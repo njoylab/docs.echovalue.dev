@@ -1,0 +1,25 @@
+
+baseURL = "https://example.com/"
+
+[module]
+[module.hugoVersion]
+min = "0.71.0"
+[[module.imports]]
+path = "alpinejs"
+[[module.imports]]
+path="lunr.js-master"
+[[module.imports.mounts]]
+source="lunr.js"
+target="assets/js/lib/lunr.js"
+[[module.imports]]
+path="slate-main"
+[[module.imports.mounts]]
+source="source/images"
+target="static/images"
+[[module.imports.mounts]]
+source="source/fonts"
+target="static/fonts"
+[[module.imports.mounts]]
+source="source/stylesheets"
+target="assets/scss/slate"
+

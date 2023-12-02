@@ -1,0 +1,54 @@
+baseURL = 'https://echovalue.njoylab.com'
+languageCode = 'en-us'
+title = 'EchoValue'
+
+[[module.imports]]
+path = "docuapi-master"
+
+disableKinds = ["taxonomy"]
+
+# Code higlighting settings
+pygmentsCodefences = true
+pygmentsCodeFencesGuesSsyntax = false
+pygmentsOptions = ""
+pygmentsStyle = "monokai"
+pygmentsUseClasses = false
+
+defaultContentLanguage = "en"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.parser]
+      autoHeadingIDType = "github-ascii"
+    [markup.goldmark.renderer]
+        unsafe = true
+
+[module]
+[module.hugoVersion]
+[[module.imports]]
+# This is replaced in go.mod to point to the directory above.
+
+[params]
+search = true
+maxMenuDepth = 3 # (optional) available options are: 1, 2, or 3 (default: 2)
+
+docFreetokens = 500
+docMaxCharacters = 30
+
+# Configure the language example tabs.
+[[params.language_tabs]]
+key = "shell"
+name = "CURL" 
+
+#Languages 
+[languages]
+
+[languages.en]
+    languageName = "English"
+    weight       = 2
+    title        = "EchoValue API Docs"
+    [languages.en.params]
+      # Left sidebar footer items. Use HTMl or Markdown.
+      toc_footers = [
+        "Documentation Powered by [DocuAPI](https://github.com/bep/docuapi)",
+      ]
