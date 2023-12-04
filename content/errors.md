@@ -4,7 +4,8 @@ title: Errors
 
 ---
 
-# Errors
+# Errors Codes
+The API uses standard HTTP error codes, including 400 (Bad Request), 401 (Unauthorized), 402 (Payment Required), and others, to indicate various types of errors.
 
 <aside class="notice">
 Please note: API calls resulting in errors due to malformed requests will count as successful calls to prevent misuse.

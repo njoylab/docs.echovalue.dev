@@ -2,16 +2,16 @@
 weight: 15
 title: New API Token
 ---
-# Token
-## Request a new Token
+# Token Management
+## Generating a New Token
 
-> To require a new API Token, use this code:
+> To obtain a new API token, execute this command:
 
 ```shell
 curl 'https://token.echovalue.dev' \
 -d 'token=new'
 ```
-> The above command returns a string with just the new TOKEN:
+> This will return a new token as a string.:
 ```shell
 mytoken
 ```
@@ -33,17 +33,17 @@ You will get <code>100</code> operation with your personal API token.
 Tokens unused for two years will be automatically deactivated, and all associated data will be deleted. Please ensure regular API usage to keep your token active.
 </aside>
 
-## Wallet Check
-
+## Checking Wallet Balance
+> To view your remaining credits, use:
 ```shell
 curl 'https://token.echovalue.dev' \
 -h 'x-token: mytoken'
 ```
-> The above command returns a JSON with :
+> The response will be a JSON object detailing your credit balance and token creation date.
 ```json
 {"wallet":12345,"created":"2023-08-09T15:40:09.77Z"}
 ```
-Retrieves the current number of remaining credits for the user's token.
+To view your remaining credits, use:
 ### HTTP Request
 `GET https://token.echovalue.dev`
 
@@ -58,18 +58,18 @@ created | Date when the token has been created
 Costs: 1 credit
 </aside>
 
-## Wallet Recharge
-
+## Recharging Wallet
+> To add credits to your wallet, use:
 ```shell
 curl 'https://token.echovalue.dev' \
 -d 'token=recharge'
 ```
-> The above command returns an URL to Stripe :
+> This returns a Stripe payment link for the recharge process:
 ```
 https://buy.stripe.com/<randomID>?client_reference_id=mytoken
 ```
 
-Follow the link to make a payment and recharge your tokens
+To add credits to your wallet, use:
 
 ### HTTP Request
 `POST https://token.echovalue.dev`
@@ -80,3 +80,5 @@ token | `recharge`
 
 ### HTTP Response
 200 - String with the payment link
+
+Follow the link to make a payment and recharge your wallet

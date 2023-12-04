@@ -2,8 +2,8 @@
 weight: 35
 title: Logs
 ---
-# Logs
-
+# Logs Retrieval
+> To access logs, execute:
 ```shell
 curl 'https://token.echovalue.dev?logs?n=5' \
 -h 'x-token: mytoken'

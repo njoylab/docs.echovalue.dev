@@ -3,10 +3,11 @@ weight: 20
 title: Key Values
 ---
 
-# Key Values
+# Key/Value Operations
 
-## Set a Key/Value
+## Setting a Key/Value Pair
 
+> To store a new key/value pair, use:
 ```shell
 curl 'https://api.echovalue.dev/default/mykey' \
 -H 'x-token: mytoken' \
@@ -20,6 +21,7 @@ curl 'https://api.echovalue.dev/default/mykey?ttl=30' \
 
 This endpoint sets the value of the key.
 The maximum length of a key is **30** characters.
+Optionally, you can set a time-to-live (TTL) for the key.
 
 ### HTTP Request
 `POST https://api.echovalue.dev/<group>/<key>?ttl=<seconds>`
@@ -39,8 +41,8 @@ ttl | You can specify in seconds the time to live for this key. If omitted key w
 Costs: 1 credit
 </aside>
 
-## Get a Key/Value
-
+## Retrieving a Key/Value Pair
+> Retrieve the value of a key with:
 ```shell
 curl 'https://api.echovalue.dev/default/mykey' \
 -H 'x-token: mytoken'
@@ -62,7 +64,7 @@ Costs: 1 credit
 </aside>
 
 ## Delete a Key/Value
-
+> To delete a key/value pair, use:
 ```shell
 curl 'https://api.echovalue.dev/default/mykey' \
 -H 'x-token: mytoken' \
