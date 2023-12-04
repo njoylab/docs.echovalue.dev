@@ -9,8 +9,8 @@ title: Authentication
 
 ```shell
 # With shell, you can just pass the correct header with each request
-curl "api_endpoint_here"
-  -H "x-token: mytoken"
+curl 'api_endpoint_here'
+  -H 'x-token: mytoken'
 ```
 
 
