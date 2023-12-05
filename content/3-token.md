@@ -74,9 +74,10 @@ To add credits to your wallet, use:
 ### HTTP Request
 `POST https://token.echovalue.dev`
 
-Parameter | Value
+Parameter | Value  | Description
 --------- | -----------
-token | `recharge`
+token | `recharge` | constant
+amount | `1` | Select the number of million operations you wish to recharge. Available options are `1` and `3`, with the default set to `1`.
 
 ### HTTP Response
 200 - String with the payment link
@@ -84,4 +85,4 @@ token | `recharge`
 Follow the link to make a payment and recharge your wallet
 
 <aside class="notice">
-Please be aware that the card transaction will appear as nJoyLab on your statement. This is to simplify operations, as I use a single Stripe account for all my projects.</aside>
+Please be aware that the card payment page will appear as nJoyLab. This is to simplify operations, as I use a single Stripe account for all my projects.</aside>
