@@ -35,7 +35,7 @@ key | Key to set
 ### HTTP Parameters
 Parameter | Description | Optional
 --------- | ----------- | -------
-ttl | You can specify in seconds the time to live for this key. If omitted key will expire in 30 days if not updated | Yes
+ttl | You can specify in seconds the time to live for this key. If omitted key will expire in 30 days if not updated. Maximum value is 2592000 ( 30 days) | Yes
 
 <aside class="notice">
 Costs: 1 credit

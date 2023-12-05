@@ -82,3 +82,6 @@ token | `recharge`
 200 - String with the payment link
 
 Follow the link to make a payment and recharge your wallet
+
+<aside class="notice">
+Please be aware that the card transaction will appear as nJoyLab on your statement. This is to simplify operations, as I use a single Stripe account for all my projects.</aside>
