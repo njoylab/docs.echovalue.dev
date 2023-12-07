@@ -5,12 +5,41 @@ title: Logs
 # Logs Retrieval
 > To access logs, execute:
 ```shell
-curl 'https://token.echovalue.dev?logs?n=5' \
--h 'x-token: mytoken'
+curl 'https://token.echovalue.dev/logs?n=5' \
+-H 'x-token: mytoken'
 ```
 > The above command returns a JSON with :
 ```json
-{"logs":[{"method":"POST","path":"/default/test","timestamp":"2023-12-02T12:00:52.736Z","expiration":"2024-01-01T12:00:52.719624Z","cost":0},{"method":"POST","path":"/default/test","timestamp":"2023-12-02T11:18:21.987Z","expiration":"2024-01-01T11:18:21.985298Z","cost":0},{"method":"POST","path":"/default/test","timestamp":"2023-12-02T11:18:14.416Z","expiration":"2024-01-01T11:18:14.413627Z","cost":0},{"method":"DELETE","path":"/default/test","timestamp":"2023-12-02T11:12:49.111Z","expiration":"2024-01-01T11:12:49.097578Z","cost":0},{"method":"POST","path":"/default/test","timestamp":"2023-12-02T11:00:07.316Z","expiration":"2024-01-01T11:00:07.303867Z","cost":0}],"n":5}
+{
+    "logs": [
+        {
+            "id": "jd9kImh8U4In3odfNeKf",
+            "method": "GET",
+            "path": "/default/mykey",
+            "error": "Key Not Found",
+            "timestamp": "2023-12-07T12:14:16.124481Z",
+            "expiration": "2023-12-14T12:14:16.12448Z",
+            "cost": -1
+        },
+        {
+            "id": "6Ss3GtZPbVwqeyhGHSo1",
+            "method": "POST",
+            "path": "/default/test",
+            "timestamp": "2023-12-07T12:04:11.453575Z",
+            "expiration": "2023-12-14T12:04:11.453575Z",
+            "cost": -1
+        },
+        {
+            "id": "T4rR1GHCteMwYOFRJLkx",
+            "method": "GET",
+            "path": "/default/test",
+            "timestamp": "2023-12-07T12:01:58.63676Z",
+            "expiration": "2023-12-14T12:01:58.63676Z",
+            "cost": -1
+        }
+    ],
+    "n": 3
+}
 ```
 Retrieves a list of the latest API calls made using the user's tokens.
 Logs have a TTL of 7 days and they are typically deleted within 24 hours after they expiration date.
@@ -33,10 +62,12 @@ logs | Array of Log entries
 
 Key | Description
 --------- | -----------
+id | unique id of the log entry
 method | Method requested
-path | Path Requested
-timestamp | TimeStamp creation
-expiration | TimeStamp when the entry will expire
+path | Path requested
+error | Optional, error message
+timestamp | Timestamp of Log Creation.
+expiration | Expiration Timestamp of the Log Entry
 cost | cost deducted from the wallet
 
 <aside class="notice">
