@@ -21,6 +21,9 @@ curl 'https://api.echovalue.dev/default/mykey?ttl=30' \
 
 This endpoint sets the value of the key.
 The maximum length of a key is **30** characters.
+The maximum length of a group name is **30** characters.
+The maximum length of value is **30** characters.
+
 Optionally, you can set a time-to-live (TTL) for the key.
 
 ### HTTP Request
