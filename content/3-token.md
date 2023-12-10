@@ -64,6 +64,7 @@ Costs: 1 credit
 curl 'https://token.echovalue.dev' \
 -H 'x-token: mytoken' \
 -d 'token=recharge'
+-d 'amount=1'
 ```
 > This returns a Stripe payment link for the recharge process:
 ```
