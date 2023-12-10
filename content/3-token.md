@@ -37,7 +37,7 @@ Tokens unused for two years will be automatically deactivated, and all associate
 > To view your remaining credits, use:
 ```shell
 curl 'https://token.echovalue.dev' \
--h 'x-token: mytoken'
+-H 'x-token: mytoken'
 ```
 > The response will be a JSON object detailing your credit balance and token creation date.
 ```json
@@ -62,11 +62,12 @@ Costs: 1 credit
 > To add credits to your wallet, use:
 ```shell
 curl 'https://token.echovalue.dev' \
+-H 'x-token: mytoken' \
 -d 'token=recharge'
 ```
 > This returns a Stripe payment link for the recharge process:
 ```
-https://buy.stripe.com/<randomID>?client_reference_id=mytoken
+https://buy.stripe.com/<productID>?client_reference_id=mytoken
 ```
 
 To add credits to your wallet, use:
@@ -75,7 +76,7 @@ To add credits to your wallet, use:
 `POST https://token.echovalue.dev`
 
 Parameter | Value  | Description
---------- | -----------
+--------- | ----------- | -----------
 token | `recharge` | constant
 amount | `1` | Select the number of million operations you wish to recharge. Available options are `1` and `3`, with the default set to `1`.
 
