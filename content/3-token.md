@@ -87,4 +87,4 @@ amount | `1` | Select the number of million operations you wish to recharge. Ava
 Follow the link to make a payment and recharge your wallet
 
 <aside class="notice">
-Please be aware that the card payment page will appear as nJoyLab. This is to simplify operations, as I use a single Stripe account for all my projects.</aside>
+Please be aware that the card transaction will appear as nJoyLab on your statement. This is to simplify operations, as I use a single Stripe account for all my projects.</aside>
