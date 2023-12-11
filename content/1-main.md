@@ -12,5 +12,5 @@ title: API Reference
 **echoValue** is not intended to replace robust databases or caching systems in large and security-critical applications. It is specifically tailored to cater to the needs of small projects where simplicity, ease of use, and quick setup are the primary concerns.
 
 <aside class="warning">
-You should not use echoValue to save sensitive data
+You should not use echoValue to save sensitive data.
 </aside>
