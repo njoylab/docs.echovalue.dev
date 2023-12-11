@@ -19,7 +19,8 @@ curl 'https://token.echovalue.dev/logs?n=5' \
             "error": "Key Not Found",
             "timestamp": "2023-12-07T12:14:16.124481Z",
             "expiration": "2023-12-14T12:14:16.12448Z",
-            "cost": -1
+            "cost": 1,
+            "balance": 97
         },
         {
             "id": "6Ss3GtZPbVwqeyhGHSo1",
@@ -27,7 +28,8 @@ curl 'https://token.echovalue.dev/logs?n=5' \
             "path": "/default/test",
             "timestamp": "2023-12-07T12:04:11.453575Z",
             "expiration": "2023-12-14T12:04:11.453575Z",
-            "cost": -1
+            "cost": 1,
+            "balance": 98
         },
         {
             "id": "T4rR1GHCteMwYOFRJLkx",
@@ -35,7 +37,8 @@ curl 'https://token.echovalue.dev/logs?n=5' \
             "path": "/default/test",
             "timestamp": "2023-12-07T12:01:58.63676Z",
             "expiration": "2023-12-14T12:01:58.63676Z",
-            "cost": -1
+            "cost": 1,
+            "balance": 99
         }
     ],
     "n": 3
@@ -68,7 +71,8 @@ path | Path requested
 error | Optional, error message
 timestamp | Timestamp of Log Creation.
 expiration | Expiration Timestamp of the Log Entry
-cost | cost deducted from the wallet
+cost | Cost deducted from the wallet
+balance | New credit balance
 
 <aside class="notice">
 Costs: 1 credit for each entry log returned ( `n` value in the response). Please note that `n` returned could be less than the value requested depending on wallet capacity and total number of entries
