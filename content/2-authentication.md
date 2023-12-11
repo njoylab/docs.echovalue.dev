@@ -16,9 +16,9 @@ curl 'api_endpoint_here'
 
 > Remember to replace `mytoken` with your actual token.
 
-**EchoValue** uses API tokens to allow access to the API.
+**echoValue** uses API tokens to allow access to the API.
 
-**The EchoValue API** offers a streamlined way for users to interact with its services. To authenticate your requests, include the following header in your API calls:
+**The echoValue API** offers a streamlined way for users to interact with its services. To authenticate your requests, include the following header in your API calls:
 
 `x-token: mytoken`
 
