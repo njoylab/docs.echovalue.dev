@@ -55,7 +55,7 @@ wallet | Integer with the remaining credit
 created | Date when the token has been created
 
 <aside class="notice">
-Costs: 1 credit
+Costs: 1 credit. The best method to check your balance is to look at the `x-balance` response header following each request.
 </aside>
 
 ## Recharging Wallet

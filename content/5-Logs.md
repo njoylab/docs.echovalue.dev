@@ -72,7 +72,7 @@ error | Optional, error message
 timestamp | Timestamp of Log Creation.
 expiration | Expiration Timestamp of the Log Entry
 cost | Cost deducted from the wallet
-balance | New credit balance
+balance | Wallet balance
 
 <aside class="notice">
 Costs: 1 credit for each entry log returned ( `n` value in the response). Please note that `n` returned could be less than the value requested depending on wallet capacity and total number of entries
