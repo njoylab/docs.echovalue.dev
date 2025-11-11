@@ -1,9 +1,9 @@
 ---
 weight: 20
-title: Key Values
+title: DB API - Key-Value Store
 ---
 
-# Key/Value Operations
+# DB API: Key-Value Store
 
 ## Setting a Key/Value Pair
 
