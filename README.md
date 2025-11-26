@@ -232,10 +232,23 @@ This documentation is licensed under the Apache License 2.0. See [LICENSE](LICEN
 
 The DocuAPI theme is also licensed under Apache 2.0.
 
+## API Specification
+
+OpenAPI 3.0 specification available at:
+- **OpenAPI Spec**: [openapi.yaml](https://docs.echovalue.dev/openapi.yaml)
+- View in **Swagger Editor**: [editor.swagger.io](https://editor.swagger.io/?url=https://docs.echovalue.dev/openapi.yaml)
+
+Use the OpenAPI spec to:
+- Generate client SDKs in any language
+- Import into Postman, Insomnia, or other API tools
+- Validate requests and responses
+- Auto-generate API documentation
+
 ## Links
 
 - **EchoValue Website**: [echovalue.dev](https://www.echovalue.dev)
 - **API Documentation**: [docs.echovalue.dev](https://docs.echovalue.dev)
+- **OpenAPI Specification**: [docs.echovalue.dev/openapi.yaml](https://docs.echovalue.dev/openapi.yaml)
 - **DocuAPI Theme**: [github.com/bep/docuapi](https://github.com/bep/docuapi)
 - **Hugo Documentation**: [gohugo.io/documentation](https://gohugo.io/documentation/)
 

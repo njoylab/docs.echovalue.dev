@@ -1,0 +1,411 @@
+openapi: 3.0.3
+info:
+  title: EchoValue API
+  description: |
+    **EchoValue** is a lightweight and easy-to-use API designed for freelancers and developers working on small projects. It serves as a simple key-value database system, specifically tailored to store and retrieve random key-value data without the need for complex server platforms.
+
+    ## Important Notes
+    - EchoValue is not intended to replace robust databases or caching systems in large and security-critical applications
+    - You should not use EchoValue to save sensitive data
+    - Tokens unused for two years will be automatically deactivated
+    - All API calls cost credits from your wallet balance
+
+    ## Authentication
+    Include the `x-token` header in all your API requests.
+
+  version: 1.0.0
+  contact:
+    name: EchoValue Support
+    url: https://www.echovalue.dev
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://api.echovalue.dev
+    description: Key-Value Storage API
+  - url: https://token.echovalue.dev
+    description: Token Management API
+
+tags:
+  - name: Key-Value Operations
+    description: Store, retrieve, and delete key-value pairs
+  - name: Token Management
+    description: Generate tokens, check balance, and recharge credits
+  - name: Logs
+    description: Retrieve API usage logs
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /{group}/{key}:
+    parameters:
+      - name: group
+        in: path
+        required: true
+        description: Group name for organizing keys (e.g., 'default')
+        schema:
+          type: string
+          maxLength: 30
+          example: default
+      - name: key
+        in: path
+        required: true
+        description: Key identifier
+        schema:
+          type: string
+          maxLength: 30
+          example: mykey
+
+    post:
+      tags:
+        - Key-Value Operations
+      summary: Set a key/value pair
+      description: |
+        Sets the value of a key. Optionally, you can specify a time-to-live (TTL) for automatic expiration.
+
+        **Cost:** 1 credit
+      operationId: setKeyValue
+      parameters:
+        - name: ttl
+          in: query
+          required: false
+          description: Time to live in seconds (max 2592000 = 30 days). If omitted, key expires in 30 days if not updated.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 2592000
+            example: 30
+      requestBody:
+        required: true
+        description: The value to store (max 30 characters)
+        content:
+          text/plain:
+            schema:
+              type: string
+              maxLength: 30
+              example: newdata
+      responses:
+        '200':
+          description: Key/value pair successfully stored
+          headers:
+            x-cost:
+              description: Credits deducted from wallet
+              schema:
+                type: integer
+                example: 1
+            x-balance:
+              description: Remaining wallet balance
+              schema:
+                type: integer
+                example: 99
+        '400':
+          description: Bad Request - Malformed request
+        '401':
+          description: Unauthorized - Invalid API token
+        '402':
+          description: Payment Required - Wallet is empty
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+
+    get:
+      tags:
+        - Key-Value Operations
+      summary: Retrieve a key/value pair
+      description: |
+        Gets the value of a key.
+
+        **Cost:** 1 credit
+      operationId: getKeyValue
+      responses:
+        '200':
+          description: Value retrieved successfully
+          headers:
+            x-cost:
+              description: Credits deducted from wallet
+              schema:
+                type: integer
+                example: 1
+            x-balance:
+              description: Remaining wallet balance
+              schema:
+                type: integer
+                example: 98
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: newdata
+        '401':
+          description: Unauthorized - Invalid API token
+        '402':
+          description: Payment Required - Wallet is empty
+        '404':
+          description: Not Found - Key does not exist
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+
+    delete:
+      tags:
+        - Key-Value Operations
+      summary: Delete a key/value pair
+      description: |
+        Deletes a key and its value.
+
+        **Cost:** 1 credit
+      operationId: deleteKeyValue
+      responses:
+        '200':
+          description: Key/value pair successfully deleted
+          headers:
+            x-cost:
+              description: Credits deducted from wallet
+              schema:
+                type: integer
+                example: 1
+            x-balance:
+              description: Remaining wallet balance
+              schema:
+                type: integer
+                example: 97
+        '401':
+          description: Unauthorized - Invalid API token
+        '402':
+          description: Payment Required - Wallet is empty
+        '404':
+          description: Not Found - Key does not exist
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+
+  /:
+    servers:
+      - url: https://token.echovalue.dev
+
+    post:
+      tags:
+        - Token Management
+      summary: Generate a new token or recharge wallet
+      description: |
+        Generate a new API token or create a recharge payment link.
+
+        **For new token:** No authentication required, returns token string, includes 100 free operations.
+
+        **For recharge:** Requires authentication, returns Stripe payment link.
+      operationId: tokenOperation
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  enum: [new, recharge]
+                  description: Operation type
+                amount:
+                  type: integer
+                  enum: [1, 3]
+                  description: Million operations to recharge (only for recharge operation)
+                  default: 1
+              required:
+                - token
+            examples:
+              generateToken:
+                summary: Generate new token
+                value:
+                  token: new
+              rechargeWallet:
+                summary: Recharge wallet
+                value:
+                  token: recharge
+                  amount: 1
+      responses:
+        '200':
+          description: Operation successful
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                newToken:
+                  summary: New token generated
+                  value: mytoken
+                paymentLink:
+                  summary: Payment link for recharge
+                  value: https://buy.stripe.com/productID?client_reference_id=mytoken
+        '400':
+          description: Bad Request - Invalid parameters
+        '401':
+          description: Unauthorized - Invalid API token (for recharge)
+
+    get:
+      tags:
+        - Token Management
+      summary: Check wallet balance
+      description: |
+        Returns remaining credits and token creation date.
+
+        **Cost:** 1 credit
+      operationId: checkBalance
+      responses:
+        '200':
+          description: Wallet information retrieved
+          headers:
+            x-cost:
+              description: Credits deducted from wallet
+              schema:
+                type: integer
+                example: 1
+            x-balance:
+              description: Remaining wallet balance
+              schema:
+                type: integer
+                example: 99
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wallet:
+                    type: integer
+                    description: Remaining credits
+                    example: 12345
+                  created:
+                    type: string
+                    format: date-time
+                    description: Token creation date
+                    example: "2023-08-09T15:40:09.77Z"
+        '401':
+          description: Unauthorized - Invalid API token
+        '402':
+          description: Payment Required - Wallet is empty
+
+  /logs:
+    servers:
+      - url: https://token.echovalue.dev
+
+    get:
+      tags:
+        - Logs
+      summary: Retrieve API usage logs
+      description: |
+        Retrieves a list of the latest API calls made using the user's token.
+        Logs have a TTL of 7 days and are deleted within 24 hours after expiration.
+
+        **Cost:** 1 credit per log entry returned (n value in response)
+      operationId: getLogs
+      parameters:
+        - name: n
+          in: query
+          required: false
+          description: Number of log entries to retrieve (default 5)
+          schema:
+            type: integer
+            minimum: 1
+            default: 5
+            example: 5
+      responses:
+        '200':
+          description: Logs retrieved successfully
+          headers:
+            x-cost:
+              description: Credits deducted (equals n returned)
+              schema:
+                type: integer
+                example: 3
+            x-balance:
+              description: Remaining wallet balance
+              schema:
+                type: integer
+                example: 96
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  n:
+                    type: integer
+                    description: Number of entries returned
+                    example: 3
+                  logs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique log entry ID
+                          example: jd9kImh8U4In3odfNeKf
+                        method:
+                          type: string
+                          description: HTTP method used
+                          example: GET
+                        path:
+                          type: string
+                          description: API path called
+                          example: /default/mykey
+                        error:
+                          type: string
+                          description: Error message if any
+                          example: Key Not Found
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Log creation timestamp
+                          example: "2023-12-07T12:14:16.124481Z"
+                        expiration:
+                          type: string
+                          format: date-time
+                          description: Log expiration timestamp
+                          example: "2023-12-14T12:14:16.12448Z"
+                        cost:
+                          type: integer
+                          description: Credits deducted
+                          example: 1
+                        balance:
+                          type: integer
+                          description: Wallet balance after operation
+                          example: 97
+        '401':
+          description: Unauthorized - Invalid API token
+        '402':
+          description: Payment Required - Insufficient wallet balance
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-token
+      description: API token for authentication
+
+  responses:
+    BadRequest:
+      description: Bad Request - Malformed request
+    Unauthorized:
+      description: Unauthorized - Invalid API token
+    PaymentRequired:
+      description: Payment Required - Wallet is empty
+    Forbidden:
+      description: Forbidden - Insufficient permissions
+    NotFound:
+      description: Not Found - Resource does not exist
+    MethodNotAllowed:
+      description: Method Not Allowed - Invalid HTTP method
+    NotAcceptable:
+      description: Not Acceptable - Invalid format requested
+    TooManyRequests:
+      description: Too Many Requests - Rate limit exceeded
+    InternalServerError:
+      description: Internal Server Error - Service issue
+    NotImplemented:
+      description: Not Implemented - Endpoint not available
+    ServiceUnavailable:
+      description: Service Unavailable - Temporary offline
+
+externalDocs:
+  description: Full API Documentation
+  url: https://docs.echovalue.dev
