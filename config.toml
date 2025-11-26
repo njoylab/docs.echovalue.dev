@@ -1,9 +1,9 @@
-baseURL = 'https://echovalue.njoylab.com'
+baseURL = 'https://docs.echovalue.dev'
 languageCode = 'en-us'
 title = 'EchoValue'
 
 [[module.imports]]
-path = "docuapi-master"
+path = "github.com/bep/docuapi/v2"
 
 disableKinds = ["taxonomy"]
 
@@ -25,8 +25,6 @@ defaultContentLanguage = "en"
 
 [module]
 [module.hugoVersion]
-[[module.imports]]
-# This is replaced in go.mod to point to the directory above.
 
 [params]
 search = true

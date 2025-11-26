@@ -1,0 +1,59 @@
+// EchoValue Custom Color Theme
+// Modern, professional palette with teal accents
+
+// ============================================================================
+// NAVIGATION (Left Sidebar) - Deep Blue/Slate
+// ============================================================================
+$nav-bg: #1e293b;                    // Sidebar: deep slate blue
+$nav-text: #e2e8f0;                  // Sidebar text: light gray
+$nav-active-bg: #06b6d4;             // Active menu: vibrant cyan/teal
+$nav-active-text: #ffffff;           // Active text: pure white
+$nav-active-parent-bg: #334155;      // Active parent: lighter slate
+$nav-active-parent-text: #f1f5f9;   // Active parent text: off-white
+$nav-subitem-bg: #334155;            // Submenu: lighter slate
+$nav-footer-border-color: #475569;   // Footer border: medium slate
+
+// ============================================================================
+// MAIN CONTENT AREA - Clean & Light
+// ============================================================================
+$main-bg: #ffffff;                   // Main content: pure white
+$main-text: #1e293b;                 // Main text: dark slate
+
+// ============================================================================
+// CODE EXAMPLES (Right Column) - Dark & Modern
+// ============================================================================
+$examples-bg: #0f172a;               // Code examples: very dark blue
+$code-bg: #1e293b;                   // Code blocks: dark slate
+$code-annotation-bg: #0f172a;        // Code annotations: darkest
+
+// ============================================================================
+// LANGUAGE SELECTOR - Matching Code Column
+// ============================================================================
+$lang-select-bg: #1e293b;            // Language tab: dark slate
+$lang-select-active-bg: #0f172a;     // Active tab: darkest blue
+$lang-select-border: #334155;        // Border: medium slate
+$lang-select-text: #94a3b8;          // Tab text: muted gray
+$lang-select-active-text: #06b6d4;   // Active tab text: cyan
+$lang-select-pressed-bg: #0c1220;    // Pressed: almost black
+$lang-select-pressed-text: #06b6d4;  // Pressed text: cyan
+
+// ============================================================================
+// ASIDE BOXES - Modern & Vibrant
+// ============================================================================
+$aside-notice-bg: #dbeafe;           // Notice: soft blue
+$aside-warning-bg: #fecaca;          // Warning: soft red
+$aside-success-bg: #d1fae5;          // Success: soft green
+
+// ============================================================================
+// SEARCH
+// ============================================================================
+$search-notice-bg: #fecaca;          // Search notice: soft red
+$search-box-border-color: #475569;   // Search border: medium slate
+
+// ============================================================================
+// FONT FAMILY (Optional)
+// ============================================================================
+// Using default system fonts for best performance
+// Uncomment below to use Inter font:
+// @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+// $font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

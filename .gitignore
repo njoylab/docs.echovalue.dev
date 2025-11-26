@@ -16,3 +16,10 @@ hugo.linux
 
 # Temporary lock file while building
 /.hugo_build.lock
+
+# Node.js dependencies
+/node_modules/
+package-lock.json
+
+# Hugo modules
+/_vendor/
