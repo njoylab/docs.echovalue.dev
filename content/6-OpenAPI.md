@@ -13,13 +13,13 @@ The EchoValue API is fully documented using the **OpenAPI 3.0** specification fo
 
 ## View & Test
 
-### Swagger Editor
-Open the specification in Swagger Editor to explore and test the API:
+### Redocly
+View the interactive API documentation with a modern interface:
 
-🔗 [Open in Swagger Editor](https://editor.swagger.io/?url=https://docs.echovalue.dev/openapi.yaml)
+🔗 [Open in Redocly](https://redocly.github.io/redoc/?url=https://docs.echovalue.dev/openapi.yaml)
 
 ### Swagger UI
-View the interactive API documentation:
+Explore and test the API interactively:
 
 🔗 [Open in Swagger UI](https://petstore.swagger.io/?url=https://docs.echovalue.dev/openapi.yaml)
 
@@ -86,18 +86,6 @@ npx @stoplight/prism-cli mock \
 
 # Mock server will run on http://127.0.0.1:4010
 ```
-
-## Specification Details
-
-The OpenAPI specification includes:
-
-✅ All API endpoints (Key-Value Operations, Token Management, Logs)
-✅ Request/response schemas
-✅ Authentication requirements
-✅ Error responses
-✅ Parameter validation rules
-✅ Examples for all operations
-✅ Rate limits and cost information
 
 ## Keep Updated
 

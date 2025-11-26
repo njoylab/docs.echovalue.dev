@@ -236,7 +236,8 @@ The DocuAPI theme is also licensed under Apache 2.0.
 
 OpenAPI 3.0 specification available at:
 - **OpenAPI Spec**: [openapi.yaml](https://docs.echovalue.dev/openapi.yaml)
-- View in **Swagger Editor**: [editor.swagger.io](https://editor.swagger.io/?url=https://docs.echovalue.dev/openapi.yaml)
+- View in **Redocly**: [redocly.github.io](https://redocly.github.io/redoc/?url=https://docs.echovalue.dev/openapi.yaml)
+- View in **Swagger UI**: [petstore.swagger.io](https://petstore.swagger.io/?url=https://docs.echovalue.dev/openapi.yaml)
 
 Use the OpenAPI spec to:
 - Generate client SDKs in any language
