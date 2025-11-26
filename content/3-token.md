@@ -11,6 +11,60 @@ title: New API Token
 curl 'https://token.echovalue.dev' \
 -d 'token=new'
 ```
+
+```javascript
+// Using fetch API
+fetch('https://token.echovalue.dev', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+  body: 'token=new'
+})
+.then(response => response.text())
+.then(token => console.log(token));
+```
+
+```python
+import requests
+
+# Using requests library
+response = requests.post('https://token.echovalue.dev',
+  data={'token': 'new'}
+)
+print(response.text)
+```
+
+```php
+<?php
+$ch = curl_init('https://token.echovalue.dev');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'token=new');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$token = curl_exec($ch);
+curl_close($ch);
+echo $token;
+?>
+```
+
+```go
+package main
+
+import (
+	"io"
+	"net/http"
+	"strings"
+)
+
+func main() {
+	body := strings.NewReader("token=new")
+	resp, _ := http.Post("https://token.echovalue.dev", "application/x-www-form-urlencoded", body)
+	defer resp.Body.Close()
+	token, _ := io.ReadAll(resp.Body)
+	println(string(token))
+}
+```
+
 > This will return a new token as a string.:
 ```shell
 mytoken
@@ -35,10 +89,69 @@ Tokens unused for two years will be automatically deactivated, and all associate
 
 ## Checking Wallet Balance
 > To view your remaining credits, use:
+
 ```shell
 curl 'https://token.echovalue.dev' \
 -H 'x-token: mytoken'
 ```
+
+```javascript
+// Using fetch API
+fetch('https://token.echovalue.dev', {
+  headers: {
+    'x-token': 'mytoken'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+```python
+import requests
+
+# Using requests library
+response = requests.get('https://token.echovalue.dev',
+  headers={'x-token': 'mytoken'}
+)
+print(response.json())
+```
+
+```php
+<?php
+$ch = curl_init('https://token.echovalue.dev');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+$data = json_decode($response);
+print_r($data);
+?>
+```
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, _ := http.NewRequest("GET", "https://token.echovalue.dev", nil)
+	req.Header.Set("x-token", "mytoken")
+
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	var result map[string]interface{}
+	json.Unmarshal(body, &result)
+	println(result)
+}
+```
+
 > The response will be a JSON object detailing your credit balance and token creation date.
 ```json
 {"wallet":12345,"created":"2023-08-09T15:40:09.77Z"}

@@ -36,7 +36,23 @@ docMaxCharacters = 30
 # Configure the language example tabs.
 [[params.language_tabs]]
 key = "shell"
-name = "CURL" 
+name = "CURL"
+
+[[params.language_tabs]]
+key = "javascript"
+name = "JavaScript"
+
+[[params.language_tabs]]
+key = "python"
+name = "Python"
+
+[[params.language_tabs]]
+key = "php"
+name = "PHP"
+
+[[params.language_tabs]]
+key = "go"
+name = "Go" 
 
 #Languages 
 [languages]

@@ -8,15 +8,97 @@ title: DB API - Key-Value Store
 ## Setting a Key/Value Pair
 
 > To store a new key/value pair, use:
+
 ```shell
 curl 'https://api.echovalue.dev/default/mykey' \
 -H 'x-token: mytoken' \
 -d 'newdata'
 
-// with 30 seconds expiration
+# with 30 seconds expiration
 curl 'https://api.echovalue.dev/default/mykey?ttl=30' \
 -H 'x-token: mytoken' \
 -d 'newdata'
+```
+
+```javascript
+// Using fetch API
+fetch('https://api.echovalue.dev/default/mykey', {
+  method: 'POST',
+  headers: {
+    'x-token': 'mytoken'
+  },
+  body: 'newdata'
+});
+
+// with 30 seconds expiration
+fetch('https://api.echovalue.dev/default/mykey?ttl=30', {
+  method: 'POST',
+  headers: {
+    'x-token': 'mytoken'
+  },
+  body: 'newdata'
+});
+```
+
+```python
+import requests
+
+# Using requests library
+requests.post('https://api.echovalue.dev/default/mykey',
+  headers={'x-token': 'mytoken'},
+  data='newdata'
+)
+
+# with 30 seconds expiration
+requests.post('https://api.echovalue.dev/default/mykey?ttl=30',
+  headers={'x-token': 'mytoken'},
+  data='newdata'
+)
+```
+
+```php
+<?php
+// Using cURL
+$ch = curl_init('https://api.echovalue.dev/default/mykey');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'newdata');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+
+// with 30 seconds expiration
+$ch = curl_init('https://api.echovalue.dev/default/mykey?ttl=30');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'newdata');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+```go
+package main
+
+import (
+	"net/http"
+	"strings"
+)
+
+func main() {
+	// Create request
+	body := strings.NewReader("newdata")
+	req, _ := http.NewRequest("POST", "https://api.echovalue.dev/default/mykey", body)
+	req.Header.Set("x-token", "mytoken")
+
+	// Send request
+	client := &http.Client{}
+	client.Do(req)
+
+	// with 30 seconds expiration
+	req2, _ := http.NewRequest("POST", "https://api.echovalue.dev/default/mykey?ttl=30", body)
+	req2.Header.Set("x-token", "mytoken")
+	client.Do(req2)
+}
 ```
 
 This endpoint sets the value of the key.
@@ -46,9 +128,65 @@ Costs: 1 credit
 
 ## Retrieving a Key/Value Pair
 > Retrieve the value of a key with:
+
 ```shell
 curl 'https://api.echovalue.dev/default/mykey' \
 -H 'x-token: mytoken'
+```
+
+```javascript
+// Using fetch API
+fetch('https://api.echovalue.dev/default/mykey', {
+  headers: {
+    'x-token': 'mytoken'
+  }
+})
+.then(response => response.text())
+.then(data => console.log(data));
+```
+
+```python
+import requests
+
+# Using requests library
+response = requests.get('https://api.echovalue.dev/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+print(response.text)
+```
+
+```php
+<?php
+// Using cURL
+$ch = curl_init('https://api.echovalue.dev/default/mykey');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+?>
+```
+
+```go
+package main
+
+import (
+	"io"
+	"net/http"
+)
+
+func main() {
+	// Create request
+	req, _ := http.NewRequest("GET", "https://api.echovalue.dev/default/mykey", nil)
+	req.Header.Set("x-token", "mytoken")
+
+	// Send request and read response
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	println(string(body))
+}
 ```
 
 This endpoint gets the value of the key.
@@ -68,10 +206,57 @@ Costs: 1 credit
 
 ## Delete a Key/Value
 > To delete a key/value pair, use:
+
 ```shell
 curl 'https://api.echovalue.dev/default/mykey' \
 -H 'x-token: mytoken' \
 -X DELETE
+```
+
+```javascript
+// Using fetch API
+fetch('https://api.echovalue.dev/default/mykey', {
+  method: 'DELETE',
+  headers: {
+    'x-token': 'mytoken'
+  }
+});
+```
+
+```python
+import requests
+
+# Using requests library
+requests.delete('https://api.echovalue.dev/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+```
+
+```php
+<?php
+// Using cURL
+$ch = curl_init('https://api.echovalue.dev/default/mykey');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+```go
+package main
+
+import "net/http"
+
+func main() {
+	// Create DELETE request
+	req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/default/mykey", nil)
+	req.Header.Set("x-token", "mytoken")
+
+	// Send request
+	client := &http.Client{}
+	client.Do(req)
+}
 ```
 This endpoint delete the key and it's value.
 

@@ -4,9 +4,68 @@ title: Logs
 ---
 # Logs Retrieval
 > To access logs, execute:
+
 ```shell
 curl 'https://token.echovalue.dev/logs?n=5' \
 -H 'x-token: mytoken'
+```
+
+```javascript
+// Using fetch API
+fetch('https://token.echovalue.dev/logs?n=5', {
+  headers: {
+    'x-token': 'mytoken'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+```python
+import requests
+
+# Using requests library
+response = requests.get('https://token.echovalue.dev/logs',
+  headers={'x-token': 'mytoken'},
+  params={'n': 5}
+)
+print(response.json())
+```
+
+```php
+<?php
+$ch = curl_init('https://token.echovalue.dev/logs?n=5');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+$data = json_decode($response);
+print_r($data);
+?>
+```
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+)
+
+func main() {
+	req, _ := http.NewRequest("GET", "https://token.echovalue.dev/logs?n=5", nil)
+	req.Header.Set("x-token", "mytoken")
+
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	var result map[string]interface{}
+	json.Unmarshal(body, &result)
+	println(result)
+}
 ```
 > The above command returns a JSON with :
 ```json
