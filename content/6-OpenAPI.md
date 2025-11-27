@@ -27,27 +27,40 @@ Explore and test the API interactively:
 
 ### Generate Client SDKs
 
-Use tools like [OpenAPI Generator](https://openapi-generator.tech/) to generate client libraries:
+Use tools like [OpenAPI Generator](https://openapi-generator.tech/) to generate client libraries in your preferred language.
+
+<aside class="notice">
+Choose ONE of the following commands based on your language. Each command generates a complete client SDK in the <code>./echovalue-client</code> directory.
+</aside>
+
+**JavaScript**
 
 ```shell
-# Generate JavaScript client
 openapi-generator-cli generate \
   -i https://docs.echovalue.dev/openapi.yaml \
   -g javascript \
   -o ./echovalue-client
+```
 
-# Generate Python client
+**Python**
+
+```shell
 openapi-generator-cli generate \
   -i https://docs.echovalue.dev/openapi.yaml \
   -g python \
   -o ./echovalue-client
+```
 
-# Generate Go client
+**Go**
+
+```shell
 openapi-generator-cli generate \
   -i https://docs.echovalue.dev/openapi.yaml \
   -g go \
   -o ./echovalue-client
 ```
+
+> Other languages supported: Java, Ruby, PHP, C#, TypeScript, Rust, and [many more](https://openapi-generator.tech/docs/generators)
 
 ### Import into API Tools
 
