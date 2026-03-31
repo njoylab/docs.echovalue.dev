@@ -60,7 +60,7 @@ name = "Go"
 [languages.en]
     languageName = "English"
     weight       = 2
-    title        = "EchoValue API Docs"
+    title        = "EchoValue API Docs — Key-Value Store & Developer Tools"
     [languages.en.params]
       # Left sidebar footer items. Use HTMl or Markdown.
       toc_footers = [
