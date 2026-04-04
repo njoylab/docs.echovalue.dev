@@ -178,10 +178,8 @@ Costs: 1 credit. The best method to check your balance is to look at the `x-bala
 ## Recharging Wallet
 > To add credits to your wallet, use:
 ```shell
-curl 'https://api.echovalue.dev/token' \
--H 'x-token: mytoken' \
--d 'token=recharge' \
--d 'amount=1'
+curl 'https://api.echovalue.dev/recharge?amount=1' \
+-H 'x-token: mytoken'
 ```
 > This returns a Stripe payment link for the recharge process:
 ```
@@ -191,12 +189,11 @@ https://buy.stripe.com/<productID>?client_reference_id=mytoken
 To add credits to your wallet, use:
 
 ### HTTP Request
-`POST https://api.echovalue.dev/token`
+`GET https://api.echovalue.dev/recharge`
 
-Parameter | Value  | Description
---------- | ----------- | -----------
-token | `recharge` | constant
-amount | `1` | Select the number of million operations you wish to recharge. Available options are `1` and `3`, with the default set to `1`.
+Parameter | Value  | Description | Optional
+--------- | ----------- | ----------- | -------
+amount | `1` | Select the number of million operations you wish to recharge. Available options are `1` and `3`, with the default set to `1`. | Yes
 
 ### HTTP Response
 200 - String with the payment link

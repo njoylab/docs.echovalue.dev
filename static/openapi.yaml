@@ -189,14 +189,12 @@ paths:
     post:
       tags:
         - Token Management
-      summary: Generate a new token or recharge wallet
+      summary: Generate a new token
       description: |
-        Generate a new API token or create a recharge payment link.
+        Generate a new API token. No authentication required, returns token string, includes 100 free operations.
 
-        **For new token:** No authentication required, returns token string, includes 100 free operations.
-
-        **For recharge:** Requires authentication, returns Stripe payment link.
-      operationId: tokenOperation
+        **Rate Limit:** 1 request every 10 seconds.
+      operationId: generateToken
       security: []
       requestBody:
         required: true
@@ -204,46 +202,30 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               type: object
+              required:
+                - token
               properties:
                 token:
                   type: string
-                  enum: [new, recharge]
-                  description: Operation type
-                amount:
-                  type: integer
-                  enum: [1, 3]
-                  description: Million operations to recharge (only for recharge operation)
-                  default: 1
-              required:
-                - token
+                  enum: [new]
+                  description: Must be `new`
             examples:
               generateToken:
                 summary: Generate new token
                 value:
                   token: new
-              rechargeWallet:
-                summary: Recharge wallet
-                value:
-                  token: recharge
-                  amount: 1
       responses:
         '200':
-          description: Operation successful
+          description: New token generated
           content:
             text/plain:
               schema:
                 type: string
-              examples:
-                newToken:
-                  summary: New token generated
-                  value: mytoken
-                paymentLink:
-                  summary: Payment link for recharge
-                  value: https://buy.stripe.com/productID?client_reference_id=mytoken
+              example: mytoken
         '400':
           description: Bad Request - Invalid parameters
-        '401':
-          description: Unauthorized - Invalid API token (for recharge)
+        '429':
+          description: Too Many Requests - Rate limit exceeded
 
     get:
       tags:
@@ -294,6 +276,38 @@ paths:
   /logs:
     servers:
       - url: https://api.echovalue.dev/token
+  /recharge:
+    servers:
+      - url: https://api.echovalue.dev/recharge
+    get:
+      tags:
+        - Token Management
+      summary: Get recharge link
+      description: Returns a Stripe checkout link for recharging wallet.
+      operationId: getRechargeLink
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: amount
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ["1", "3"]
+            default: "1"
+          description: Recharge tier (million operations)
+      responses:
+        '200':
+          description: Stripe checkout URL
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: https://buy.stripe.com/<productID>?client_reference_id=mytoken
+        '400':
+          description: Bad Request - Invalid parameters
+        '401':
+          description: Unauthorized - Invalid API token
   /webhook:
     servers:
       - url: https://api.echovalue.dev/webhook
