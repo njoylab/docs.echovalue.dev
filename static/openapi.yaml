@@ -62,7 +62,7 @@ components:
       schema:
         type: string
         maxLength: 30
-      description: Group/bucket name for organizing keys (max 30 characters)
+      description: Group/bucket name for organizing keys (max 30 characters, cannot start with `reserved-` or end with `---`)
 
     Key:
       name: key
@@ -292,6 +292,8 @@ paths:
               schema:
                 type: integer
               description: Credits consumed (1)
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "402":
@@ -605,6 +607,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "500":
+          description: Internal server error
 
     delete:
       tags: [Webhook API]
