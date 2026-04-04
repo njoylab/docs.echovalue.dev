@@ -5,7 +5,7 @@ title: Mail2Webhook Service
 
 # Mail2Webhook Service
 
-The Mail2Webhook service allows you to receive email notifications at a custom webhook URL. Each wallet can have one webhook configured, and emails sent to `<wallet-id>@hook.echovalue.dev` will be forwarded to your webhook.
+The Mail2Webhook service allows you to receive email notifications at a custom webhook URL. Each wallet can have one webhook configured, and emails sent to `<wallet-id>@api.echovalue.dev` will be forwarded to your webhook.
 
 
 <aside class="notice">
@@ -17,7 +17,7 @@ Costs: Each webhook operation (get, set, or delete) costs 1 credit. Each email p
 > To configure or update your webhook, use:
 
 ```shell
-curl 'https://hook.echovalue.dev/webhook' \
+curl 'https://api.echovalue.dev/webhook' \
 -H 'x-token: mytoken' \
 -H 'Content-Type: application/json' \
 -d '{"url":"https://yourdomain.com/webhook","headers":{"Authorization":"Bearer secret"}}'
@@ -25,7 +25,7 @@ curl 'https://hook.echovalue.dev/webhook' \
 
 ```javascript
 // Using fetch API
-fetch('https://hook.echovalue.dev/webhook', {
+fetch('https://api.echovalue.dev/webhook', {
   method: 'POST',
   headers: {
     'x-token': 'mytoken',
@@ -45,7 +45,7 @@ import requests
 import json
 
 # Using requests library
-response = requests.post('https://hook.echovalue.dev/webhook',
+response = requests.post('https://api.echovalue.dev/webhook',
   headers={
     'x-token': 'mytoken',
     'Content-Type': 'application/json'
@@ -69,7 +69,7 @@ $data = json_encode([
   ]
 ]);
 
-$ch = curl_init('https://hook.echovalue.dev/webhook');
+$ch = curl_init('https://api.echovalue.dev/webhook');
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -102,7 +102,7 @@ func main() {
 	body := bytes.NewBuffer(jsonData)
 
 	// Create request
-	req, _ := http.NewRequest("POST", "https://hook.echovalue.dev/webhook", body)
+	req, _ := http.NewRequest("POST", "https://api.echovalue.dev/webhook", body)
 	req.Header.Set("x-token", "mytoken")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -115,7 +115,7 @@ func main() {
 This endpoint sets the webhook for this wallet (upsert operation). Only one webhook can be configured per wallet.
 
 ### HTTP Request
-`POST https://hook.echovalue.dev/webhook`
+`POST https://api.echovalue.dev/webhook`
 
 ### HTTP Headers
 Header | Description
@@ -143,13 +143,13 @@ Costs: 1 credit
 > To retrieve your current webhook configuration, use:
 
 ```shell
-curl 'https://hook.echovalue.dev/webhook' \
+curl 'https://api.echovalue.dev/webhook' \
 -H 'x-token: mytoken'
 ```
 
 ```javascript
 // Using fetch API
-fetch('https://hook.echovalue.dev/webhook', {
+fetch('https://api.echovalue.dev/webhook', {
   headers: {
     'x-token': 'mytoken'
   }
@@ -162,7 +162,7 @@ fetch('https://hook.echovalue.dev/webhook', {
 import requests
 
 # Using requests library
-response = requests.get('https://hook.echovalue.dev/webhook',
+response = requests.get('https://api.echovalue.dev/webhook',
   headers={'x-token': 'mytoken'}
 )
 print(response.json())
@@ -171,7 +171,7 @@ print(response.json())
 ```php
 <?php
 // Using cURL
-$ch = curl_init('https://hook.echovalue.dev/webhook');
+$ch = curl_init('https://api.echovalue.dev/webhook');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
@@ -192,7 +192,7 @@ import (
 
 func main() {
 	// Create request
-	req, _ := http.NewRequest("GET", "https://hook.echovalue.dev/webhook", nil)
+	req, _ := http.NewRequest("GET", "https://api.echovalue.dev/webhook", nil)
 	req.Header.Set("x-token", "mytoken")
 
 	// Send request and read response
@@ -215,7 +215,7 @@ This endpoint returns the currently configured webhook for this wallet.
   "headers": {
     "Authorization": "Bearer secret"
   },
-  "email": "yourwalletid@hook.echovalue.dev"
+  "email": "yourwalletid@api.echovalue.dev"
 }
 ```
 
@@ -224,11 +224,11 @@ If no webhook is configured, only the email field will be returned:
 
 ```json
 {
-  "email": "yourwalletid@hook.echovalue.dev"
+  "email": "yourwalletid@api.echovalue.dev"
 }
 ```
 
-`GET https://hook.echovalue.dev/webhook`
+`GET https://api.echovalue.dev/webhook`
 
 ### HTTP Headers
 Header | Description
@@ -245,7 +245,7 @@ The response includes your webhook configuration:
   "headers": {
     "Authorization": "Bearer secret"
   },
-  "email": "yourwalletid@hook.echovalue.dev",
+  "email": "yourwalletid@api.echovalue.dev",
   "hash": "a1b2c3d4e5f6..."
 }
 ```
@@ -255,7 +255,7 @@ If no webhook is configured, only the email and hash fields will be returned:
 
 ```json
 {
-  "email": "yourwalletid@hook.echovalue.dev",
+  "email": "yourwalletid@api.echovalue.dev",
   "hash": "a1b2c3d4e5f6..."
 }
 ```
@@ -266,7 +266,7 @@ Security Note: Use the `hash` field in webhook payloads instead of email to avoi
 
 ```javascript
 // Using fetch API
-fetch('https://hook.echovalue.dev/webhook', {
+fetch('https://api.echovalue.dev/webhook', {
   method: 'DELETE',
   headers: {
     'x-token': 'mytoken'
@@ -278,7 +278,7 @@ fetch('https://hook.echovalue.dev/webhook', {
 import requests
 
 # Using requests library
-requests.delete('https://hook.echovalue.dev/webhook',
+requests.delete('https://api.echovalue.dev/webhook',
   headers={'x-token': 'mytoken'}
 )
 ```
@@ -286,7 +286,7 @@ requests.delete('https://hook.echovalue.dev/webhook',
 ```php
 <?php
 // Using cURL
-$ch = curl_init('https://hook.echovalue.dev/webhook');
+$ch = curl_init('https://api.echovalue.dev/webhook');
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_exec($ch);
@@ -303,7 +303,7 @@ import (
 
 func main() {
 	// Create DELETE request
-	req, _ := http.NewRequest("DELETE", "https://hook.echovalue.dev/webhook", nil)
+	req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/webhook", nil)
 	req.Header.Set("x-token", "mytoken")
 
 	// Send request
@@ -315,7 +315,7 @@ func main() {
 This endpoint removes the configured webhook for this wallet.
 
 ### HTTP Request
-`DELETE https://hook.echovalue.dev/webhook`
+`DELETE https://api.echovalue.dev/webhook`
 
 ### HTTP Headers
 Header | Description
@@ -328,7 +328,7 @@ Costs: 1 credit
 
 ## Webhook Payload
 
-When an email is received at your wallet's email address (`<wallet-id>@hook.echovalue.dev`), the service will send a POST request to your configured webhook URL with the following JSON payload:
+When an email is received at your wallet's email address (`<wallet-id>@api.echovalue.dev`), the service will send a POST request to your configured webhook URL with the following JSON payload:
 
 ```json
 {
@@ -389,7 +389,7 @@ Security: Your webhook endpoint should validate that requests come from the Mail
 You can send a payload to another wallet's webhook using the `/call` endpoint. This is useful for server-to-server communication between wallets.
 
 ### HTTP Request
-`POST https://hook.echovalue.dev/call`
+`POST https://api.echovalue.dev/webhook/call`
 
 ### HTTP Headers
 Header | Description
@@ -408,7 +408,7 @@ x-mailbox-secret | Shared secret (matched against MAILBOX_SECRET env)
 > Example
 
 ```shell
-curl 'https://hook.echovalue.dev/call' \
+curl 'https://api.echovalue.dev/webhook/call' \
 -H 'x-token: mytoken' \
 -H 'x-mailbox-secret: mysecret' \
 -H 'Content-Type: application/json' \
@@ -419,7 +419,7 @@ curl 'https://hook.echovalue.dev/call' \
 ```json
 {
   "success": true,
-  "message": "target@hook.echovalue.dev"
+  "message": "target@api.echovalue.dev"
 }
 ```
 

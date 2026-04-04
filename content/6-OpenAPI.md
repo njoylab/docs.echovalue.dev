@@ -53,7 +53,7 @@ const jestOpenAPI = require('jest-openapi');
 jestOpenAPI('https://docs.echovalue.dev/openapi.yaml');
 
 test('GET /default/mykey returns valid response', async () => {
-  const response = await fetch('https://api.echovalue.dev/default/mykey', {
+  const response = await fetch('https://api.echovalue.dev/kv/default/mykey', {
     headers: { 'x-token': 'mytoken' }
   });
   expect(response).toSatisfyApiSpec();

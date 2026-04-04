@@ -115,8 +115,9 @@ The documentation follows these conventions:
 3. **Cost Information**: Each endpoint documents credit cost in an aside block
 
 4. **API Endpoints**: Base URLs are:
-   - Main API: `https://api.echovalue.dev/<group>/<key>`
-   - Token management: `https://token.echovalue.dev`
+   - Key-Value API: `https://api.echovalue.dev/kv/<group>/<key>`
+   - Token management: `https://api.echovalue.dev/token`
+   - Webhook API: `https://api.echovalue.dev/webhook`
 
 ### File Organization
 

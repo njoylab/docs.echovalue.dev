@@ -8,13 +8,13 @@ title: New API Token
 > To obtain a new API token, execute this command:
 
 ```shell
-curl 'https://token.echovalue.dev' \
+curl 'https://api.echovalue.dev/token' \
 -d 'token=new'
 ```
 
 ```javascript
 // Using fetch API
-fetch('https://token.echovalue.dev', {
+fetch('https://api.echovalue.dev/token', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded'
@@ -29,7 +29,7 @@ fetch('https://token.echovalue.dev', {
 import requests
 
 # Using requests library
-response = requests.post('https://token.echovalue.dev',
+response = requests.post('https://api.echovalue.dev/token',
   data={'token': 'new'}
 )
 print(response.text)
@@ -37,7 +37,7 @@ print(response.text)
 
 ```php
 <?php
-$ch = curl_init('https://token.echovalue.dev');
+$ch = curl_init('https://api.echovalue.dev/token');
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, 'token=new');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -58,7 +58,7 @@ import (
 
 func main() {
 	body := strings.NewReader("token=new")
-	resp, _ := http.Post("https://token.echovalue.dev", "application/x-www-form-urlencoded", body)
+	resp, _ := http.Post("https://api.echovalue.dev/token", "application/x-www-form-urlencoded", body)
 	defer resp.Body.Close()
 	token, _ := io.ReadAll(resp.Body)
 	println(string(token))
@@ -71,7 +71,7 @@ mytoken
 ```
 This endpoint requests a new API Token.
 ### HTTP Request
-`POST https://token.echovalue.dev`
+`POST https://api.echovalue.dev/token`
 
 Parameter | Value
 --------- | -----------
@@ -91,13 +91,13 @@ Tokens unused for two years will be automatically deactivated, and all associate
 > To view your remaining credits, use:
 
 ```shell
-curl 'https://token.echovalue.dev' \
+curl 'https://api.echovalue.dev/token' \
 -H 'x-token: mytoken'
 ```
 
 ```javascript
 // Using fetch API
-fetch('https://token.echovalue.dev', {
+fetch('https://api.echovalue.dev/token', {
   headers: {
     'x-token': 'mytoken'
   }
@@ -110,7 +110,7 @@ fetch('https://token.echovalue.dev', {
 import requests
 
 # Using requests library
-response = requests.get('https://token.echovalue.dev',
+response = requests.get('https://api.echovalue.dev/token',
   headers={'x-token': 'mytoken'}
 )
 print(response.json())
@@ -118,7 +118,7 @@ print(response.json())
 
 ```php
 <?php
-$ch = curl_init('https://token.echovalue.dev');
+$ch = curl_init('https://api.echovalue.dev/token');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
@@ -138,7 +138,7 @@ import (
 )
 
 func main() {
-	req, _ := http.NewRequest("GET", "https://token.echovalue.dev", nil)
+	req, _ := http.NewRequest("GET", "https://api.echovalue.dev/token", nil)
 	req.Header.Set("x-token", "mytoken")
 
 	client := &http.Client{}
@@ -158,7 +158,7 @@ func main() {
 ```
 To view your remaining credits, use:
 ### HTTP Request
-`GET https://token.echovalue.dev`
+`GET https://api.echovalue.dev/token`
 
 ### HTTP Response
 JSON with this values
@@ -175,7 +175,7 @@ Costs: 1 credit. The best method to check your balance is to look at the `x-bala
 ## Recharging Wallet
 > To add credits to your wallet, use:
 ```shell
-curl 'https://token.echovalue.dev' \
+curl 'https://api.echovalue.dev/token' \
 -H 'x-token: mytoken' \
 -d 'token=recharge' \
 -d 'amount=1'
@@ -188,7 +188,7 @@ https://buy.stripe.com/<productID>?client_reference_id=mytoken
 To add credits to your wallet, use:
 
 ### HTTP Request
-`POST https://token.echovalue.dev`
+`POST https://api.echovalue.dev/token`
 
 Parameter | Value  | Description
 --------- | ----------- | -----------

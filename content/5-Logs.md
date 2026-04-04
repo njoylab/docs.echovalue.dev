@@ -6,13 +6,13 @@ title: Logs
 > To access logs, execute:
 
 ```shell
-curl 'https://token.echovalue.dev/logs?n=5' \
+curl 'https://api.echovalue.dev/token/logs?n=5' \
 -H 'x-token: mytoken'
 ```
 
 ```javascript
 // Using fetch API
-fetch('https://token.echovalue.dev/logs?n=5', {
+fetch('https://api.echovalue.dev/token/logs?n=5', {
   headers: {
     'x-token': 'mytoken'
   }
@@ -25,7 +25,7 @@ fetch('https://token.echovalue.dev/logs?n=5', {
 import requests
 
 # Using requests library
-response = requests.get('https://token.echovalue.dev/logs',
+response = requests.get('https://api.echovalue.dev/token/logs',
   headers={'x-token': 'mytoken'},
   params={'n': 5}
 )
@@ -34,7 +34,7 @@ print(response.json())
 
 ```php
 <?php
-$ch = curl_init('https://token.echovalue.dev/logs?n=5');
+$ch = curl_init('https://api.echovalue.dev/token/logs?n=5');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
@@ -54,7 +54,7 @@ import (
 )
 
 func main() {
-	req, _ := http.NewRequest("GET", "https://token.echovalue.dev/logs?n=5", nil)
+	req, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/logs?n=5", nil)
 	req.Header.Set("x-token", "mytoken")
 
 	client := &http.Client{}
@@ -107,7 +107,7 @@ Retrieves a list of the latest API calls made using the user's tokens.
 Logs have a TTL of 7 days and they are typically deleted within 24 hours after they expiration date.
 
 ### HTTP Request
-`GET https://token.echovalue.dev/logs?n=5`
+`GET https://api.echovalue.dev/token/logs?n=5`
 
 ### HTTP Parameters
 Parameter | Description | Optional

@@ -9,21 +9,21 @@ title: DB API - Key-Value Store
 
 > To store a new key/value pair, use:
 ```shell
-curl 'https://api.echovalue.dev/default/mykey' \
+curl 'https://api.echovalue.dev/kv/default/mykey' \
 -H 'x-token: mytoken' \
 -d 'newdata'
 ```
 > With 30 seconds expiration:
 
 ```shell
-curl 'https://api.echovalue.dev/default/mykey?ttl=30' \
+curl 'https://api.echovalue.dev/kv/default/mykey?ttl=30' \
 -H 'x-token: mytoken' \
 -d 'newdata'
 ```
 
 ```javascript
 // Using fetch API
-fetch('https://api.echovalue.dev/default/mykey', {
+fetch('https://api.echovalue.dev/kv/default/mykey', {
   method: 'POST',
   headers: {
     'x-token': 'mytoken'
@@ -32,7 +32,7 @@ fetch('https://api.echovalue.dev/default/mykey', {
 });
 
 // with 30 seconds expiration
-fetch('https://api.echovalue.dev/default/mykey?ttl=30', {
+fetch('https://api.echovalue.dev/kv/default/mykey?ttl=30', {
   method: 'POST',
   headers: {
     'x-token': 'mytoken'
@@ -45,13 +45,13 @@ fetch('https://api.echovalue.dev/default/mykey?ttl=30', {
 import requests
 
 # Using requests library
-requests.post('https://api.echovalue.dev/default/mykey',
+requests.post('https://api.echovalue.dev/kv/default/mykey',
   headers={'x-token': 'mytoken'},
   data='newdata'
 )
 
 # with 30 seconds expiration
-requests.post('https://api.echovalue.dev/default/mykey?ttl=30',
+requests.post('https://api.echovalue.dev/kv/default/mykey?ttl=30',
   headers={'x-token': 'mytoken'},
   data='newdata'
 )
@@ -60,7 +60,7 @@ requests.post('https://api.echovalue.dev/default/mykey?ttl=30',
 ```php
 <?php
 // Using cURL
-$ch = curl_init('https://api.echovalue.dev/default/mykey');
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, 'newdata');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
@@ -68,7 +68,7 @@ curl_exec($ch);
 curl_close($ch);
 
 // with 30 seconds expiration
-$ch = curl_init('https://api.echovalue.dev/default/mykey?ttl=30');
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey?ttl=30');
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, 'newdata');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
@@ -88,7 +88,7 @@ import (
 func main() {
 	// Create request
 	body := strings.NewReader("newdata")
-	req, _ := http.NewRequest("POST", "https://api.echovalue.dev/default/mykey", body)
+	req, _ := http.NewRequest("POST", "https://api.echovalue.dev/kv/default/mykey", body)
 	req.Header.Set("x-token", "mytoken")
 
 	// Send request
@@ -96,7 +96,7 @@ func main() {
 	client.Do(req)
 
 	// with 30 seconds expiration
-	req2, _ := http.NewRequest("POST", "https://api.echovalue.dev/default/mykey?ttl=30", body)
+	req2, _ := http.NewRequest("POST", "https://api.echovalue.dev/kv/default/mykey?ttl=30", body)
 	req2.Header.Set("x-token", "mytoken")
 	client.Do(req2)
 }
@@ -115,7 +115,7 @@ OK
 ```
 
 ### HTTP Request
-`POST https://api.echovalue.dev/<group>/<key>?ttl=<seconds>`
+`POST https://api.echovalue.dev/kv/<group>/<key>?ttl=<seconds>`
 
 ### PATH Parameters
 Parameter | Description
@@ -136,13 +136,13 @@ Costs: 1 credit
 > Retrieve the value of a key with:
 
 ```shell
-curl 'https://api.echovalue.dev/default/mykey' \
+curl 'https://api.echovalue.dev/kv/default/mykey' \
 -H 'x-token: mytoken'
 ```
 
 ```javascript
 // Using fetch API
-fetch('https://api.echovalue.dev/default/mykey', {
+fetch('https://api.echovalue.dev/kv/default/mykey', {
   headers: {
     'x-token': 'mytoken'
   }
@@ -155,7 +155,7 @@ fetch('https://api.echovalue.dev/default/mykey', {
 import requests
 
 # Using requests library
-response = requests.get('https://api.echovalue.dev/default/mykey',
+response = requests.get('https://api.echovalue.dev/kv/default/mykey',
   headers={'x-token': 'mytoken'}
 )
 print(response.text)
@@ -164,7 +164,7 @@ print(response.text)
 ```php
 <?php
 // Using cURL
-$ch = curl_init('https://api.echovalue.dev/default/mykey');
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
@@ -183,7 +183,7 @@ import (
 
 func main() {
 	// Create request
-	req, _ := http.NewRequest("GET", "https://api.echovalue.dev/default/mykey", nil)
+	req, _ := http.NewRequest("GET", "https://api.echovalue.dev/kv/default/mykey", nil)
 	req.Header.Set("x-token", "mytoken")
 
 	// Send request and read response
@@ -203,7 +203,7 @@ newdata
 ```
 
 ### HTTP Request
-`GET https://api.echovalue.dev/<group>/<key>`
+`GET https://api.echovalue.dev/kv/<group>/<key>`
 
 ### PATH Parameters
 Parameter | Description
@@ -219,14 +219,14 @@ Costs: 1 credit
 > To delete a key/value pair, use:
 
 ```shell
-curl 'https://api.echovalue.dev/default/mykey' \
+curl 'https://api.echovalue.dev/kv/default/mykey' \
 -H 'x-token: mytoken' \
 -X DELETE
 ```
 
 ```javascript
 // Using fetch API
-fetch('https://api.echovalue.dev/default/mykey', {
+fetch('https://api.echovalue.dev/kv/default/mykey', {
   method: 'DELETE',
   headers: {
     'x-token': 'mytoken'
@@ -238,7 +238,7 @@ fetch('https://api.echovalue.dev/default/mykey', {
 import requests
 
 # Using requests library
-requests.delete('https://api.echovalue.dev/default/mykey',
+requests.delete('https://api.echovalue.dev/kv/default/mykey',
   headers={'x-token': 'mytoken'}
 )
 ```
@@ -246,7 +246,7 @@ requests.delete('https://api.echovalue.dev/default/mykey',
 ```php
 <?php
 // Using cURL
-$ch = curl_init('https://api.echovalue.dev/default/mykey');
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_exec($ch);
@@ -261,7 +261,7 @@ import "net/http"
 
 func main() {
 	// Create DELETE request
-	req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/default/mykey", nil)
+	req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/kv/default/mykey", nil)
 	req.Header.Set("x-token", "mytoken")
 
 	// Send request
@@ -277,7 +277,7 @@ OK
 ```
 
 ### HTTP Request
-`DELETE https://api.echovalue.dev/<group>/<key>`
+`DELETE https://api.echovalue.dev/kv/<group>/<key>`
 
 ### PATH Parameters
 Parameter | Description

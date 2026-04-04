@@ -22,10 +22,12 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 
 servers:
-  - url: https://api.echovalue.dev
+  - url: https://api.echovalue.dev/kv
     description: Key-Value Storage API
-  - url: https://token.echovalue.dev
+  - url: https://api.echovalue.dev/token
     description: Token Management API
+  - url: https://api.echovalue.dev/webhook
+    description: Webhook API
 
 tags:
   - name: Key-Value Operations
@@ -182,7 +184,7 @@ paths:
 
   /:
     servers:
-      - url: https://token.echovalue.dev
+      - url: https://api.echovalue.dev/token
 
     post:
       tags:
@@ -291,13 +293,10 @@ paths:
 
   /logs:
     servers:
-      - url: https://token.echovalue.dev
+      - url: https://api.echovalue.dev/token
   /webhook:
     servers:
-      - url: https://hook.echovalue.dev
-        description: Production - Webhook API
-      - url: https://dev-hook.echovalue.dev
-        description: Development - Webhook API
+      - url: https://api.echovalue.dev/webhook
     get:
       tags:
         - Webhook API
@@ -327,8 +326,8 @@ paths:
                       Authorization: Bearer secret
                   email:
                     type: string
-                    description: Email address to send messages to (<token>@hook.echovalue.dev)
-                    example: yourwalletid@hook.echovalue.dev
+                    description: Email address to send messages to (<token>@api.echovalue.dev)
+                    example: yourwalletid@api.echovalue.dev
                   hash:
                     type: string
                     description: SHA256 hash of the wallet token (use in webhook payloads instead of exposing token)
@@ -435,7 +434,7 @@ paths:
 
   /logs:
     servers:
-      - url: https://token.echovalue.dev
+      - url: https://api.echovalue.dev/token
     get:
       tags:
         - Logs
