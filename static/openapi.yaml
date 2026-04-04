@@ -326,8 +326,8 @@ paths:
                       Authorization: Bearer secret
                   email:
                     type: string
-                    description: Email address to send messages to (<token>@api.echovalue.dev)
-                    example: yourwalletid@api.echovalue.dev
+                    description: Email address to send messages to (<token>@hook.echovalue.dev)
+                    example: yourwalletid@hook.echovalue.dev
                   hash:
                     type: string
                     description: SHA256 hash of the wallet token (use in webhook payloads instead of exposing token)

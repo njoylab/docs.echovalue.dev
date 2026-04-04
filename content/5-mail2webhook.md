@@ -5,7 +5,7 @@ title: Mail2Webhook Service
 
 # Mail2Webhook Service
 
-The Mail2Webhook service allows you to receive email notifications at a custom webhook URL. Each wallet can have one webhook configured, and emails sent to `<wallet-id>@api.echovalue.dev` will be forwarded to your webhook.
+The Mail2Webhook service allows you to receive email notifications at a custom webhook URL. Each wallet can have one webhook configured, and emails sent to `<wallet-id>@hook.echovalue.dev` will be forwarded to your webhook.
 
 
 <aside class="notice">
@@ -215,7 +215,7 @@ This endpoint returns the currently configured webhook for this wallet.
   "headers": {
     "Authorization": "Bearer secret"
   },
-  "email": "yourwalletid@api.echovalue.dev"
+  "email": "yourwalletid@hook.echovalue.dev"
 }
 ```
 
@@ -224,7 +224,7 @@ If no webhook is configured, only the email field will be returned:
 
 ```json
 {
-  "email": "yourwalletid@api.echovalue.dev"
+  "email": "yourwalletid@hook.echovalue.dev"
 }
 ```
 
@@ -245,7 +245,7 @@ The response includes your webhook configuration:
   "headers": {
     "Authorization": "Bearer secret"
   },
-  "email": "yourwalletid@api.echovalue.dev",
+  "email": "yourwalletid@hook.echovalue.dev",
   "hash": "a1b2c3d4e5f6..."
 }
 ```
@@ -255,7 +255,7 @@ If no webhook is configured, only the email and hash fields will be returned:
 
 ```json
 {
-  "email": "yourwalletid@api.echovalue.dev",
+  "email": "yourwalletid@hook.echovalue.dev",
   "hash": "a1b2c3d4e5f6..."
 }
 ```
@@ -328,7 +328,7 @@ Costs: 1 credit
 
 ## Webhook Payload
 
-When an email is received at your wallet's email address (`<wallet-id>@api.echovalue.dev`), the service will send a POST request to your configured webhook URL with the following JSON payload:
+When an email is received at your wallet's email address (`<wallet-id>@hook.echovalue.dev`), the service will send a POST request to your configured webhook URL with the following JSON payload:
 
 ```json
 {
@@ -419,7 +419,7 @@ curl 'https://api.echovalue.dev/webhook/call' \
 ```json
 {
   "success": true,
-  "message": "target@api.echovalue.dev"
+  "message": "target@hook.echovalue.dev"
 }
 ```
 
