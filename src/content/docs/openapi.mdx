@@ -1,0 +1,78 @@
+---
+title: OpenAPI Specification
+description: Download and use the echoValue OpenAPI 3.0 specification
+sidebar:
+  order: 9
+---
+
+The echoValue API is fully documented using the **OpenAPI 3.0** specification format.
+
+## Download
+
+📥 **[Download openapi.yaml](/openapi.yaml)**
+
+## View & Test Interactively
+
+**Swagger UI:**
+[Open in Swagger UI](https://petstore.swagger.io/?url=https://docs.echovalue.dev/openapi.yaml)
+
+---
+
+## Use Cases
+
+### Generate Client SDKs
+
+Use [OpenAPI Generator](https://openapi-generator.tech/) to generate client libraries:
+
+```sh
+openapi-generator-cli generate \
+  -i https://docs.echovalue.dev/openapi.yaml \
+  -g javascript \
+  -o ./echovalue-client
+```
+
+Supported languages include Java, Ruby, PHP, C#, TypeScript, Rust, and [many more](https://openapi-generator.tech/docs/generators).
+
+### Import into API Tools
+
+| Tool             | Steps                                              |
+| ---------------- | -------------------------------------------------- |
+| **Postman**      | File → Import → Link → Paste OpenAPI URL           |
+| **Insomnia**     | Create → Import From → URL → Paste OpenAPI URL     |
+| **Paw**          | File → Import → Paste OpenAPI URL                  |
+| **HTTPie**       | Import → OpenAPI → Paste OpenAPI URL               |
+
+### API Validation in Tests
+
+```js
+// Example with jest-openapi
+const jestOpenAPI = require('jest-openapi');
+jestOpenAPI('https://docs.echovalue.dev/openapi.yaml');
+
+test('GET /default/mykey returns valid response', async () => {
+  const response = await fetch('https://api.echovalue.dev/kv/default/mykey', {
+    headers: { 'x-token': 'mytoken' }
+  });
+  expect(response).toSatisfyApiSpec();
+});
+```
+
+### Mock Server
+
+```sh
+# Using Prism
+npx @stoplight/prism-cli mock \
+  https://docs.echovalue.dev/openapi.yaml
+
+# Mock server runs at http://127.0.0.1:4010
+```
+
+---
+
+The OpenAPI specification is automatically updated with each documentation release. Always use the latest version from:
+
+**https://docs.echovalue.dev/openapi.yaml**
+
+:::note
+The specification is version-controlled alongside the documentation. Check the [GitHub repository](https://github.com/njoylab/docs.echovalue.dev) for the full history of changes.
+:::

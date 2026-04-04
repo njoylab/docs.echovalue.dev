@@ -1,0 +1,52 @@
+---
+title: Errors
+description: HTTP error codes returned by the echoValue API
+sidebar:
+  order: 8
+---
+
+The API uses standard HTTP status codes. Error responses are returned as plain text with a short description.
+
+**Example error response:**
+
+```
+Key Not Found
+```
+
+:::note
+Requests that result in errors are still counted as API calls and consume credits, to prevent misuse.
+:::
+
+## 4xx Client Errors
+
+| Code | Name | When it occurs |
+| ---- | ---- | -------------- |
+| `400` | Bad Request | The request is malformed or missing required parameters |
+| `401` | Unauthorized | The `x-token` header is missing or invalid |
+| `402` | Payment Required | Your wallet has no credits remaining |
+| `403` | Forbidden | You don't have permission to access this endpoint |
+| `404` | Not Found | The key, webhook, or resource does not exist |
+| `405` | Method Not Allowed | The HTTP method is not supported for this endpoint |
+| `406` | Not Acceptable | The requested response format is not supported |
+| `418` | I'm a Teapot | — |
+| `429` | Too Many Requests | You have exceeded the rate limit |
+
+## 5xx Server Errors
+
+| Code | Name | When it occurs |
+| ---- | ---- | -------------- |
+| `500` | Internal Server Error | Unexpected server-side failure — try again later |
+| `501` | Not Implemented | Endpoint exists but is not yet available |
+| `503` | Service Unavailable | The service is temporarily offline — try again later |
+
+## Common Scenarios
+
+| Situation | Status code |
+| --------- | ----------- |
+| Missing `x-token` header | `401` |
+| Token doesn't exist | `401` |
+| No credits left | `402` |
+| GET on a key that was never set | `404` |
+| DELETE on a key that doesn't exist | `404` |
+| GET webhook when none is configured | `404` |
+| Token generation faster than 1 req/10s | `429` |

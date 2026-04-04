@@ -1,0 +1,109 @@
+---
+title: Response Headers
+description: Standard response headers returned by the echoValue API
+sidebar:
+  order: 7
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Every API response includes these headers:
+
+| Header | Type | Description |
+| ------ | ---- | ----------- |
+| `x-cost` | integer | Credits deducted from your wallet for this request |
+| `x-balance` | integer | Credits remaining in your wallet after this request |
+
+:::note
+`x-balance` is the most efficient way to monitor your balance — it's included on every response at no extra cost, so you don't need to call the balance endpoint separately.
+:::
+
+## Reading Headers
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+# Use -i to show response headers
+curl -i 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken'
+
+# Output includes:
+# x-cost: 1
+# x-balance: 99
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => {
+  console.log('Cost:', response.headers.get('x-cost'));
+  console.log('Balance:', response.headers.get('x-balance'));
+  return response.text();
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+print('Cost:', response.headers.get('x-cost'))
+print('Balance:', response.headers.get('x-balance'))
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HEADER, true);
+
+$response = curl_exec($ch);
+$headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+$headers = substr($response, 0, $headerSize);
+curl_close($ch);
+
+// Parse x-balance from headers
+preg_match('/x-balance:\s*(\d+)/i', $headers, $matches);
+echo 'Balance: ' . $matches[1];
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/kv/default/mykey", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    fmt.Println("Cost:", resp.Header.Get("x-cost"))
+    fmt.Println("Balance:", resp.Header.Get("x-balance"))
+}
+```
+
+</TabItem>
+</Tabs>

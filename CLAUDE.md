@@ -4,117 +4,83 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Hugo-based documentation site for the **echoValue API** - a lightweight key-value database service designed for freelancers and small projects. The site is built using the DocuAPI theme (a Hugo port of Slate) and deployed to `https://docs.echovalue.dev`.
+This is an **Astro + Starlight** documentation site for the **echoValue API** - a lightweight key-value database service designed for freelancers and small projects. Deployed to `https://docs.echovalue.dev`.
+
+> **Migration note:** The `content/` directory and `config.toml` are legacy Hugo files kept for reference. The active Starlight site lives under `src/`.
 
 ## Key Commands
 
-### Development
 ```bash
-# Start Hugo development server with live reload
-hugo server
+# Start dev server with live reload
+npm run dev
 
-# Build the site (outputs to ./public directory)
-hugo
+# Build the site (outputs to ./dist)
+npm run build
 
-# Build with minification for production
-hugo --minify
-```
-
-### Theme Management
-```bash
-# Update theme to latest version
-hugo mod get -u github.com/bep/docuapi/v2
-
-# Update all Hugo modules
-hugo mod get -u
-
-# Clean module cache
-hugo mod clean
-
-# View module dependency graph
-hugo mod graph
-```
-
-### Dependencies
-```bash
-# Install PostCSS dependencies (required for theme)
-npm install
-
-# Check Hugo version (requires v0.138.0+ extended)
-hugo version
+# Preview the production build
+npm run preview
 ```
 
 ## Architecture
 
 ### Content Structure
 
-Documentation content lives in `content/` with numbered prefixes for ordering:
+All documentation lives in `src/content/docs/` as `.mdx` files:
 
-- `1-main.md` (weight: 10) - Introduction and overview
-- `2-authentication.md` (weight: 11) - Authentication with `x-token` header
-- `3-token.md` (weight: 15) - Token management (generate, check balance, recharge)
-- `4-KeyValues.md` (weight: 20) - Key-value store operations (GET/POST/DELETE)
-- `5-Logs.md` (weight: 35) - Logs retrieval API
-- `10-response-headers.md` (weight: 40) - Response headers documentation
-- `errors.md` (weight: 50) - HTTP error codes
+- `index.mdx` (order: 1) — Introduction and overview
+- `authentication.mdx` (order: 2) — Authentication with `x-token` header
+- `token.mdx` (order: 3) — Token management (generate, check balance, recharge)
+- `key-value.mdx` (order: 4) — Key-value store operations (GET/POST/DELETE)
+- `mail2webhook.mdx` (order: 5) — Mail2Webhook service
+- `logs.mdx` (order: 6) — Logs retrieval API
+- `response-headers.mdx` (order: 7) — Response headers documentation
+- `errors.mdx` (order: 8) — HTTP error codes
+- `openapi.mdx` (order: 9) — OpenAPI specification
 
-Files use `weight` in frontmatter to control sidebar ordering (lower numbers appear first).
+Sidebar order is controlled via `sidebar.order` in frontmatter.
 
-### Theme Configuration
+### Configuration
 
-- Uses DocuAPI v2.4.2 theme via Hugo Modules (`github.com/bep/docuapi/v2`)
-- AlpineJS-based (v2 replaced jQuery with AlpineJS for better performance)
-- PostCSS required for stylesheet compilation
-- Code highlighting: Monokai style with fenced code blocks
-- Single language example tabs: Shell/CURL only
-
-### Theme Customization
-
-Custom theme hooks in `layouts/partials/`:
-
-- `hook_left_sidebar_logo.html` - Custom logo linking to https://www.echovalue.dev
-  - Logo file: `static/logo.png`
-  - Opens in new tab with `target="_blank"`
-
-Available hooks for further customization:
-- `hook_head_end.html` - Additional head content (CSS, meta tags)
-- `hook_body_end.html` - Additional body end content (analytics, scripts)
-- `hook_left_sidebar_start.html` - Top of left sidebar
-- `hook_left_sidebar_end.html` - Bottom of left sidebar
-
-### Important Configuration Details
-
-From `config.toml`:
-- Maximum key length: 30 characters (configured in params)
-- Maximum group name: 30 characters
-- Maximum value length: 30 characters
-- Free tokens on signup: 500
-- Default content language: English
-- Search enabled
-- Goldmark renderer with unsafe HTML enabled (for styled aside boxes)
+- `astro.config.mjs` — Main Astro + Starlight configuration (sidebar, logo, social links)
+- `src/content.config.ts` — Content collection schema (Astro 6 location)
+- `static/` — Static assets served as-is (configured via `publicDir: './static'`)
+  - Includes favicons, `openapi.yaml`, `robots.txt`, `logo.png`
+- `src/assets/logo.png` — Logo for Starlight header (processed by Astro)
 
 ### API Documentation Patterns
 
-The documentation follows these conventions:
-
-1. **Asides/Callouts**: Uses HTML-style aside blocks for notices and warnings
+1. **Callouts** — Use Starlight directives:
    ```markdown
-   <aside class="notice">
+   :::note
    Notice text here
-   </aside>
+   :::
 
-   <aside class="warning">
+   :::caution
    Warning text here
-   </aside>
+   :::
    ```
 
-2. **Code Examples**: Shell/CURL examples appear in right column via theme
-   - Use triple backticks with `shell` language identifier
-   - Prefix with `>` blockquote for right-column placement
+2. **Multi-language code examples** — Use `<Tabs syncKey="lang">` so language selection persists across pages:
+   ```mdx
+   import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-3. **Cost Information**: Each endpoint documents credit cost in an aside block
+   <Tabs syncKey="lang">
+   <TabItem label="cURL">
+   ```sh
+   curl ...
+   ```
+   </TabItem>
+   <TabItem label="JavaScript">
+   ```js
+   fetch(...)
+   ```
+   </TabItem>
+   </Tabs>
+   ```
 
-4. **API Endpoints**: Base URLs are:
+3. **Cost information** — Document credit costs in `:::note` blocks after each endpoint
+
+4. **API Endpoints** — Base URLs:
    - Key-Value API: `https://api.echovalue.dev/kv/<group>/<key>`
    - Token management: `https://api.echovalue.dev/token`
    - Webhook API: `https://api.echovalue.dev/webhook`
@@ -123,37 +89,38 @@ The documentation follows these conventions:
 
 ```
 docs/
-├── config.toml           # Hugo configuration
-├── go.mod / go.sum       # Hugo modules dependencies
-├── package.json          # PostCSS dependencies
-├── content/              # API documentation markdown files
-├── layouts/
-│   └── partials/         # Theme customization hooks
-│       └── hook_left_sidebar_logo.html
-├── static/               # Static assets (logo, favicons)
-│   └── logo.png
-├── public/               # Generated site (git-ignored, build output)
-├── node_modules/         # npm dependencies (git-ignored)
-├── _vendor/              # Hugo module cache (git-ignored)
-├── data/                 # Data files
-└── resources/            # Hugo resources cache
+├── astro.config.mjs          # Astro + Starlight config
+├── package.json              # Dependencies (astro, @astrojs/starlight)
+├── tsconfig.json             # TypeScript config
+├── src/
+│   ├── assets/               # Processed assets (logo)
+│   ├── content.config.ts     # Content collection schema (Astro 6)
+│   └── content/
+│       └── docs/             # MDX documentation files
+├── static/                   # Static assets (served as publicDir)
+│   ├── openapi.yaml
+│   ├── logo.png
+│   └── favicon*.png / *.ico
+├── dist/                     # Generated site (git-ignored)
+└── node_modules/             # npm dependencies (git-ignored)
 ```
 
 ## Content Guidelines
 
 When editing documentation:
 
-1. **Maintain weight ordering**: Ensure frontmatter `weight` values create logical flow
-2. **Preserve example format**: Keep `>` prefix for right-column code examples
-3. **Credit costs**: Always document operation costs in aside blocks
-4. **Constraints**: Document any length/size/time limits (30 char limits, TTL ranges, etc.)
-5. **Headers**: Use `x-token` for authentication, document `x-cost` and `x-balance` response headers
+1. **Sidebar order**: Use `sidebar.order` in frontmatter (lower = first in sidebar)
+2. **Language tabs**: Always wrap multi-language examples in `<Tabs syncKey="lang">` with labels: `cURL`, `JavaScript`, `Python`, `PHP`, `Go`
+3. **Credit costs**: Always document operation costs in `:::note` blocks
+4. **Constraints**: Document length/size/time limits (30 char key/group limits, TTL ranges, etc.)
+5. **Auth header**: Use `x-token` for authentication; document `x-cost` and `x-balance` response headers
 
 ## Important Notes
 
-- This is a documentation-only repository (no API source code)
-- The API itself is a separate service not contained in this repo
-- Maximum TTL for keys: 2592000 seconds (30 days)
+- Documentation-only repository (no API source code)
+- Maximum key/group name length: 30 characters
+- Maximum value length: 1000 characters (~1 KB)
+- Maximum TTL: 2592000 seconds (30 days)
 - Unused tokens expire after 2 years with data deletion
-- Logs have 7-day TTL and are deleted within 24 hours post-expiration
-- Site uses syntax highlighting with Monokai theme
+- Logs have 7-day TTL, deleted within 24 hours post-expiration
+- Search powered by Pagefind (built automatically with `npm run build`)

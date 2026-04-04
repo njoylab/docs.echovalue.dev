@@ -1,0 +1,152 @@
+---
+title: Logs
+description: Retrieve API call history for your echoValue token
+sidebar:
+  order: 6
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Retrieve Logs
+
+`GET https://api.echovalue.dev/token/logs`
+
+Returns a list of recent API calls made with your token. Logs have a TTL of 7 days and are deleted within 24 hours after expiration.
+
+**Request headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Query parameters:**
+
+| Parameter | Type | Description | Default |
+| --------- | ---- | ----------- | ------- |
+| `n` | integer | Number of log entries to retrieve. Min: `1`. | `5` |
+
+**Response:** `200` — JSON object.
+
+```json
+{
+  "logs": [
+    {
+      "id": "jd9kImh8U4In3odfNeKf",
+      "method": "GET",
+      "path": "/default/mykey",
+      "error": "Key Not Found",
+      "timestamp": "2023-12-07T12:14:16.124481Z",
+      "expiration": "2023-12-14T12:14:16.12448Z",
+      "cost": 1,
+      "balance": 97
+    }
+  ],
+  "n": 1
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `n` | integer | Number of entries actually returned |
+| `logs` | array | Array of log entries |
+
+**Log entry fields:**
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `id` | string | Unique log entry ID |
+| `method` | string | HTTP method used (`GET`, `POST`, `DELETE`) |
+| `path` | string | API path called |
+| `error` | string | Error message, if any (omitted on success) |
+| `timestamp` | string (ISO 8601) | When the request was made |
+| `expiration` | string (ISO 8601) | When this log entry expires (7 days after creation) |
+| `cost` | integer | Credits deducted for that request |
+| `balance` | integer | Wallet balance after that request |
+
+**HTTP status codes:**
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Logs returned |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/token/logs?n=5' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/token/logs?n=5', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/token/logs',
+  headers={'x-token': 'mytoken'},
+  params={'n': 5}
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/token/logs?n=5');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/logs?n=5", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    body, _ := io.ReadAll(resp.Body)
+    var result map[string]interface{}
+    json.Unmarshal(body, &result)
+    println(result)
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+**Cost:** 1 credit per log entry returned (equal to the `n` value in the response). The actual number returned may be less than requested if fewer entries are available.
+:::
