@@ -105,7 +105,7 @@ func main() {
 This endpoint sets the value of the key.
 The maximum length of a key is **30** characters.
 The maximum length of a group name is **30** characters.
-The maximum length of value is **2000** characters ( approx 2kb).
+The maximum length of value is **1000** characters ( approx 1kb).
 
 Optionally, you can set a time-to-live (TTL) for the key.
 
