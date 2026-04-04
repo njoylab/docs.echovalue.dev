@@ -114,6 +114,20 @@ func main() {
 
 This endpoint sets the webhook for this wallet (upsert operation). Only one webhook can be configured per wallet.
 
+### HTTP Response
+
+> Response
+```json
+{
+  "webhook": "https://yourdomain.com/webhook",
+  "headers": {
+    "Authorization": "<redacted>"
+  },
+  "email": "mytoken@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
+}
+```
+
 ### HTTP Request
 `POST https://api.echovalue.dev/webhook`
 
@@ -213,18 +227,20 @@ This endpoint returns the currently configured webhook for this wallet.
 {
   "webhook": "https://yourdomain.com/webhook",
   "headers": {
-    "Authorization": "Bearer secret"
+    "Authorization": "<redacted>"
   },
-  "email": "yourwalletid@hook.echovalue.dev"
+  "email": "mytoken@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
 }
 ```
 
-If no webhook is configured, only the email field will be returned:
+If no webhook is configured, only the email and hash fields will be returned:
 > No webhook Response
 
 ```json
 {
-  "email": "yourwalletid@hook.echovalue.dev"
+  "email": "mytoken@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
 }
 ```
 
@@ -243,9 +259,9 @@ The response includes your webhook configuration:
 {
   "webhook": "https://yourdomain.com/webhook",
   "headers": {
-    "Authorization": "Bearer secret"
+    "Authorization": "<redacted>"
   },
-  "email": "yourwalletid@hook.echovalue.dev",
+  "email": "mytoken@hook.echovalue.dev",
   "hash": "a1b2c3d4e5f6..."
 }
 ```
@@ -255,13 +271,13 @@ If no webhook is configured, only the email and hash fields will be returned:
 
 ```json
 {
-  "email": "yourwalletid@hook.echovalue.dev",
+  "email": "mytoken@hook.echovalue.dev",
   "hash": "a1b2c3d4e5f6..."
 }
 ```
 
 <aside class="notice">
-Security Note: Use the `hash` field in webhook payloads instead of email to avoid exposing your wallet token. When calling another wallet's webhook via `/call`, use `{"hash": "target-hash"}` as the `to` field.
+Security Note: Use the `hash` field in webhook payloads instead of email to avoid exposing your wallet token
 </aside>
 
 ```javascript
@@ -313,6 +329,16 @@ func main() {
 ```
 
 This endpoint removes the configured webhook for this wallet.
+
+### HTTP Response
+
+> Response
+```json
+{
+  "email": "mytoken@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
+}
+```
 
 ### HTTP Request
 `DELETE https://api.echovalue.dev/webhook`
