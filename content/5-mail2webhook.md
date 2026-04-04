@@ -206,7 +206,7 @@ func main() {
 
 This endpoint returns the currently configured webhook for this wallet.
 
-### HTTP Request
+### HTTP Response
 
 > Response
 ```json

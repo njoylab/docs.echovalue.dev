@@ -1,5 +1,7 @@
 github.com/bep/docuapi/v2 v2.4.2 h1:cw+1nRAI11VCgRVTHOlsYhaxjO2pwQkDMl7Y1X1ySR0=
 github.com/bep/docuapi/v2 v2.4.2/go.mod h1:3wLOeVtAUkqA/oMrCtT7p2RyxkIgssvarP3aLSikxwM=
+github.com/bep/docuapi/v2 v2.5.0 h1:qPRb/xQbNwYTpRUhtQA8Y1xEhJAcxFjCS+a5QegUdgE=
+github.com/bep/docuapi/v2 v2.5.0/go.mod h1:3wLOeVtAUkqA/oMrCtT7p2RyxkIgssvarP3aLSikxwM=
 github.com/gohugoio/hugo-mod-jslibs-dist/alpinejs/v3 v3.21000.20300/go.mod h1:WWQxcmPs5Xy3xDgi29ipkmZT6NKVb3bsqyCDTY3eYYY=
 github.com/gohugoio/hugo-mod-jslibs-dist/alpinejs/v3 v3.21300.20800 h1:I2GanY0QJglzHgnPIB3IK1uUcSNQjPyc30l6Qz7Ajwo=
 github.com/gohugoio/hugo-mod-jslibs-dist/alpinejs/v3 v3.21300.20800/go.mod h1:WWQxcmPs5Xy3xDgi29ipkmZT6NKVb3bsqyCDTY3eYYY=

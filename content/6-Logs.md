@@ -106,6 +106,8 @@ func main() {
 Retrieves a list of the latest API calls made using the user's tokens.
 Logs have a TTL of 7 days and they are typically deleted within 24 hours after they expiration date.
 
+## Retrieving Logs
+
 ### HTTP Request
 `GET https://api.echovalue.dev/token/logs?n=5`
 

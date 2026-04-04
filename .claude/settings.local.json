@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(hugo:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
