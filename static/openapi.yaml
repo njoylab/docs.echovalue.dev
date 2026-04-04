@@ -36,8 +36,6 @@ tags:
     description: Retrieve API usage logs
   - name: Webhook API
     description: Manage webhooks for email forwarding
-  - name: Call API
-    description: Invoke another wallet's webhook
 
 security:
   - ApiKeyAuth: []
@@ -434,83 +432,6 @@ paths:
           $ref: '#/components/responses/PaymentRequired'
         '404':
           description: No webhook configured
-
-  /call:
-    servers:
-      - url: https://hook.echovalue.dev
-        description: Production - Call API
-      - url: https://dev-hook.echovalue.dev
-        description: Development - Call API
-    post:
-      tags:
-        - Call API
-      summary: Invoke another wallet's webhook
-      description: |
-        Server-to-server endpoint that sends a payload to the target wallet's webhook.
-        Costs 1 credit from the caller's wallet. Requires dual auth: X-Mailbox-Secret (shared secret)
-        and X-Token (caller wallet). Use hash in the `to` field instead of email for security.
-      operationId: callWebhook
-      parameters:
-        - name: x-mailbox-secret
-          in: header
-          required: true
-          description: Shared secret for call endpoint (matched against MAILBOX_SECRET)
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - to
-              properties:
-                to:
-                  type: object
-                  required:
-                    - hash
-                  properties:
-                    hash:
-                      type: string
-                      description: SHA256 hash of the target wallet token
-                      example: a1b2c3d4e5f6...
-                payload:
-                  type: object
-                  description: JSON payload forwarded to the target's webhook
-      responses:
-        '200':
-          description: Call processed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    description: Whether the webhook was successfully called
-                    example: true
-                  message:
-                    type: string
-                    description: Target address
-                    example: target@hook.echovalue.dev
-          headers:
-            x-cost:
-              schema:
-                type: integer
-                example: 1
-            x-balance:
-              schema:
-                type: integer
-                example: 98
-        '400':
-          description: Invalid JSON or invalid `to` address
-        '401':
-          description: Missing/invalid X-Mailbox-Secret or X-Token
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          description: Target wallet not found
 
   /logs:
     servers:
