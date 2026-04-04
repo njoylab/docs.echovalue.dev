@@ -1,0 +1,349 @@
+---
+title: Key-Value Store
+description: Store, retrieve, and delete key-value pairs with the echoValue API
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The key-value store lets you persist string data organized in named groups. All operations require authentication via the `x-token` header.
+
+**Base URL:** `https://api.echovalue.dev/kv/<group>/<key>`
+
+| URL Parameter | Description | Max length |
+| ------------- | ----------- | ---------- |
+| `group` | Logical namespace for keys (e.g. `default`) | 30 characters |
+| `key` | Key identifier | 30 characters |
+
+---
+
+## Set Key/Value
+
+`POST https://api.echovalue.dev/kv/<group>/<key>`
+
+Stores a value for the given key. If the key already exists, its value is overwritten.
+
+**Request headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Query parameters:**
+
+| Parameter | Type | Description | Default |
+| --------- | ---- | ----------- | ------- |
+| `ttl` | integer | Time-to-live in seconds. Min: `1`. Max: `2592000` (30 days). | 30 days |
+
+**Request body** (`text/plain`): The value to store. Max **1000 characters**.
+
+**Response:** `200 OK`
+
+```
+OK
+```
+
+**HTTP status codes:**
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Value stored successfully |
+| `400` | Malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `429` | Rate limit exceeded |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken' \
+  -d 'hello world'
+
+# With 30-second TTL
+curl 'https://api.echovalue.dev/kv/default/mykey?ttl=30' \
+  -H 'x-token: mytoken' \
+  -d 'hello world'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  method: 'POST',
+  headers: { 'x-token': 'mytoken' },
+  body: 'hello world'
+});
+
+// With 30-second TTL
+fetch('https://api.echovalue.dev/kv/default/mykey?ttl=30', {
+  method: 'POST',
+  headers: { 'x-token': 'mytoken' },
+  body: 'hello world'
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.post('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'},
+  data='hello world'
+)
+
+# With 30-second TTL
+requests.post('https://api.echovalue.dev/kv/default/mykey?ttl=30',
+  headers={'x-token': 'mytoken'},
+  data='hello world'
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'hello world');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "net/http"
+    "strings"
+)
+
+func main() {
+    body := strings.NewReader("hello world")
+    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/kv/default/mykey", body)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+**Cost:** 1 credit
+:::
+
+---
+
+## Get Key/Value
+
+`GET https://api.echovalue.dev/kv/<group>/<key>`
+
+Retrieves the stored value for a key.
+
+**Request headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Response:** `200` — The stored value as plain text.
+
+```
+hello world
+```
+
+**HTTP status codes:**
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Value returned |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Key does not exist or has expired |
+| `429` | Rate limit exceeded |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.text())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+print(response.text)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/kv/default/mykey", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+    body, _ := io.ReadAll(resp.Body)
+    println(string(body))
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+**Cost:** 1 credit
+:::
+
+---
+
+## Delete Key/Value
+
+`DELETE https://api.echovalue.dev/kv/<group>/<key>`
+
+Deletes a key and its associated value.
+
+**Request headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Response:** `200 OK`
+
+```
+OK
+```
+
+**HTTP status codes:**
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Key deleted successfully |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Key does not exist |
+| `429` | Rate limit exceeded |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken' \
+  -X DELETE
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  method: 'DELETE',
+  headers: { 'x-token': 'mytoken' }
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.delete('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import "net/http"
+
+func main() {
+    req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/kv/default/mykey", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+**Cost:** 1 credit
+:::

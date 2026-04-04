@@ -3,23 +3,19 @@
 **/.DS_Store
 **/._.DS_Store
 
-# Generated files by hugo
+# Astro build output
+/dist/
+
+# Node.js
+/node_modules/
+
+# Hugo legacy (kept for reference on migration branch)
 /public/
 /resources/_gen/
 /assets/jsconfig.json
 hugo_stats.json
-
-# Executable may be added to repository
 hugo.exe
 hugo.darwin
 hugo.linux
-
-# Temporary lock file while building
 /.hugo_build.lock
-
-# Node.js dependencies
-/node_modules/
-package-lock.json
-
-# Hugo modules
 /_vendor/

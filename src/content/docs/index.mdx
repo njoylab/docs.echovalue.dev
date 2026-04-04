@@ -1,0 +1,95 @@
+---
+title: Introduction
+description: echoValue API - lightweight backend utilities for freelancers and small projects
+sidebar:
+  order: 1
+---
+
+**echoValue** is a set of lightweight backend utilities designed for freelancers and small projects. No server setup, no infrastructure to manage — just a token and an HTTP call.
+
+It provides two main services:
+
+- **Key-Value Store** — persist and retrieve string data organized in named groups
+- **Mail2Webhook** — receive emails at a dedicated address and forward them as JSON to your webhook
+
+:::caution
+echoValue is not intended for sensitive data, large-scale applications, or as a replacement for production databases.
+:::
+
+## Quick Start
+
+**1. Generate a token** (free, includes 100 credits):
+
+```sh
+curl 'https://api.echovalue.dev/token' -d 'token=new'
+# → a1b2c3d4e5f6g7h8i9j0...
+```
+
+**2a. Store and retrieve a value:**
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: YOUR_TOKEN' \
+  -d 'hello world'
+# → OK
+
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: YOUR_TOKEN'
+# → hello world
+```
+
+**2b. Or configure an email-to-webhook bridge:**
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: YOUR_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"https://yourdomain.com/webhook"}'
+# → OK
+# Emails sent to YOUR_TOKEN@hook.echovalue.dev now POST to your URL
+```
+
+## Services
+
+| Service | Description |
+| ------- | ----------- |
+| **Key-Value Store** | Store, retrieve, and delete key-value pairs organized in groups |
+| **Mail2Webhook** | Receive emails at `<token>@hook.echovalue.dev` and forward them to your webhook |
+| **Logs** | Inspect your recent API call history |
+| **Token Management** | Check your credit balance and recharge |
+
+## Pricing
+
+All operations consume credits from your wallet. New tokens include **100 free credits**.
+
+| Operation | Cost |
+| --------- | ---- |
+| Generate token | Free (100 credits included) |
+| Check wallet balance | 1 credit |
+| Get recharge link | Free |
+| Set key/value | 1 credit |
+| Get key/value | 1 credit |
+| Delete key/value | 1 credit |
+| Configure webhook | 1 credit |
+| Get webhook config | 1 credit |
+| Delete webhook | 1 credit |
+| Email processed | 1 credit |
+| Logs | 1 credit per entry returned |
+
+## LLM Access
+
+This documentation is available in machine-readable format for AI assistants and LLMs:
+
+- [`/llms.txt`](https://docs.echovalue.dev/llms.txt) — index of all documentation pages
+- [`/llms-full.txt`](https://docs.echovalue.dev/llms-full.txt) — full documentation in a single file
+
+## Limits
+
+| Constraint | Value |
+| ---------- | ----- |
+| Max key/group name length | 30 characters |
+| Max value length | 1000 characters (~1 KB) |
+| Max TTL | 2,592,000 seconds (30 days) |
+| Default TTL (if omitted) | 30 days |
+| Log retention | 7 days |
+| Token inactivity before deletion | 2 years |

@@ -1,0 +1,105 @@
+---
+title: Authentication
+description: How to authenticate requests to the echoValue API using x-token header
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+All API requests must include an `x-token` header with your API token.
+
+```
+x-token: YOUR_TOKEN
+```
+
+:::note
+Don't have a token yet? Generate one for free on the [Token Management](/token/) page.
+:::
+
+## Example
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  headers: {
+    'x-token': 'mytoken'
+  }
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.get('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import "net/http"
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/kv/default/mykey", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response Headers
+
+Every API response includes these headers:
+
+| Header | Description |
+| ------ | ----------- |
+| `x-cost` | Credits deducted from your wallet for this request |
+| `x-balance` | Credits remaining in your wallet after this request |
+
+:::note
+Use `x-balance` to monitor your credit balance — it's available on every response at no extra cost, making it more efficient than calling the balance endpoint separately.
+:::
+
+## Error Responses
+
+| Status | Meaning |
+| ------ | ------- |
+| `401 Unauthorized` | The `x-token` header is missing or the token is invalid |
+| `402 Payment Required` | Your wallet has no credits remaining |
+
+See the [Errors](/errors/) page for the full list of error codes.

@@ -1,197 +1,423 @@
-openapi: 3.0.3
+openapi: "3.0.3"
 info:
   title: EchoValue API
   description: |
-    **EchoValue** is a lightweight and easy-to-use API designed for freelancers and developers working on small projects. It serves as a simple key-value database system, specifically tailored to store and retrieve random key-value data without the need for complex server platforms.
+    **EchoValue** is a lightweight key-value API designed for freelancers and developers working on small projects.
+    No server setup, no infrastructure to manage — just a token and an HTTP call.
 
     ## Important Notes
-    - EchoValue is not intended to replace robust databases or caching systems in large and security-critical applications
-    - You should not use EchoValue to save sensitive data
+    - EchoValue is not intended for sensitive data or large-scale applications
+    - All API calls cost 1 credit from your wallet balance
+    - Empty wallets return **402 Payment Required**
     - Tokens unused for two years will be automatically deactivated
-    - All API calls cost credits from your wallet balance
 
     ## Authentication
-    Include the `x-token` header in all your API requests.
+    Include the `X-Token` header in all authenticated API requests.
 
-  version: 1.0.0
+  version: "1.0.0"
   contact:
-    name: EchoValue Support
-    url: https://www.echovalue.dev
-  license:
-    name: Apache 2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0.html
+    name: EchoValue
+    url: https://docs.echovalue.dev
 
 servers:
-  - url: https://api.echovalue.dev/kv
-    description: Key-Value Storage API
-  - url: https://api.echovalue.dev/token
-    description: Token Management API
-  - url: https://api.echovalue.dev/webhook
-    description: Webhook API
+  - url: https://api.echovalue.dev
+    description: EchoValue API
 
 tags:
-  - name: Key-Value Operations
-    description: Store, retrieve, and delete key-value pairs
-  - name: Token Management
-    description: Generate tokens, check balance, and recharge credits
-  - name: Logs
-    description: Retrieve API usage logs
+  - name: KV API
+    description: Read/write/delete key-value entries (each call costs 1 credit)
+  - name: Token API
+    description: Wallet creation, balance, logs, and recharge links
   - name: Webhook API
-    description: Manage webhooks for email forwarding
+    description: Manage a single webhook per wallet (each call costs 1 credit)
+  - name: Webhook Test API
+    description: Test your configured webhook with a dummy payload (costs 1 credit)
 
-security:
-  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: X-Token
+      description: Wallet ID (token)
+
+  parameters:
+    TokenHeader:
+      name: X-Token
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 10
+      description: Wallet ID (token)
+
+    Bucket:
+      name: bucket
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 30
+      description: Group/bucket name for organizing keys (max 30 characters)
+
+    Key:
+      name: key
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 30
+      description: Key name (max 30 characters)
+
+    TTL:
+      name: ttl
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 2592000
+        default: 2592000
+      description: Time-to-live in seconds (0 or missing = max 30 days)
+
+  schemas:
+    WalletInfo:
+      type: object
+      properties:
+        wallet:
+          type: integer
+          description: Current credit balance
+        created:
+          type: string
+          format: date-time
+          description: Wallet creation timestamp
+          example: "2023-08-09T15:40:09.77Z"
+        hash:
+          type: string
+          description: SHA256 hash of the wallet token (use in webhook payloads instead of exposing token)
+          example: a1b2c3d4e5f6...
+
+    LogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          example: jd9kImh8U4In3odfNeKf
+        method:
+          type: string
+          example: GET
+        path:
+          type: string
+          example: /default/mykey
+        error:
+          type: string
+          example: Key Not Found
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-12-07T12:14:16.124481Z"
+        expiration:
+          type: string
+          format: date-time
+          example: "2023-12-14T12:14:16.12448Z"
+        cost:
+          type: integer
+          example: 1
+        balance:
+          type: integer
+          example: 97
+
+    LogsResponse:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/LogEntry"
+        n:
+          type: integer
+          description: Number of log entries returned
+
+    WebhookRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          description: Callback URL to receive webhook events (must be HTTPS)
+          example: https://yourdomain.com/webhook
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Optional custom headers to include in the callback request
+          example:
+            Authorization: Bearer secret
+
+    WebhookResponse:
+      type: object
+      properties:
+        webhook:
+          type: string
+          description: Configured callback URL (omitted if no webhook set)
+          example: https://yourdomain.com/webhook
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom headers
+          example:
+            Authorization: Bearer secret
+        email:
+          type: string
+          description: Email address to send messages to (<token>@hook.echovalue.dev)
+          example: yourtoken@hook.echovalue.dev
+        hash:
+          type: string
+          description: SHA256 hash of the wallet token (included in webhook payloads for identification)
+          example: a1b2c3d4e5f6...
+
+    TestWebhookPayload:
+      type: object
+      description: Dummy payload sent to your webhook during a test call
+      properties:
+        externalMessageId:
+          type: string
+          example: "test-msg-123"
+        receivedAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00Z"
+        from:
+          type: object
+          properties:
+            email:
+              type: string
+              example: "test@example.com"
+            name:
+              type: string
+              example: "Test User"
+        to:
+          type: object
+          properties:
+            hash:
+              type: string
+              description: SHA256 hash of your wallet token
+        subject:
+          type: string
+          example: "Test webhook"
+        text:
+          type: string
+          example: "This is a test message from echovalue.dev"
+        html:
+          type: string
+          example: "<p>This is a test message</p>"
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              filename:
+                type: string
+                example: "sample.pdf"
+              size:
+                type: integer
+                example: 14
+              contentType:
+                type: string
+                example: "application/pdf"
+              downloadUrl:
+                type: string
+                example: "https://example.com/sample.pdf"
+              downloadUrlExpiresAt:
+                type: string
+                format: date-time
+                description: Expiration time of the download URL (1 hour from test call)
+
+    TestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether the test webhook was successfully delivered
+        message:
+          type: string
+          description: Confirmation message
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid X-Token header
+    PaymentRequired:
+      description: Wallet has 0 credits. Recharge at https://docs.echovalue.dev/token/
+    NotFound:
+      description: Key not found or expired
+    BadRequest:
+      description: Invalid parameters
 
 paths:
-  /{group}/{key}:
-    parameters:
-      - name: group
-        in: path
-        required: true
-        description: Group name for organizing keys (e.g., 'default')
-        schema:
-          type: string
-          maxLength: 30
-          example: default
-      - name: key
-        in: path
-        required: true
-        description: Key identifier
-        schema:
-          type: string
-          maxLength: 30
-          example: mykey
-
-    post:
-      tags:
-        - Key-Value Operations
-      summary: Set a key/value pair
-      description: |
-        Sets the value of a key. Optionally, you can specify a time-to-live (TTL) for automatic expiration.
-
-        **Cost:** 1 credit
-      operationId: setKeyValue
-      parameters:
-        - name: ttl
-          in: query
-          required: false
-          description: Time to live in seconds (max 2592000 = 30 days). If omitted, key expires in 30 days if not updated.
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 2592000
-            example: 30
-      requestBody:
-        required: true
-        description: The value to store (max 30 characters)
-        content:
-          text/plain:
-            schema:
-              type: string
-              maxLength: 30
-              example: newdata
-      responses:
-        '200':
-          description: Key/value pair successfully stored
-          headers:
-            x-cost:
-              description: Credits deducted from wallet
-              schema:
-                type: integer
-                example: 1
-            x-balance:
-              description: Remaining wallet balance
-              schema:
-                type: integer
-                example: 99
-        '400':
-          description: Bad Request - Malformed request
-        '401':
-          description: Unauthorized - Invalid API token
-        '402':
-          description: Payment Required - Wallet is empty
-        '429':
-          description: Too Many Requests - Rate limit exceeded
-
+  # ─────────────────────────────── KV API ───────────────────────────────
+  /kv/{bucket}/{key}:
     get:
-      tags:
-        - Key-Value Operations
-      summary: Retrieve a key/value pair
+      tags: [KV API]
+      summary: Get value
       description: |
-        Gets the value of a key.
+        Returns the stored value for the given bucket/key.
 
         **Cost:** 1 credit
       operationId: getKeyValue
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+        - $ref: "#/components/parameters/Bucket"
+        - $ref: "#/components/parameters/Key"
       responses:
-        '200':
-          description: Value retrieved successfully
-          headers:
-            x-cost:
-              description: Credits deducted from wallet
-              schema:
-                type: integer
-                example: 1
-            x-balance:
-              description: Remaining wallet balance
-              schema:
-                type: integer
-                example: 98
+        "200":
+          description: The stored value
           content:
             text/plain:
               schema:
                 type: string
-                example: newdata
-        '401':
-          description: Unauthorized - Invalid API token
-        '402':
-          description: Payment Required - Wallet is empty
-        '404':
-          description: Not Found - Key does not exist
-        '429':
-          description: Too Many Requests - Rate limit exceeded
+                example: hello world
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Wallet balance after this call
+            X-Cost:
+              schema:
+                type: integer
+              description: Credits consumed (1)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      tags: [KV API]
+      summary: Store value
+      description: |
+        Stores a value for the given bucket/key with optional TTL.
+
+        **Cost:** 1 credit
+      operationId: setKeyValue
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+        - $ref: "#/components/parameters/Bucket"
+        - $ref: "#/components/parameters/Key"
+        - $ref: "#/components/parameters/TTL"
+      requestBody:
+        required: true
+        description: The value to store (max 1000 characters)
+        content:
+          text/plain:
+            schema:
+              type: string
+              maxLength: 1000
+              example: hello world
+      responses:
+        "200":
+          description: Value stored successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
 
     delete:
-      tags:
-        - Key-Value Operations
-      summary: Delete a key/value pair
+      tags: [KV API]
+      summary: Delete key
       description: |
-        Deletes a key and its value.
+        Deletes the key from the bucket.
 
         **Cost:** 1 credit
       operationId: deleteKeyValue
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+        - $ref: "#/components/parameters/Bucket"
+        - $ref: "#/components/parameters/Key"
       responses:
-        '200':
-          description: Key/value pair successfully deleted
+        "200":
+          description: Key deleted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
           headers:
-            x-cost:
-              description: Credits deducted from wallet
+            X-Balance:
               schema:
                 type: integer
-                example: 1
-            x-balance:
-              description: Remaining wallet balance
+            X-Cost:
               schema:
                 type: integer
-                example: 97
-        '401':
-          description: Unauthorized - Invalid API token
-        '402':
-          description: Payment Required - Wallet is empty
-        '404':
-          description: Not Found - Key does not exist
-        '429':
-          description: Too Many Requests - Rate limit exceeded
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  /:
-    servers:
-      - url: https://api.echovalue.dev/token
+  # ─────────────────────────────── Token API ───────────────────────────────
+  /token:
+    get:
+      tags: [Token API]
+      summary: Check wallet balance
+      description: |
+        Returns wallet info including credit balance and creation date.
+
+        **Cost:** 1 credit
+      operationId: checkBalance
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      responses:
+        "200":
+          description: Wallet info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletInfo"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
 
     post:
-      tags:
-        - Token Management
+      tags: [Token API]
       summary: Generate a new token
       description: |
-        Generate a new API token. No authentication required, returns token string, includes 100 free operations.
+        Generates a new wallet token. No authentication required.
+        New tokens include 100 free credits.
 
         **Rate Limit:** 1 request every 10 seconds.
       operationId: generateToken
@@ -202,8 +428,7 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               type: object
-              required:
-                - token
+              required: [token]
               properties:
                 token:
                   type: string
@@ -215,79 +440,28 @@ paths:
                 value:
                   token: new
       responses:
-        '200':
-          description: New token generated
+        "200":
+          description: New token string
           content:
             text/plain:
               schema:
                 type: string
-              example: mytoken
-        '400':
+              example: a1b2c3d4e5f6g7h8i9j0...
+        "400":
           description: Bad Request - Invalid parameters
-        '429':
-          description: Too Many Requests - Rate limit exceeded
+        "429":
+          description: Too Many Requests - Rate limit exceeded (1 req/10s)
 
-    get:
-      tags:
-        - Token Management
-      summary: Check wallet balance
-      description: |
-        Returns remaining credits and token creation date.
-
-        **Cost:** 1 credit
-      operationId: checkBalance
-      responses:
-        '200':
-          description: Wallet information retrieved
-          headers:
-            x-cost:
-              description: Credits deducted from wallet
-              schema:
-                type: integer
-                example: 1
-            x-balance:
-              description: Remaining wallet balance
-              schema:
-                type: integer
-                example: 99
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  wallet:
-                    type: integer
-                    description: Remaining credits
-                    example: 12345
-                  created:
-                    type: string
-                    format: date-time
-                    description: Token creation date
-                    example: "2023-08-09T15:40:09.77Z"
-                  hash:
-                    type: string
-                    description: SHA256 hash of the wallet token (use in webhook payloads instead of exposing token)
-                    example: a1b2c3d4e5f6...
-          '401':
-          description: Unauthorized - Invalid API token
-        '402':
-          description: Payment Required - Wallet is empty
-
-  /logs:
-    servers:
-      - url: https://api.echovalue.dev/token
   /recharge:
-    servers:
-      - url: https://api.echovalue.dev/recharge
     get:
-      tags:
-        - Token Management
+      tags: [Token API]
       summary: Get recharge link
-      description: Returns a Stripe checkout link for recharging wallet.
+      description: Returns a Stripe checkout link for recharging wallet credits. Free operation.
       operationId: getRechargeLink
       security:
-        - ApiKeyAuth: []
+        - TokenAuth: []
       parameters:
+        - $ref: "#/components/parameters/TokenHeader"
         - name: amount
           in: query
           required: false
@@ -297,276 +471,214 @@ paths:
             default: "1"
           description: Recharge tier (million operations)
       responses:
-        '200':
+        "200":
           description: Stripe checkout URL
           content:
             text/plain:
               schema:
                 type: string
               example: https://buy.stripe.com/<productID>?client_reference_id=mytoken
-        '400':
+        "400":
           description: Bad Request - Invalid parameters
-        '401':
-          description: Unauthorized - Invalid API token
-  /webhook:
-    servers:
-      - url: https://api.echovalue.dev/webhook
-    get:
-      tags:
-        - Webhook API
-      summary: Get webhook configuration
-      description: Returns the configured webhook for this wallet. Costs 1 credit.
-      operationId: getWebhook
-      security:
-        - ApiKeyAuth: []
-      responses:
-        '200':
-          description: Webhook configuration retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  webhook:
-                    type: string
-                    description: Configured callback URL (omitted if no webhook set)
-                    example: https://yourdomain.com/webhook
-                  headers:
-                    type: object
-                    additionalProperties:
-                      type: string
-                    description: Custom headers
-                    example:
-                      Authorization: Bearer secret
-                  email:
-                    type: string
-                    description: Email address to send messages to (<token>@hook.echovalue.dev)
-                    example: yourwalletid@hook.echovalue.dev
-                  hash:
-                    type: string
-                    description: SHA256 hash of the wallet token (use in webhook payloads instead of exposing token)
-                    example: a1b2c3d4e5f6...
-          headers:
-            x-cost:
-              description: Credits deducted from wallet
-              schema:
-                type: integer
-                example: 1
-            x-balance:
-              description: Remaining wallet balance
-              schema:
-                type: integer
-                example: 99
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          description: No webhook configured
-    post:
-      tags:
-        - Webhook API
-      summary: Create or update webhook
-      description: Sets the webhook for this wallet (upsert). Costs 1 credit. Max 1 webhook per wallet. URL must be HTTPS pointing to a public host.
-      operationId: setWebhook
-      security:
-        - ApiKeyAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - url
-              properties:
-                url:
-                  type: string
-                  description: Callback URL to receive webhook events (must be HTTPS)
-                  example: https://yourdomain.com/webhook
-                headers:
-                  type: object
-                  additionalProperties:
-                    type: string
-                  description: Optional custom headers to include in the callback request
-                  example:
-                    Authorization: Bearer secret
-      responses:
-        '200':
-          description: Webhook saved successfully
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: OK
-          headers:
-            x-cost:
-              schema:
-                type: integer
-                example: 1
-            x-balance:
-              schema:
-                type: integer
-                example: 98
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-    delete:
-      tags:
-        - Webhook API
-      summary: Delete webhook
-      description: Removes the configured webhook. Costs 1 credit.
-      operationId: deleteWebhook
-      security:
-        - ApiKeyAuth: []
-      responses:
-        '200':
-          description: Webhook deleted successfully
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: OK
-          headers:
-            x-cost:
-              schema:
-                type: integer
-                example: 1
-            x-balance:
-              schema:
-                type: integer
-                example: 97
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          description: No webhook configured
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  /logs:
-    servers:
-      - url: https://api.echovalue.dev/token
+  /token/logs:
     get:
-      tags:
-        - Logs
-      summary: Retrieve API usage logs
+      tags: [Token API]
+      summary: Get request logs
       description: |
-        Retrieves a list of the latest API calls made using the user's token.
-        Logs have a TTL of 7 days and are deleted within 24 hours after expiration.
+        Returns the latest n API call log entries.
+        Logs have a 7-day TTL and are deleted within 24 hours after expiration.
 
-        **Cost:** 1 credit per log entry returned (n value in response)
+        **Cost:** 1 credit per log entry returned
       operationId: getLogs
+      security:
+        - TokenAuth: []
       parameters:
+        - $ref: "#/components/parameters/TokenHeader"
         - name: n
           in: query
           required: false
-          description: Number of log entries to retrieve (default 5)
           schema:
             type: integer
             minimum: 1
             default: 5
             example: 5
+          description: Number of log entries to retrieve (default 5)
       responses:
-        '200':
-          description: Logs retrieved successfully
-          headers:
-            x-cost:
-              description: Credits deducted (equals n returned)
-              schema:
-                type: integer
-                example: 3
-            x-balance:
-              description: Remaining wallet balance
-              schema:
-                type: integer
-                example: 96
+        "200":
+          description: Log entries
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  n:
-                    type: integer
-                    description: Number of entries returned
-                    example: 3
-                  logs:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          description: Unique log entry ID
-                          example: jd9kImh8U4In3odfNeKf
-                        method:
-                          type: string
-                          description: HTTP method used
-                          example: GET
-                        path:
-                          type: string
-                          description: API path called
-                          example: /default/mykey
-                        error:
-                          type: string
-                          description: Error message if any
-                          example: Key Not Found
-                        timestamp:
-                          type: string
-                          format: date-time
-                          description: Log creation timestamp
-                          example: "2023-12-07T12:14:16.124481Z"
-                        expiration:
-                          type: string
-                          format: date-time
-                          description: Log expiration timestamp
-                          example: "2023-12-14T12:14:16.12448Z"
-                        cost:
-                          type: integer
-                          description: Credits deducted
-                          example: 1
-                        balance:
-                          type: integer
-                          description: Wallet balance after operation
-                          example: 97
-        '401':
-          description: Unauthorized - Invalid API token
-        '402':
-          description: Payment Required - Insufficient wallet balance
+                $ref: "#/components/schemas/LogsResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+              description: Credits consumed (equals n returned)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
 
-components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: x-token
-      description: API token for authentication
+  # ─────────────────────────────── Webhook API ───────────────────────────────
+  /webhook:
+    get:
+      tags: [Webhook API]
+      summary: Get webhook configuration
+      description: |
+        Returns the configured webhook for this wallet.
 
-  responses:
-    BadRequest:
-      description: Bad Request - Malformed request
-    Unauthorized:
-      description: Unauthorized - Invalid API token
-    PaymentRequired:
-      description: Payment Required - Wallet is empty
-    Forbidden:
-      description: Forbidden - Insufficient permissions
-    NotFound:
-      description: Not Found - Resource does not exist
-    MethodNotAllowed:
-      description: Method Not Allowed - Invalid HTTP method
-    NotAcceptable:
-      description: Not Acceptable - Invalid format requested
-    TooManyRequests:
-      description: Too Many Requests - Rate limit exceeded
-    InternalServerError:
-      description: Internal Server Error - Service issue
-    NotImplemented:
-      description: Not Implemented - Endpoint not available
-    ServiceUnavailable:
-      description: Service Unavailable - Temporary offline
+        **Cost:** 1 credit
+      operationId: getWebhook
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      responses:
+        "200":
+          description: Webhook configuration
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          description: No webhook configured
+
+    post:
+      tags: [Webhook API]
+      summary: Create or update webhook
+      description: |
+        Sets the webhook for this wallet (upsert). Max 1 webhook per wallet.
+        URL must be HTTPS pointing to a public host.
+
+        **Cost:** 1 credit
+      operationId: setWebhook
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookRequest"
+      responses:
+        "200":
+          description: Webhook saved
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+
+    delete:
+      tags: [Webhook API]
+      summary: Delete webhook
+      description: |
+        Removes the configured webhook.
+
+        **Cost:** 1 credit
+      operationId: deleteWebhook
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      responses:
+        "200":
+          description: Webhook deleted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          description: No webhook configured
+
+  # ─────────────────────────────── Webhook Test API ───────────────────────────────
+  /webhook/test:
+    post:
+      tags: [Webhook Test API]
+      summary: Test your configured webhook
+      description: |
+        Sends a dummy payload to your configured webhook URL to verify it is working.
+
+        **Cost:** 1 credit
+      operationId: testWebhook
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      responses:
+        "200":
+          description: Test call processed (check `success` field for delivery status)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestResponse"
+              examples:
+                success:
+                  summary: Delivery success
+                  value:
+                    success: true
+                    message: "test webhook delivered"
+                failure:
+                  summary: Delivery failure
+                  value:
+                    success: false
+                    message: "webhook call failed: context deadline exceeded"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
 
 externalDocs:
   description: Full API Documentation
