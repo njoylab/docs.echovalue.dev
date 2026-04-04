@@ -154,7 +154,7 @@ func main() {
 
 > The response will be a JSON object detailing your credit balance and token creation date.
 ```json
-{"wallet":12345,"created":"2023-08-09T15:40:09.77Z"}
+{"wallet":12345,"created":"2023-08-09T15:40:09.77Z","hash":"a1b2c3d4e5f6..."}
 ```
 To view your remaining credits, use:
 ### HTTP Request
@@ -166,6 +166,7 @@ Key | Description
 --------- | -----------
 wallet | Integer with the remaining credit
 created | Date when the token has been created
+hash | SHA256 hash of your wallet token (use this in webhook payloads instead of exposing your token)
 
 <aside class="notice">
 Costs: 1 credit. The best method to check your balance is to look at the `x-balance` response header following each request.
