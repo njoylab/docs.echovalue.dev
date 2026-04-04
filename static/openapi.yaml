@@ -2,11 +2,15 @@ openapi: "3.0.3"
 info:
   title: EchoValue API
   description: |
-    **EchoValue** is a lightweight key-value API designed for freelancers and developers working on small projects.
-    No server setup, no infrastructure to manage — just a token and an HTTP call.
+    **echoValue** is a set of lightweight backend utilities designed for freelancers and small projects. No server setup, no infrastructure to manage — just a token and an HTTP call.
+
+    It provides two main services:
+    - **Key-Value Store** — persist and retrieve string data organized in named groups
+    - **Mail2Webhook** — receive emails at a dedicated address and forward them as JSON to your webhook
+
+    > echoValue is not intended for sensitive data, large-scale applications, or as a replacement for production databases.
 
     ## Important Notes
-    - EchoValue is not intended for sensitive data or large-scale applications
     - All API calls cost 1 credit from your wallet balance
     - Empty wallets return **402 Payment Required**
     - Tokens unused for two years will be automatically deactivated
