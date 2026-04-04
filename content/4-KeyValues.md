@@ -8,13 +8,14 @@ title: DB API - Key-Value Store
 ## Setting a Key/Value Pair
 
 > To store a new key/value pair, use:
-
 ```shell
 curl 'https://api.echovalue.dev/default/mykey' \
 -H 'x-token: mytoken' \
 -d 'newdata'
+```
+> With 30 seconds expiration:
 
-# with 30 seconds expiration
+```shell
 curl 'https://api.echovalue.dev/default/mykey?ttl=30' \
 -H 'x-token: mytoken' \
 -d 'newdata'
@@ -104,9 +105,14 @@ func main() {
 This endpoint sets the value of the key.
 The maximum length of a key is **30** characters.
 The maximum length of a group name is **30** characters.
-The maximum length of value is **30** characters.
+The maximum length of value is **2000** characters ( approx 2kb).
 
 Optionally, you can set a time-to-live (TTL) for the key.
+
+> Response
+```text
+OK
+```
 
 ### HTTP Request
 `POST https://api.echovalue.dev/<group>/<key>?ttl=<seconds>`
@@ -191,6 +197,11 @@ func main() {
 
 This endpoint gets the value of the key.
 
+> Response
+```text
+newdata
+```
+
 ### HTTP Request
 `GET https://api.echovalue.dev/<group>/<key>`
 
@@ -259,6 +270,11 @@ func main() {
 }
 ```
 This endpoint delete the key and it's value.
+
+> Response
+```text
+OK
+```
 
 ### HTTP Request
 `DELETE https://api.echovalue.dev/<group>/<key>`

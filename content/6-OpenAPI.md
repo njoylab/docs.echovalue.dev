@@ -13,11 +13,6 @@ The EchoValue API is fully documented using the **OpenAPI 3.0** specification fo
 
 ## View & Test
 
-### Redocly
-View the interactive API documentation with a modern interface:
-
-🔗 [Open in Redocly](https://redocly.github.io/redoc/?url=https://docs.echovalue.dev/openapi.yaml)
-
 ### Swagger UI
 Explore and test the API interactively:
 
@@ -29,11 +24,6 @@ Explore and test the API interactively:
 
 Use tools like [OpenAPI Generator](https://openapi-generator.tech/) to generate client libraries in your preferred language.
 
-<aside class="notice">
-Choose ONE of the following commands based on your language. Each command generates a complete client SDK in the <code>./echovalue-client</code> directory.
-</aside>
-
-**JavaScript**
 
 ```shell
 openapi-generator-cli generate \
@@ -42,25 +32,7 @@ openapi-generator-cli generate \
   -o ./echovalue-client
 ```
 
-**Python**
-
-```shell
-openapi-generator-cli generate \
-  -i https://docs.echovalue.dev/openapi.yaml \
-  -g python \
-  -o ./echovalue-client
-```
-
-**Go**
-
-```shell
-openapi-generator-cli generate \
-  -i https://docs.echovalue.dev/openapi.yaml \
-  -g go \
-  -o ./echovalue-client
-```
-
-> Other languages supported: Java, Ruby, PHP, C#, TypeScript, Rust, and [many more](https://openapi-generator.tech/docs/generators)
+Other languages supported: Java, Ruby, PHP, C#, TypeScript, Rust, and [many more](https://openapi-generator.tech/docs/generators)
 
 ### Import into API Tools
 
