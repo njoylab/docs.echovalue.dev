@@ -83,6 +83,9 @@ token | `new`
 <aside class="notice">
 You will get <code>100</code> operation with your personal API token.
 </aside>
+<aside class="notice">
+Rate Limit: Token generation is limited to <code>1 request every 10 seconds</code>.
+</aside>
 <aside class="warning">
 Tokens unused for two years will be automatically deactivated, and all associated data will be deleted. Please ensure regular API usage to keep your token active.
 </aside>
