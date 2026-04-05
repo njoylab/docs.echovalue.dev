@@ -5,6 +5,7 @@
 
 # Astro build output
 /dist/
+/.astro/
 
 # Node.js
 /node_modules/

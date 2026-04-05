@@ -1,0 +1,111 @@
+---
+title: Get Key/Value
+description: Retrieve a stored value by key from the echoValue key-value store
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`GET https://api.echovalue.dev/kv/<group>/<key>`
+
+Retrieves the stored value for a key.
+
+:::note
+**Cost:** 1 credit
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.text())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+print(response.text)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+echo $response;
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/kv/default/mykey", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+    body, _ := io.ReadAll(resp.Body)
+    println(string(body))
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response
+
+`200 OK` — The stored value as plain text.
+
+```
+hello world
+```
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Value returned |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Key does not exist or has expired |
+| `429` | Rate limit exceeded |

@@ -1,0 +1,35 @@
+---
+title: Mail2Webhook
+description: Forward emails to your webhook URL using echoValue's Mail2Webhook service
+sidebar:
+  order: 5
+---
+
+The Mail2Webhook service assigns each wallet dedicated email addresses at `<token>+<id>@hook.echovalue.dev`. Emails sent to those addresses are forwarded as JSON POST requests to your configured webhook URLs.
+
+Each wallet supports multiple webhooks, identified by unique `id` values (default: `0`).
+
+## Native Format Support
+
+Set `format` when configuring your webhook to have echoValue transform incoming emails into the native payload format for your platform — no custom handling required on your end.
+
+| Format | Platform |
+| ------ | -------- |
+| `slack` | [Slack Incoming Webhooks](/mail2webhook-slack) |
+| `discord` | [Discord Webhooks](/mail2webhook-discord) |
+| `teams` | [Microsoft Teams](/mail2webhook-teams) |
+| `telegram` | [Telegram Bot API](/mail2webhook-telegram) |
+| `pagerduty` | [PagerDuty Events API v2](/mail2webhook-pagerduty) |
+
+Without a `format`, the raw email payload is forwarded as-is (see [Webhook Payload](/mail2webhook/payload)).
+
+## Pricing
+
+| Operation | Cost |
+| --------- | ---- |
+| Configure webhook | 1 credit |
+| Get webhook config | 1 credit |
+| Delete webhook | 1 credit |
+| Test webhook | 1 credit |
+| Email processed (no attachments) | 2 credits |
+| Email processed (with attachments) | 5 credits |

@@ -23,7 +23,7 @@ Returns a list of recent API calls made with your token. Logs have a TTL of 7 da
 
 | Parameter | Type | Description | Default |
 | --------- | ---- | ----------- | ------- |
-| `n` | integer | Number of log entries to retrieve. Min: `1`. | `5` |
+| `n` | integer | Number of log entries to retrieve. Min: `1`. Default: `5`. | `5` |
 
 **Response:** `200` — JSON object.
 
@@ -34,6 +34,9 @@ Returns a list of recent API calls made with your token. Logs have a TTL of 7 da
       "id": "jd9kImh8U4In3odfNeKf",
       "method": "GET",
       "path": "/default/mykey",
+      "endpoint": "kv",
+      "status_code": 200,
+      "response_time_ms": 513,
       "error": "Key Not Found",
       "timestamp": "2023-12-07T12:14:16.124481Z",
       "expiration": "2023-12-14T12:14:16.12448Z",
@@ -56,21 +59,23 @@ Returns a list of recent API calls made with your token. Logs have a TTL of 7 da
 | ----- | ---- | ----------- |
 | `id` | string | Unique log entry ID |
 | `method` | string | HTTP method used (`GET`, `POST`, `DELETE`) |
-| `path` | string | API path called |
+| `path` | string | Full request path including query parameters |
+| `endpoint` | string | API category (`kv`, `token`, `webhook`) |
+| `status_code` | integer | HTTP status code returned by the request |
+| `response_time_ms` | integer | Response time in milliseconds for the request |
 | `error` | string | Error message, if any (omitted on success) |
 | `timestamp` | string (ISO 8601) | When the request was made |
 | `expiration` | string (ISO 8601) | When this log entry expires (7 days after creation) |
 | `cost` | integer | Credits deducted for that request |
 | `balance` | integer | Wallet balance after that request |
-
 **HTTP status codes:**
 
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Logs returned |
 | `401` | Invalid token |
-| `402` | Insufficient credits |
 
+Note: fetching logs is free and does not deduct credits from your wallet. The service will return at most 100 logs per request. If you request more than 100 logs, the response will be truncated to 100.
 <Tabs syncKey="lang">
 <TabItem label="cURL">
 
@@ -87,7 +92,12 @@ fetch('https://api.echovalue.dev/token/logs?n=5', {
   headers: { 'x-token': 'mytoken' }
 })
 .then(response => response.json())
-.then(data => console.log(data));
+.then(data => {
+  console.log(`Returned ${data.n} logs`);
+  (data.logs || []).forEach(l => {
+    console.log(`${l.timestamp} ${l.method} ${l.endpoint || l.path} status=${l.status_code} time=${l.response_time_ms}ms cost=${l.cost} balance=${l.balance} id=${l.id}`);
+  });
+});
 ```
 
 </TabItem>
@@ -100,7 +110,10 @@ response = requests.get('https://api.echovalue.dev/token/logs',
   headers={'x-token': 'mytoken'},
   params={'n': 5}
 )
-print(response.json())
+data = response.json()
+print(f"Returned {data.get('n')} logs")
+for l in data.get('logs', []):
+    print(f"{l.get('timestamp')} {l.get('method')} {l.get('endpoint') or l.get('path')} status={l.get('status_code')} time={l.get('response_time_ms')}ms cost={l.get('cost')} balance={l.get('balance')} id={l.get('id')}")
 ```
 
 </TabItem>
@@ -113,7 +126,11 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
 curl_close($ch);
-print_r(json_decode($response));
+$data = json_decode($response, true);
+echo "Returned {$data['n']} logs\n";
+foreach ($data['logs'] as $l) {
+  echo "{$l['timestamp']} {$l['method']} " . ($l['endpoint'] ?? $l['path']) . " status={$l['status_code']} time={$l['response_time_ms']}ms cost={$l['cost']} balance={$l['balance']} id={$l['id']}\n";
+}
 ?>
 ```
 
@@ -125,6 +142,7 @@ package main
 
 import (
     "encoding/json"
+    "fmt"
     "io"
     "net/http"
 )
@@ -140,7 +158,15 @@ func main() {
     body, _ := io.ReadAll(resp.Body)
     var result map[string]interface{}
     json.Unmarshal(body, &result)
-    println(result)
+
+    if logs, ok := result["logs"].([]interface{}); ok {
+        fmt.Printf("Returned %v logs\n", result["n"])
+        for _, li := range logs {
+            l := li.(map[string]interface{})
+            fmt.Printf("%v %v %v status=%v time=%vms cost=%v balance=%v id=%v\n",
+                l["timestamp"], l["method"], l["endpoint"], l["status_code"], l["response_time_ms"], l["cost"], l["balance"], l["id"])
+        }
+    }
 }
 ```
 
@@ -148,5 +174,7 @@ func main() {
 </Tabs>
 
 :::note
-**Cost:** 1 credit per log entry returned (equal to the `n` value in the response). The actual number returned may be less than requested if fewer entries are available.
+Log reads are free. By default the API returns 5 logs when `n` is not provided. The maximum number of logs you can request in a single call is 100.
+
+Note that logs may have a delay of a few seconds from when they are written to when they become readable.
 :::

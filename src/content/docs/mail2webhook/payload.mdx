@@ -1,0 +1,66 @@
+---
+title: Webhook Payload
+description: JSON payload structure sent to your webhook when an email is received
+sidebar:
+  order: 4
+---
+
+When an email arrives at `<token>+<id>@hook.echovalue.dev`, echoValue sends a `POST` request to your webhook URL with this JSON body:
+
+```json
+{
+  "externalMessageId": "<CA+abc123@mail.gmail.com>",
+  "receivedAt": "2026-04-04T09:21:35.218Z",
+  "from": { "email": "john@gmail.com", "name": "John Snow" },
+  "to": { "hash": "a1b2c3d4e5f6..." },
+  "cc": [{ "email": "jane@gmail.com", "name": "Jane Doe" }],
+  "subject": "Alert: Server down",
+  "text": "Server #3 is not responding",
+  "html": "<div>Server #3 is not responding</div>",
+  "headers": {},
+  "attachments": [
+    {
+      "filename": "attachment.pdf",
+      "contentType": "application/pdf",
+      "size": 33380,
+      "downloadUrl": "<presigned_url>",
+      "downloadUrlExpiresAt": "2026-04-04T09:26:35.218Z"
+    }
+  ]
+}
+```
+
+## Fields
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `externalMessageId` | string | Unique identifier for the email message |
+| `receivedAt` | string (ISO 8601) | When the email was received |
+| `from` | object | Sender: `email` and optional `name` |
+| `to` | object | Recipient: `hash` (SHA256 of your token) |
+| `cc` | array | CC recipients: each item has `email` and optional `name` |
+| `subject` | string | Email subject line |
+| `text` | string | Plain text body |
+| `html` | string | HTML body (if present) |
+| `headers` | object | Raw email headers as key-value pairs |
+| `attachments` | array | File attachments (empty array if none) |
+
+## Attachments
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `filename` | string | Original filename |
+| `contentType` | string | MIME type |
+| `size` | integer | File size in bytes |
+| `downloadUrl` | string | Presigned URL to download the file |
+| `downloadUrlExpiresAt` | string (ISO 8601) | When the download URL expires (1 hour) |
+
+:::note
+**Cost:** 2-5 credits per email processed:
+- **2 credits**: email without attachments, or with attachments but webhook has `includeAttachments: false`
+- **5 credits**: email with attachments and webhook has `includeAttachments: true` (default)
+:::
+
+:::note
+Use the `to.hash` field to verify that incoming webhook requests originate from echoValue without exposing your raw token.
+:::

@@ -1,0 +1,63 @@
+---
+title: "Mail2Webhook: Discord"
+description: Forward emails to Discord using echoValue's Mail2Webhook with native Discord formatting
+sidebar:
+  order: 7
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+When `format` is set to `discord`, incoming emails are converted into Discord messages using the [Webhook API](https://discord.com/developers/docs/resources/webhook). No custom payload handling required on your end.
+
+---
+
+## Get the Webhook URL
+
+<Steps>
+
+1. In Discord, right-click the channel where you want to receive messages and select **Edit Channel**.
+
+2. Click **Integrations** in the sidebar, then **Webhooks** → **New Webhook**.
+
+3. Give it a name (optional), then click **Copy Webhook URL** — it looks like:
+   ```
+   https://discord.com/api/webhooks/000000000000000000/XXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   ```
+
+</Steps>
+
+---
+
+## Configure the Webhook
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://discord.com/api/webhooks/000000000000000000/XXXX",
+    "format": "discord"
+  }'
+```
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `url` | string | Yes | Your Discord Webhook URL |
+| `format` | string | Yes | Must be `"discord"` |
+| `options` | object | No | Not used for Discord |
+
+---
+
+## Message Preview
+
+Each email arrives in Discord as:
+
+```
+**Subject line**
+From: Sender Name <sender@example.com>
+Email body text
+```
+
+:::note
+The plain text body is used. HTML is stripped automatically.
+:::

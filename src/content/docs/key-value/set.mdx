@@ -1,0 +1,136 @@
+---
+title: Set Key/Value
+description: Store a value for a key in the echoValue key-value store
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`POST https://api.echovalue.dev/kv/<group>/<key>`
+
+Stores a value for the given key. If the key already exists, its value is overwritten.
+
+:::note
+**Cost:** 1 credit
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Query parameters:**
+
+| Parameter | Type | Description | Default |
+| --------- | ---- | ----------- | ------- |
+| `ttl` | integer | Time-to-live in seconds. Min: `1`. Max: `2592000` (30 days). | 30 days |
+
+**Body** (`text/plain`): The value to store. Max **1000 characters**.
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken' \
+  -d 'hello world'
+
+# With 30-second TTL
+curl 'https://api.echovalue.dev/kv/default/mykey?ttl=30' \
+  -H 'x-token: mytoken' \
+  -d 'hello world'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  method: 'POST',
+  headers: { 'x-token': 'mytoken' },
+  body: 'hello world'
+});
+
+// With 30-second TTL
+fetch('https://api.echovalue.dev/kv/default/mykey?ttl=30', {
+  method: 'POST',
+  headers: { 'x-token': 'mytoken' },
+  body: 'hello world'
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.post('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'},
+  data='hello world'
+)
+
+# With 30-second TTL
+requests.post('https://api.echovalue.dev/kv/default/mykey?ttl=30',
+  headers={'x-token': 'mytoken'},
+  data='hello world'
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, 'hello world');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "net/http"
+    "strings"
+)
+
+func main() {
+    body := strings.NewReader("hello world")
+    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/kv/default/mykey", body)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response
+
+`200 OK`
+
+```
+OK
+```
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Value stored successfully |
+| `400` | Malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `429` | Rate limit exceeded |

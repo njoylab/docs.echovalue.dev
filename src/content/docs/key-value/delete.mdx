@@ -1,0 +1,103 @@
+---
+title: Delete Key/Value
+description: Delete a key and its value from the echoValue key-value store
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`DELETE https://api.echovalue.dev/kv/<group>/<key>`
+
+Deletes a key and its associated value.
+
+:::note
+**Cost:** 1 credit
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/kv/default/mykey' \
+  -H 'x-token: mytoken' \
+  -X DELETE
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/kv/default/mykey', {
+  method: 'DELETE',
+  headers: { 'x-token': 'mytoken' }
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.delete('https://api.echovalue.dev/kv/default/mykey',
+  headers={'x-token': 'mytoken'}
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/kv/default/mykey');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import "net/http"
+
+func main() {
+    req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/kv/default/mykey", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response
+
+`200 OK`
+
+```
+OK
+```
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Key deleted successfully |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Key does not exist |
+| `429` | Rate limit exceeded |

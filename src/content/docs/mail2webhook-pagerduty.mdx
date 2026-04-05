@@ -1,0 +1,76 @@
+---
+title: "Mail2Webhook: PagerDuty"
+description: Forward emails to PagerDuty using echoValue's Mail2Webhook to trigger incidents automatically
+sidebar:
+  order: 10
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+When `format` is set to `pagerduty`, incoming emails trigger PagerDuty incidents via the [Events API v2](https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTgw-events-api-v2-overview). The email subject becomes the incident summary and the sender is set as the source. This format requires a `routing_key` option.
+
+---
+
+## Get the Routing Key
+
+<Steps>
+
+1. In PagerDuty, go to **Services** and select the service you want to trigger incidents on.
+
+2. Click the **Integrations** tab, then **Add an integration**.
+
+3. Search for **Events API v2** and click **Add**.
+
+4. The integration is created. Click on it to expand and copy the **Integration Key** — this is your `routing_key`:
+   ```
+   a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+   ```
+
+</Steps>
+
+:::tip
+You can also create a dedicated service just for email alerts to keep them separate from other incident sources.
+:::
+
+---
+
+## Configure the Webhook
+
+The `url` is always `https://events.pagerduty.com/v2/enqueue` — it never changes.
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://events.pagerduty.com/v2/enqueue",
+    "format": "pagerduty",
+    "options": {
+      "routing_key": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
+    }
+  }'
+```
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `url` | string | Yes | Always `https://events.pagerduty.com/v2/enqueue` |
+| `format` | string | Yes | Must be `"pagerduty"` |
+| `options.routing_key` | string | Yes | The integration key from your PagerDuty service |
+
+---
+
+## Incident Details
+
+Each email creates a PagerDuty `trigger` event with:
+
+| PagerDuty field | Value |
+| --------------- | ----- |
+| `summary` | Email subject |
+| `source` | Sender email address |
+| `severity` | `info` |
+| `custom_details.text` | Plain text email body |
+| `custom_details.from_name` | Sender display name |
+
+:::note
+Incidents are always created with severity `info`. If you need dynamic severity, use the raw webhook format and handle the mapping in your own endpoint.
+:::

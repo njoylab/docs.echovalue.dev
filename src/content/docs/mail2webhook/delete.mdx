@@ -1,0 +1,109 @@
+---
+title: Delete Webhook
+description: Remove the webhook configuration from your echoValue wallet
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`DELETE https://api.echovalue.dev/webhook`
+
+Removes a specific webhook from your wallet. If no `id` is provided, deletes the default webhook (`0`).
+
+:::note
+**Cost:** 1 credit
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Query parameters:**
+
+| Parameter | Type | Description | Default |
+| --------- | ---- | ----------- | ------- |
+| `id` | string | ID of the webhook to delete | `0` |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/webhook?id=slack' \
+  -H 'x-token: mytoken' \
+  -X DELETE
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/webhook?id=slack', {
+  method: 'DELETE',
+  headers: { 'x-token': 'mytoken' }
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.delete('https://api.echovalue.dev/webhook',
+  headers={'x-token': 'mytoken'},
+  params={'id': 'slack'}
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/webhook?id=slack');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import "net/http"
+
+func main() {
+    req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/webhook?id=slack", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response
+
+`200 OK`
+
+```
+OK
+```
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook deleted |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | No webhook configured |

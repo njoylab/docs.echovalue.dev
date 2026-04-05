@@ -1,0 +1,146 @@
+---
+title: Test Webhook
+description: Send a dummy payload to your configured webhook to verify it's working
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`POST https://api.echovalue.dev/webhook/test`
+
+Sends a dummy email payload to the specified webhook URL to verify it is working correctly.
+
+:::note
+**Cost:** 1 credit
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Query parameters:**
+
+| Parameter | Type | Description | Default |
+| --------- | ---- | ----------- | ------- |
+| `id` | string | ID of the webhook to test | `0` |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/webhook/test?id=slack' \
+  -H 'x-token: mytoken' \
+  -X POST
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/webhook/test?id=slack', {
+  method: 'POST',
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.post('https://api.echovalue.dev/webhook/test',
+  headers={'x-token': 'mytoken'},
+  params={'id': 'slack'}
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/webhook/test?id=slack');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/webhook/test?id=slack", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    body, _ := io.ReadAll(resp.Body)
+    var result map[string]interface{}
+    json.Unmarshal(body, &result)
+    fmt.Println(result)
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response
+
+`200 OK` — JSON object.
+
+```json
+{
+  "success": true,
+  "message": "test webhook delivered"
+}
+```
+
+On failure:
+
+```json
+{
+  "success": false,
+  "message": "webhook call failed: context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `success` | boolean | Whether the test webhook was successfully delivered |
+| `message` | string | Confirmation or error message |
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Test call processed |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `405` | Method not POST |
+
+:::note
+The test sends a dummy payload with sample email data. Check your webhook endpoint logs to verify the full payload was received correctly.
+:::

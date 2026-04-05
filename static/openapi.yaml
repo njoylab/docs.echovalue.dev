@@ -8,7 +8,7 @@ info:
     - **Key-Value Store** — persist and retrieve string data organized in named groups
     - **Mail2Webhook** — receive emails at a dedicated address and forward them as JSON to your webhook
 
-    > echoValue is not intended for sensitive data, large-scale applications, or as a replacement for production databases.
+    > echoValue is not intended for storing sensitive data.
 
     ## Important Notes
     - All API calls cost 1 credit from your wallet balance
@@ -33,7 +33,7 @@ tags:
   - name: Token API
     description: Wallet creation, balance, logs, and recharge links
   - name: Webhook API
-    description: Manage a single webhook per wallet (each call costs 1 credit)
+    description: Manage multiple webhooks per wallet (each call costs 1 credit)
   - name: Webhook Test API
     description: Test your configured webhook with a dummy payload (costs 1 credit)
 
@@ -112,7 +112,20 @@ components:
           example: GET
         path:
           type: string
+          description: Full request path including query parameters
           example: /default/mykey
+        endpoint:
+          type: string
+          description: API category (e.g. `kv`, `token`, `webhook`)
+          example: kv
+        status_code:
+          type: integer
+          description: HTTP response status code
+          example: 200
+        response_time_ms:
+          type: integer
+          description: Response time in milliseconds
+          example: 513
         error:
           type: string
           example: Key Not Found
@@ -146,6 +159,10 @@ components:
       type: object
       required: [url]
       properties:
+        id:
+          type: string
+          description: Unique identifier for this webhook (e.g. `slack`, `myserver`). Defaults to `0` if omitted.
+          example: slack
         url:
           type: string
           description: Callback URL to receive webhook events (must be HTTPS)
@@ -157,86 +174,89 @@ components:
           description: Optional custom headers to include in the callback request
           example:
             Authorization: Bearer secret
+        format:
+          type: string
+          enum: ["", "slack", "discord", "teams", "telegram", "pagerduty", "custom"]
+          description: |
+            Native payload format. When set, the webhook body is transformed into the platform's native message format instead of forwarding the raw email payload.
+            - `slack` — `{"text": "..."}` with bold subject and From
+            - `discord` — `{"content": "..."}` with bold subject and From
+            - `teams` — `{"text": "..."}` Adaptive Card text
+            - `telegram` — `{"chat_id": "...", "text": "...", "parse_mode": "HTML"}` (requires `options.chat_id`)
+            - `pagerduty` — Events API v2 trigger payload (requires `options.routing_key`)
+            - `custom` — user-defined JSON template with placeholders (requires `template` field)
+        template:
+          type: object
+          description: |
+            JSON template used when `format` is `custom`. Supports placeholders:
+            - Dot notation: `{{from.name}}`, `{{subject}}`
+            - Array index: `{{attachments[0].filename}}`, `{{attachments[-1].filename}}` (negative = from end)
+            - Fallback chain: `{{text|html}}` (first non-empty wins)
+            - Literal fallback: `{{sender|"unknown"}}`
+            Max 2048 bytes, max 5 nesting levels.
+          additionalProperties: true
+        options:
+          type: object
+          additionalProperties:
+            type: string
+          description: |
+            Format-specific options (max 10 keys, values up to 500 chars each).
+            - `chat_id` — required for `telegram` format
+            - `routing_key` — required for `pagerduty` format
+        includeAttachments:
+          type: boolean
+          default: true
+          description: Whether to include email attachments in the webhook payload. If false, attachments are stripped from the payload.
 
     WebhookResponse:
       type: object
       properties:
+        id:
+          type: string
+          description: Webhook identifier
+          example: slack
         webhook:
           type: string
-          description: Configured callback URL (omitted if no webhook set)
+          description: Configured callback URL
           example: https://yourdomain.com/webhook
         headers:
           type: object
           additionalProperties:
             type: string
-          description: Custom headers
+          description: Custom headers (values are redacted)
           example:
             Authorization: Bearer secret
+        format:
+          type: string
+          description: Native format, if configured (e.g. `slack`, `telegram`, `custom`)
+          example: slack
+        template:
+          type: object
+          description: Custom template object (only present when format is `custom`)
+        options:
+          type: object
+          additionalProperties:
+            type: string
+          description: Format options with sensitive values redacted
+        includeAttachments:
+          type: boolean
+          description: Whether attachments are included in webhook payload
         email:
           type: string
-          description: Email address to send messages to (<token>@hook.echovalue.dev)
-          example: yourtoken@hook.echovalue.dev
+          description: Specific email address for this webhook (<token>+<id>@hook.echovalue.dev)
+          example: yourtoken+slack@hook.echovalue.dev
         hash:
           type: string
           description: SHA256 hash of the wallet token (included in webhook payloads for identification)
           example: a1b2c3d4e5f6...
 
-    TestWebhookPayload:
+    WebhookListResponse:
       type: object
-      description: Dummy payload sent to your webhook during a test call
       properties:
-        externalMessageId:
-          type: string
-          example: "test-msg-123"
-        receivedAt:
-          type: string
-          format: date-time
-          example: "2024-01-01T00:00:00Z"
-        from:
-          type: object
-          properties:
-            email:
-              type: string
-              example: "test@example.com"
-            name:
-              type: string
-              example: "Test User"
-        to:
-          type: object
-          properties:
-            hash:
-              type: string
-              description: SHA256 hash of your wallet token
-        subject:
-          type: string
-          example: "Test webhook"
-        text:
-          type: string
-          example: "This is a test message from echovalue.dev"
-        html:
-          type: string
-          example: "<p>This is a test message</p>"
-        attachments:
+        webhooks:
           type: array
           items:
-            type: object
-            properties:
-              filename:
-                type: string
-                example: "sample.pdf"
-              size:
-                type: integer
-                example: 14
-              contentType:
-                type: string
-                example: "application/pdf"
-              downloadUrl:
-                type: string
-                example: "https://example.com/sample.pdf"
-              downloadUrlExpiresAt:
-                type: string
-                format: date-time
-                description: Expiration time of the download URL (1 hour from test call)
+            $ref: "#/components/schemas/WebhookResponse"
 
     TestResponse:
       type: object
@@ -536,42 +556,53 @@ paths:
   /webhook:
     get:
       tags: [Webhook API]
-      summary: Get webhook configuration
+      summary: List webhooks
       description: |
-        Returns the configured webhook for this wallet.
+        Returns all configured webhooks for this wallet.
 
         **Cost:** 1 credit
-      operationId: getWebhook
+      operationId: listWebhooks
       security:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
       responses:
         "200":
-          description: Webhook configuration
+          description: Webhook list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebhookResponse"
+                $ref: "#/components/schemas/WebhookListResponse"
+              example:
+                webhooks:
+                  - id: "slack"
+                    webhook: "https://hooks.slack.com/services/T00/B00/XXX"
+                    headers: {}
+                    format: "slack"
+                    options: {}
+                    includeAttachments: true
+                    email: "mytoken+slack@hook.echovalue.dev"
+                    hash: "a1b2c3d4e5f6..."
           headers:
             X-Balance:
               schema:
                 type: integer
+              description: Wallet balance after this call
             X-Cost:
               schema:
                 type: integer
+              description: Credits consumed (1)
         "401":
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/PaymentRequired"
-        "404":
-          description: No webhook configured
 
     post:
       tags: [Webhook API]
       summary: Create or update webhook
       description: |
-        Sets the webhook for this wallet (upsert). Max 1 webhook per wallet.
+        Sets or updates a webhook for this wallet. Costs 1 credit.
+        Multiple webhooks can be created using different IDs.
         URL must be HTTPS pointing to a public host.
 
         **Cost:** 1 credit
@@ -586,6 +617,19 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/WebhookRequest"
+            examples:
+              basic:
+                summary: Basic webhook
+                value:
+                  url: https://yourdomain.com/webhook
+                  headers:
+                    Authorization: Bearer secret
+              slack:
+                summary: Slack webhook
+                value:
+                  id: slack
+                  url: https://hooks.slack.com/services/T00/B00/XXX
+                  format: slack
       responses:
         "200":
           description: Webhook saved
@@ -614,7 +658,7 @@ paths:
       tags: [Webhook API]
       summary: Delete webhook
       description: |
-        Removes the configured webhook.
+        Removes a specific webhook. Costs 1 credit.
 
         **Cost:** 1 credit
       operationId: deleteWebhook
@@ -622,6 +666,13 @@ paths:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "0"
+          description: ID of the webhook to delete
       responses:
         "200":
           description: Webhook deleted
@@ -648,9 +699,9 @@ paths:
   /webhook/test:
     post:
       tags: [Webhook Test API]
-      summary: Test your configured webhook
+      summary: Test a specific webhook
       description: |
-        Sends a dummy payload to your configured webhook URL to verify it is working.
+        Sends a dummy payload to the specified webhook URL to verify it is working.
 
         **Cost:** 1 credit
       operationId: testWebhook
@@ -658,6 +709,13 @@ paths:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "0"
+          description: ID of the webhook to test
       responses:
         "200":
           description: Test call processed (check `success` field for delivery status)
@@ -675,18 +733,22 @@ paths:
                   summary: Delivery failure
                   value:
                     success: false
-                    message: "webhook call failed: context deadline exceeded"
+                    message: "webhook call failed: context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
           headers:
             X-Balance:
               schema:
                 type: integer
+              description: Wallet balance after this call
             X-Cost:
               schema:
                 type: integer
+              description: Credits consumed (1)
         "401":
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "405":
+          description: Method not POST
 
 externalDocs:
   description: Full API Documentation

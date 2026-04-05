@@ -13,20 +13,45 @@ export default defineConfig({
         { icon: 'github', label: 'GitHub', href: 'https://github.com/njoylab/docs.echovalue.dev' },
       ],
       sidebar: [
-        { label: 'Introduction', link: '/' },
         {
-          label: 'Getting Started',
+          label: 'Introduction',
           items: [
+            { label: 'Overview', link: '/' },
             { label: 'Authentication', link: '/authentication/' },
             { label: 'Token Management', link: '/token/' },
+            { label: 'Logs', link: '/logs/' },
           ],
         },
         {
-          label: 'API Reference',
+          label: 'Key-Value Store',
           items: [
-            { label: 'Key-Value Store', link: '/key-value/' },
-            { label: 'Mail2Webhook', link: '/mail2webhook/' },
-            { label: 'Logs', link: '/logs/' },
+            { label: 'Overview', link: '/key-value/' },
+            { label: 'Set Key/Value', link: '/key-value/set/' },
+            { label: 'Get Key/Value', link: '/key-value/get/' },
+            { label: 'Delete Key/Value', link: '/key-value/delete/' },
+            { label: 'Agent Shared State', link: '/key-value/agent-state/' },
+          ],
+        },
+        {
+          label: 'Mail2Webhook',
+          items: [
+            { label: 'Overview', link: '/mail2webhook/' },
+            { label: 'Configure Webhook', link: '/mail2webhook/configure/' },
+            { label: 'Get Webhook Configuration', link: '/mail2webhook/get/' },
+            { label: 'Delete Webhook', link: '/mail2webhook/delete/' },
+            { label: 'Test Webhook', link: '/mail2webhook/test/' },
+            { label: 'Webhook Payload', link: '/mail2webhook/payload/' },
+            {
+              label: 'Formats',
+              items: [
+                { label: 'Slack', link: '/mail2webhook-slack/' },
+                { label: 'Discord', link: '/mail2webhook-discord/' },
+                { label: 'Microsoft Teams', link: '/mail2webhook-teams/' },
+                { label: 'Telegram', link: '/mail2webhook-telegram/' },
+                { label: 'PagerDuty', link: '/mail2webhook-pagerduty/' },
+                { label: 'Custom', link: '/mail2webhook-custom/' },
+              ],
+            },
           ],
         },
         {
