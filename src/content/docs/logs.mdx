@@ -13,6 +13,17 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Returns a list of recent API calls made with your token. Logs have a TTL of 7 days and are deleted within 24 hours after expiration.
 
+You can filter logs by endpoint type using the `type` parameter.
+
+**Endpoint types:**
+
+| Type | Description |
+| ---- | ----------- |
+| `kv` | Key-value operations (`GET`, `POST`, `DELETE` on `/kv/*`) |
+| `webhook` | Webhook calls (`/webhook/call`) |
+| `token` | Wallet info requests (`GET /token`) |
+| `service` | Recharge operations |
+
 **Request headers:**
 
 | Header | Description |
@@ -24,6 +35,7 @@ Returns a list of recent API calls made with your token. Logs have a TTL of 7 da
 | Parameter | Type | Description | Default |
 | --------- | ---- | ----------- | ------- |
 | `n` | integer | Number of log entries to retrieve. Min: `1`. Default: `5`. | `5` |
+| `type` | string | Filter logs by endpoint type. Values: `kv`, `webhook`, `token`, `manage`, `service`. If omitted, returns all logs. | — |
 
 **Response:** `200` — JSON object.
 
@@ -76,11 +88,29 @@ Returns a list of recent API calls made with your token. Logs have a TTL of 7 da
 | `401` | Invalid token |
 
 Note: fetching logs is free and does not deduct credits from your wallet. The service will return at most 100 logs per request. If you request more than 100 logs, the response will be truncated to 100.
+
+### Filtering by Endpoint Type
+
+Use the `type` parameter to filter logs by endpoint:
+
+```sh
+# Get only KV operations
+curl 'https://api.echovalue.dev/token/logs?type=kv' -H 'x-token: mytoken'
+
+# Get only webhook calls
+curl 'https://api.echovalue.dev/token/logs?type=webhook&n=10' -H 'x-token: mytoken'
+```
+
 <Tabs syncKey="lang">
 <TabItem label="cURL">
 
 ```sh
+# Get all logs (default 5)
 curl 'https://api.echovalue.dev/token/logs?n=5' \
+  -H 'x-token: mytoken'
+
+# Get only KV operations
+curl 'https://api.echovalue.dev/token/logs?type=kv' \
   -H 'x-token: mytoken'
 ```
 
@@ -88,6 +118,7 @@ curl 'https://api.echovalue.dev/token/logs?n=5' \
 <TabItem label="JavaScript">
 
 ```js
+// Get all logs
 fetch('https://api.echovalue.dev/token/logs?n=5', {
   headers: { 'x-token': 'mytoken' }
 })
@@ -98,6 +129,15 @@ fetch('https://api.echovalue.dev/token/logs?n=5', {
     console.log(`${l.timestamp} ${l.method} ${l.endpoint || l.path} status=${l.status_code} time=${l.response_time_ms}ms cost=${l.cost} balance=${l.balance} id=${l.id}`);
   });
 });
+
+// Get only KV logs
+fetch('https://api.echovalue.dev/token/logs?type=kv', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.json())
+.then(data => {
+  console.log(`Returned ${data.n} KV logs`);
+});
 ```
 
 </TabItem>
@@ -106,6 +146,7 @@ fetch('https://api.echovalue.dev/token/logs?n=5', {
 ```python
 import requests
 
+# Get all logs
 response = requests.get('https://api.echovalue.dev/token/logs',
   headers={'x-token': 'mytoken'},
   params={'n': 5}
@@ -114,6 +155,12 @@ data = response.json()
 print(f"Returned {data.get('n')} logs")
 for l in data.get('logs', []):
     print(f"{l.get('timestamp')} {l.get('method')} {l.get('endpoint') or l.get('path')} status={l.get('status_code')} time={l.get('response_time_ms')}ms cost={l.get('cost')} balance={l.get('balance')} id={l.get('id')}")
+
+# Get only webhook logs
+response = requests.get('https://api.echovalue.dev/token/logs',
+  headers={'x-token': 'mytoken'},
+  params={'type': 'webhook'}
+)
 ```
 
 </TabItem>
@@ -121,6 +168,7 @@ for l in data.get('logs', []):
 
 ```php
 <?php
+// Get all logs
 $ch = curl_init('https://api.echovalue.dev/token/logs?n=5');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -131,6 +179,13 @@ echo "Returned {$data['n']} logs\n";
 foreach ($data['logs'] as $l) {
   echo "{$l['timestamp']} {$l['method']} " . ($l['endpoint'] ?? $l['path']) . " status={$l['status_code']} time={$l['response_time_ms']}ms cost={$l['cost']} balance={$l['balance']} id={$l['id']}\n";
 }
+
+// Get only KV logs
+$ch = curl_init('https://api.echovalue.dev/token/logs?type=kv');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
 ?>
 ```
 
@@ -148,6 +203,7 @@ import (
 )
 
 func main() {
+    // Get all logs
     req, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/logs?n=5", nil)
     req.Header.Set("x-token", "mytoken")
 
@@ -167,6 +223,12 @@ func main() {
                 l["timestamp"], l["method"], l["endpoint"], l["status_code"], l["response_time_ms"], l["cost"], l["balance"], l["id"])
         }
     }
+
+    // Get only KV logs
+    req2, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/logs?type=kv", nil)
+    req2.Header.Set("x-token", "mytoken")
+    resp2, _ := client.Do(req2)
+    defer resp2.Body.Close()
 }
 ```
 
