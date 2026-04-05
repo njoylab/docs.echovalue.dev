@@ -9,6 +9,18 @@ This repository includes an AI agent skill that enables agents to execute EchoVa
 ✅ Manage tokens (generate, check balance, retrieve logs)  
 ✅ Share state between AI agents  
 
+## Compatible Agents
+
+This skill works with any AI agent that supports the skills convention:
+
+- ✅ **Claude Code** (Anthropic's terminal-based agent)
+- ✅ **Cursor** (AI-powered code editor)
+- ✅ **Aider** (AI pair programming tool)
+- ✅ **Continue** (Autopilot for VS Code/JetBrains)
+- ✅ **Any agent** using `~/.claude/skills/` directory
+
+All compatible agents follow the same skill directory convention: `~/.claude/skills/`
+
 ## Quick Install
 
 ```bash

@@ -2,6 +2,18 @@
 
 A functional skill that enables AI agents to execute EchoValue API operations on your behalf.
 
+## Compatibility
+
+This skill works with any AI agent that supports skills:
+
+- ✅ **Claude Code** (Anthropic's terminal-based agent)
+- ✅ **Cursor** (AI-powered code editor)
+- ✅ **Aider** (AI pair programming tool)
+- ✅ **Continue** (Autopilot for VS Code/JetBrains)
+- ✅ **Any agent** using `~/.claude/skills/` directory
+
+All compatible agents follow the same skill directory convention: `~/.claude/skills/`
+
 ## What This Skill Does
 
 This skill is **functional** - it doesn't just provide documentation, it can actually execute API operations:
