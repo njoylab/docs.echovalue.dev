@@ -1,0 +1,183 @@
+---
+title: Agent Shared State
+description: Give your AI agents shared state using the echoValue key-value API. Copy-paste examples for Python and TypeScript.
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Give your AI agents shared state. Copy, paste, run. Works with Claude, OpenAI, Gemini.
+
+## How it works
+
+1. **Define** — Register `save_state` and `read_state` as tools your LLM can call.
+2. **Handle** — When the LLM calls a tool, your handler sends the request to the echoValue API.
+3. **Share** — Any agent with the same token can read and write. Shared state, zero config.
+
+## Full example
+
+<Tabs syncKey="lang">
+<TabItem label="Python">
+```python
+# pip install anthropic requests
+
+import requests
+from anthropic import Anthropic
+
+# Get a free token: curl https://api.echovalue.dev/token -d 'token=new'
+TOKEN = "your-echovalue-token"
+BASE  = "https://api.echovalue.dev/kv"
+
+# 1. Define the tools
+tools = [
+    {
+        "name": "save_state",
+        "description": "Save a key-value pair to shared agent state",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "group": {"type": "string", "description": "Namespace / bucket"},
+                "key":   {"type": "string", "description": "Identifier"},
+                "value": {"type": "string", "description": "Data to store"},
+                "ttl":   {"type": "integer", "description": "Expiry in seconds"}
+            },
+            "required": ["group", "key", "value"]
+        }
+    },
+    {
+        "name": "read_state",
+        "description": "Read a value from shared agent state",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "group": {"type": "string", "description": "Namespace / bucket"},
+                "key":   {"type": "string", "description": "Identifier"}
+            },
+            "required": ["group", "key"]
+        }
+    }
+]
+
+# 2. Handle tool calls → echoValue API
+def run_tool(name, args):
+    headers = {"x-token": TOKEN}
+    if name == "save_state":
+        ttl = args.get("ttl", 86400)
+        r = requests.post(
+            f"{BASE}/{args['group']}/{args['key']}?ttl={ttl}",
+            data=args["value"], headers=headers)
+        return r.text
+    if name == "read_state":
+        r = requests.get(
+            f"{BASE}/{args['group']}/{args['key']}",
+            headers=headers)
+        return r.text
+
+# 3. Run the agent
+client = Anthropic()
+response = client.messages.create(
+    model="claude-sonnet-4-5",
+    max_tokens=1024,
+    tools=tools,
+    messages=[{"role": "user", "content": "Save status=done for the import pipeline"}]
+)
+
+# 4. Process tool calls from the response
+for block in response.content:
+    if block.type == "tool_use":
+        result = run_tool(block.name, block.input)
+        print(f"{block.name} → {result}")
+        # save_state → OK
+```
+</TabItem>
+<TabItem label="TypeScript">
+```typescript
+// npm install @anthropic-ai/sdk
+
+import Anthropic from "@anthropic-ai/sdk";
+
+// Get a free token: curl https://api.echovalue.dev/token -d 'token=new'
+const TOKEN = "your-echovalue-token";
+const BASE = "https://api.echovalue.dev/kv";
+
+// 1. Define the tools
+const tools: Anthropic.Tool[] = [
+  {
+    name: "save_state",
+    description: "Save a key-value pair to shared agent state",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        group: { type: "string", description: "Namespace / bucket" },
+        key:   { type: "string", description: "Identifier" },
+        value: { type: "string", description: "Data to store" },
+        ttl:   { type: "integer", description: "Expiry in seconds" },
+      },
+      required: ["group", "key", "value"],
+    },
+  },
+  {
+    name: "read_state",
+    description: "Read a value from shared agent state",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        group: { type: "string", description: "Namespace / bucket" },
+        key:   { type: "string", description: "Identifier" },
+      },
+      required: ["group", "key"],
+    },
+  },
+];
+
+// 2. Handle tool calls → echoValue API
+async function runTool(name: string, args: Record<string, any>) {
+  const headers = { "x-token": TOKEN };
+
+  if (name === "save_state") {
+    const ttl = args.ttl ?? 86400;
+    const res = await fetch(
+      `${BASE}/${args.group}/${args.key}?ttl=${ttl}`,
+      { method: "POST", body: args.value, headers }
+    );
+    return res.text();
+  }
+
+  if (name === "read_state") {
+    const res = await fetch(
+      `${BASE}/${args.group}/${args.key}`,
+      { headers }
+    );
+    return res.text();
+  }
+}
+
+// 3. Run the agent
+const client = new Anthropic();
+const response = await client.messages.create({
+  model: "claude-sonnet-4-5",
+  max_tokens: 1024,
+  tools,
+  messages: [{ role: "user", content: "Save status=done for the import pipeline" }],
+});
+
+// 4. Process tool calls from the response
+for (const block of response.content) {
+  if (block.type === "tool_use") {
+    const result = await runTool(block.name, block.input as Record<string, any>);
+    console.log(`${block.name} → ${result}`);
+    // save_state → OK
+  }
+}
+```
+</TabItem>
+</Tabs>
+
+:::note
+Operations cost 1 credit each. Get a free token with 100 credits — no registration required:
+
+```sh
+curl https://api.echovalue.dev/token -d 'token=new'
+```
+:::

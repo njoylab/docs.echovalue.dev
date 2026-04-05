@@ -1,0 +1,126 @@
+---
+title: "Mail2Webhook: Custom Format"
+description: Create custom webhook payload transformations using echoValue's template engine
+sidebar:
+  order: 11
+---
+
+When `format` is set to `custom`, you define your own JSON template with placeholders. echoValue fills in the values from the incoming email and sends the result to your webhook URL.
+
+---
+
+## Configure the Webhook
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://yourdomain.com/webhook",
+    "format": "custom",
+    "template": {
+      "subject": "{{subject}}",
+      "from": "{{from.name}} <{{from.email}}>",
+      "body": "{{text|html}}",
+      "attachments": "{{attachments[0].filename}}"
+    }
+  }'
+```
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `url` | string | Yes | Your webhook URL |
+| `format` | string | Yes | Must be `"custom"` |
+| `template` | object | Yes | JSON template with placeholders |
+| `options` | object | No | Not used for custom format |
+
+---
+
+## Template Placeholders
+
+Placeholders use `{{dot.notation}}` syntax and are resolved against the [webhook payload](/mail2webhook/payload).
+
+### Dot Notation
+
+Access nested fields with dots:
+
+```
+{{subject}}
+{{from.name}}
+{{from.email}}
+{{attachments[0].filename}}
+```
+
+### Array Index
+
+Access array items by index (0-based). Negative indices count from the end:
+
+```
+{{attachments[0].filename}}     — first attachment
+{{attachments[-1].filename}}    — last attachment
+```
+
+### Fallback Chain
+
+Use `|` to try multiple fields — the first non-empty value wins:
+
+```
+{{text|html}}           — use plain text, fall back to HTML
+{{from.name|from.email}} — use name, fall back to email
+```
+
+### Literal Fallback
+
+Use `|"value"` to provide a default when all fields are empty:
+
+```
+{{from.name|"unknown"}}
+{{text|"No body"}}
+```
+
+---
+
+## Example Templates
+
+### Simple notification
+
+```json
+{
+  "template": {
+    "text": "*{{subject}}*\nFrom: {{from.name}} <{{from.email}}>\n\n{{text|html}}"
+  }
+}
+```
+
+### Attachment alert
+
+```json
+{
+  "template": {
+    "subject": "{{subject}}",
+    "has_attachments": "{{attachments[0].filename|none}}",
+    "first_file": "{{attachments[0].filename|no attachments}}"
+  }
+}
+```
+
+### Minimal payload
+
+```json
+{
+  "template": {
+    "msg": "{{subject}} — {{from.name|\"unknown\"}}"
+  }
+}
+```
+
+---
+
+## Limits
+
+| Constraint | Value |
+| ---------- | ----- |
+| Max template size | 2048 bytes |
+| Max nesting depth | 5 levels |
+| Max keys in `options` | 10 |
+| Max value length in `options` | 500 chars |
