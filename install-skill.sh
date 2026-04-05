@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # EchoValue Skill Installer
-# Installs the EchoValue API skill for Claude and supporting files for other tools.
+# Installs the EchoValue API skill for Claude, Codex, and supporting files for other tools.
 
 set -euo pipefail
 
@@ -9,6 +9,7 @@ REPO_URL="https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main"
 CLAUDE_SKILL_DIR="$HOME/.claude/skills/echovalue"
 
 install_claude=false
+install_codex=false
 install_cursor=false
 install_continue=false
 workspace_dir=""
@@ -16,7 +17,7 @@ workspace_dir=""
 usage() {
     cat <<'EOF'
 Usage:
-  install-skill.sh [--claude] [--cursor] [--continue] [--all] [--workspace DIR]
+  install-skill.sh [--claude] [--codex] [--cursor] [--continue] [--all] [--workspace DIR]
 
 Defaults to --claude when no agent flags are supplied.
 
@@ -29,10 +30,12 @@ EOF
 while [ $# -gt 0 ]; do
     case "$1" in
         --claude) install_claude=true ;;
+        --codex) install_codex=true ;;
         --cursor) install_cursor=true ;;
         --continue) install_continue=true ;;
         --all)
             install_claude=true
+            install_codex=true
             install_cursor=true
             install_continue=true
             ;;
@@ -58,7 +61,7 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-if [ "$install_claude" = false ] && [ "$install_cursor" = false ] && [ "$install_continue" = false ]; then
+if [ "$install_claude" = false ] && [ "$install_codex" = false ] && [ "$install_cursor" = false ] && [ "$install_continue" = false ]; then
     install_claude=true
 fi
 
@@ -76,6 +79,15 @@ install_claude_skill() {
     download "$REPO_URL/skill/SKILL.md" "$CLAUDE_SKILL_DIR/SKILL.md"
     download "$REPO_URL/skill/quick-reference.md" "$CLAUDE_SKILL_DIR/quick-reference.md"
     echo "✅ Claude skill installed to $CLAUDE_SKILL_DIR"
+}
+
+install_codex_skill() {
+    local codex_skill_dir="$workspace_dir/.agents/skills/echovalue"
+    echo "🚀 Installing Codex skill..."
+    mkdir -p "$codex_skill_dir"
+    download "$REPO_URL/agent-config/codex/echovalue/SKILL.md" "$codex_skill_dir/SKILL.md"
+    download "$REPO_URL/skill/quick-reference.md" "$codex_skill_dir/quick-reference.md"
+    echo "✅ Codex skill installed to $codex_skill_dir"
 }
 
 install_cursor_rules() {
@@ -96,6 +108,10 @@ install_continue_rules() {
 
 if [ "$install_claude" = true ]; then
     install_claude_skill
+fi
+
+if [ "$install_codex" = true ]; then
+    install_codex_skill
 fi
 
 if [ "$install_cursor" = true ]; then

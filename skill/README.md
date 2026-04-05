@@ -4,7 +4,7 @@ This directory contains the Claude skill and the canonical reference files for E
 
 ## Install
 
-Use [`INSTALL.md`](../INSTALL.md) for the full install flow.
+Use [`INSTALL.md`](../INSTALL.md) for the full install flow, including Codex, ChatGPT, Cursor, and Continue.
 
 ## Files
 

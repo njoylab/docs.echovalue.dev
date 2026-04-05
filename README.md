@@ -35,7 +35,7 @@ docs/
 │       ├── response-headers.mdx
 │       ├── errors.mdx
 │       └── openapi.mdx
-├── agent-config/            # Workspace files for Cursor and Continue
+├── agent-config/            # Skill/config files for Codex, ChatGPT, Cursor, and Continue
 └── static/                   # Static assets (favicons, openapi.yaml)
 ```
 

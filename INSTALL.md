@@ -1,6 +1,6 @@
 # AI Agent Skill Installation
 
-This repository includes an AI agent skill plus local files for Cursor and Continue that let agents execute EchoValue API operations on your behalf.
+This repository includes an AI agent skill plus reusable skill files for Codex and ChatGPT, and local files for Cursor and Continue that let agents execute EchoValue API operations on your behalf.
 
 ## What This Skill Does
 
@@ -14,9 +14,11 @@ This repository includes an AI agent skill plus local files for Cursor and Conti
 This repository supports multiple agents through different installation paths:
 
 - ✅ **Claude Code** via `~/.claude/skills/echovalue/`
+- ✅ **Codex** via `.agents/skills/echovalue/`
+- ✅ **ChatGPT** via the Skills page upload/share flow
 - ✅ **Cursor** via `.cursor/rules/echovalue.mdc`
 - ✅ **Continue** via `.continue/rules/echovalue.md`
-Only Claude uses the shared skill directory convention. Cursor and Continue use local files in the current workspace.
+Only Claude uses the shared skill directory convention. Codex, Cursor, and Continue use local files in the current workspace. ChatGPT uses the Skills page UI.
 
 ## Quick Install
 
@@ -39,6 +41,22 @@ mkdir -p ~/.claude/skills/echovalue
 curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/skill/SKILL.md -o ~/.claude/skills/echovalue/SKILL.md
 curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/skill/quick-reference.md -o ~/.claude/skills/echovalue/quick-reference.md
 ```
+
+### Codex
+
+```bash
+mkdir -p .agents/skills/echovalue
+curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/agent-config/codex/echovalue/SKILL.md -o .agents/skills/echovalue/SKILL.md
+curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/skill/quick-reference.md -o .agents/skills/echovalue/quick-reference.md
+```
+
+### ChatGPT
+
+1. Open ChatGPT and go to your profile menu.
+2. Select `Skills`.
+3. Click `New skill` and choose `Upload from your computer`.
+4. Upload [`agent-config/chatgpt/echovalue/SKILL.md`](./agent-config/chatgpt/echovalue/SKILL.md).
+5. Optionally share it with your workspace from the Skills page.
 
 ### Cursor
 

@@ -114,6 +114,81 @@ components:
         hash:
           type: string
           description: SHA256 hash of the wallet token (used for identification in webhook payloads)
+        low_balance_threshold:
+          type: integer
+          description: Threshold for low balance notifications (0 = disabled)
+        low_balance_webhook:
+          type: string
+          description: Webhook URL to call when balance falls below threshold
+        low_balance_email:
+          type: string
+          description: Email address to notify when balance falls below threshold
+        low_balance_notified_at:
+          type: string
+          format: date-time
+          description: Timestamp of the last low balance notification
+
+    CustomerSettings:
+      type: object
+      properties:
+        low_balance_threshold:
+          type: integer
+          minimum: 0
+          description: Wallet balance threshold that triggers low balance notifications. Set to 0 to disable notifications.
+        low_balance_webhook:
+          $ref: "#/components/schemas/LowBalanceWebhookConfig"
+        low_balance_email:
+          type: string
+          format: email
+          description: Email address to receive low balance notifications.
+
+    LowBalanceWebhookConfig:
+      type: object
+      description: Webhook configuration for low balance notifications
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          description: HTTPS URL to receive webhook when balance falls below threshold. Must be a valid HTTPS URL.
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Optional custom headers to include in the webhook request
+        format:
+          type: string
+          enum: ["", "slack", "discord", "teams", "telegram", "custom"]
+          description: |
+            Native payload format for the webhook. When set, the payload is transformed:
+            - `slack` — `{"text": "..."}` format
+            - `discord` — `{"content": "..."}` format
+            - `teams` — `{"text": "..."}` Adaptive Card text
+            - `telegram` — `{"chat_id": "...", "text": "...", "parse_mode": "HTML"}` (requires `options.chat_id`)
+            - `custom` — user-defined JSON template with placeholders (requires `template` field)
+        template:
+          type: object
+          description: JSON template when `format` is `custom`. Supports `{{wallet}}`, `{{threshold}}`, `{{token_hash}}` placeholders.
+          additionalProperties: true
+        options:
+          type: object
+          additionalProperties:
+            type: string
+          description: Format-specific options (e.g., `chat_id` for Telegram)
+
+    LowBalancePayload:
+      type: object
+      description: Payload sent to the configured webhook when low balance is triggered
+      properties:
+        wallet:
+          type: integer
+          description: Current wallet balance
+        threshold:
+          type: integer
+          description: Configured threshold value
+        token_hash:
+          type: string
+          description: SHA256 hash of the wallet token for identification
 
     LogEntry:
       type: object
@@ -579,6 +654,79 @@ paths:
             X-Cost:
               schema:
                 type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+
+  /token/settings:
+    servers:
+      - url: https://api.echovalue.dev
+        description: Production - Consolidated API
+      - url: https://dev-api.echovalue.dev
+        description: Development - Consolidated API
+    get:
+      tags: [Token API]
+      summary: Get low balance settings
+      description: Returns the current low balance notification settings. Free endpoint.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      responses:
+        "200":
+          description: Low balance settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerSettings"
+          headers:
+            X-Cost:
+              schema:
+                type: integer
+                enum: [0]
+              description: Free endpoint (costs 0 tokens)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    put:
+      tags: [Token API]
+      summary: Update low balance settings
+      description: |
+        Configures low balance notifications. When wallet balance falls below the threshold,
+        a notification is sent to the configured webhook URL and/or email.
+        Notifications are sent at most once every 24 hours per wallet.
+        Costs 1 token.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerSettings"
+      responses:
+        "200":
+          description: Settings updated successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Wallet balance after this call
+            X-Cost:
+              schema:
+                type: integer
+                enum: [1]
+              description: Tokens consumed (1)
+        "400":
+          description: Invalid webhook URL (must be HTTPS) or invalid threshold value
         "401":
           $ref: "#/components/responses/Unauthorized"
         "402":

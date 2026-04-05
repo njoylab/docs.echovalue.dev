@@ -1,0 +1,25 @@
+---
+name: echovalue
+description: Use EchoValue to store shared state, configure webhooks, and manage token-backed key-value operations.
+---
+
+# EchoValue
+
+Use EchoValue when the user asks to store temporary state, configure email-to-webhook delivery, inspect token balance, or manage key-value entries.
+
+## Rules
+
+- Use `ECHOVALUE_TOKEN` from the environment when present.
+- Base URL: `https://api.echovalue.dev`
+- Key-value paths use `/kv/<bucket>/<key>`.
+- Webhooks use `/webhook`.
+- Token and logs use `/token` and `/token/logs`.
+- Keep responses concise and include balance changes when relevant.
+- Do not claim support for other agents unless the relevant files are installed.
+
+## Preferred behaviors
+
+- Ask for the token only if it is not already available.
+- Prefer the simplest API call that solves the request.
+- Mention limits and error codes when they matter to the task.
+- For state sharing between agents, use the key-value store and explain the bucket/key pattern.
