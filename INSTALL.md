@@ -1,6 +1,6 @@
 # AI Agent Skill Installation
 
-This repository includes an AI agent skill that enables agents to execute EchoValue API operations on your behalf.
+This repository includes an AI agent skill plus local files for Cursor and Continue that let agents execute EchoValue API operations on your behalf.
 
 ## What This Skill Does
 
@@ -11,15 +11,12 @@ This repository includes an AI agent skill that enables agents to execute EchoVa
 
 ## Compatible Agents
 
-This skill works with any AI agent that supports the skills convention:
+This repository supports multiple agents through different installation paths:
 
-- ✅ **Claude Code** (Anthropic's terminal-based agent)
-- ✅ **Cursor** (AI-powered code editor)
-- ✅ **Aider** (AI pair programming tool)
-- ✅ **Continue** (Autopilot for VS Code/JetBrains)
-- ✅ **Any agent** using `~/.claude/skills/` directory
-
-All compatible agents follow the same skill directory convention: `~/.claude/skills/`
+- ✅ **Claude Code** via `~/.claude/skills/echovalue/`
+- ✅ **Cursor** via `.cursor/rules/echovalue.mdc`
+- ✅ **Continue** via `.continue/rules/echovalue.md`
+Only Claude uses the shared skill directory convention. Cursor and Continue use local files in the current workspace.
 
 ## Quick Install
 
@@ -27,12 +24,34 @@ All compatible agents follow the same skill directory convention: `~/.claude/ski
 curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/install-skill.sh | bash
 ```
 
+To install the workspace files into the current workspace:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/install-skill.sh | bash -s -- --all --workspace .
+```
+
 ## Manual Install
+
+### Claude Code
 
 ```bash
 mkdir -p ~/.claude/skills/echovalue
 curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/skill/SKILL.md -o ~/.claude/skills/echovalue/SKILL.md
 curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/skill/quick-reference.md -o ~/.claude/skills/echovalue/quick-reference.md
+```
+
+### Cursor
+
+```bash
+mkdir -p .cursor/rules
+curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/agent-config/cursor/echovalue.mdc -o .cursor/rules/echovalue.mdc
+```
+
+### Continue
+
+```bash
+mkdir -p .continue/rules
+curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/agent-config/continue/echovalue.md -o .continue/rules/echovalue.md
 ```
 
 ## Setup
@@ -45,7 +64,7 @@ export ECHOVALUE_TOKEN="your-token-here"
 
 ## Usage
 
-Once installed, the skill activates automatically. Just ask:
+Once installed, ask the agent:
 
 - "Configure a Slack webhook for echoValue"
 - "Check my echoValue balance"

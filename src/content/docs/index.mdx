@@ -86,41 +86,9 @@ This documentation is available in machine-readable format for AI assistants:
 
 ### AI Agent Skill
 
-Install the echoValue skill to let your AI agent execute operations on your behalf:
+See [installation details](https://github.com/njoylab/docs.echovalue.dev/blob/main/INSTALL.md) for Claude, Cursor, and Continue setup.
 
-**Quick Install:**
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/install-skill.sh | bash
-```
-
-**Setup:**
-
-```sh
-export ECHOVALUE_TOKEN="your-token-here"
-```
-
-**What the skill can do:**
-
-- ✅ Configure webhooks (Slack, Discord, Teams, Telegram, PagerDuty)
-- ✅ Execute key-value operations (get/set/delete)
-- ✅ Manage tokens (check balance, view logs)
-- ✅ Share state between AI agents
-
-**Usage:**
-
-Once installed, just ask your agent:
-
-- "Configure a Slack webhook for echoValue"
-- "Check my echoValue balance"
-- "Store a value in echoValue"
-- "How do I share state between AI agents?"
-
-The skill activates automatically when you mention echoValue or related topics.
-
-:::note
-See [installation details](https://github.com/njoylab/docs.echovalue.dev/blob/main/INSTALL.md) for manual install and advanced setup.
-:::
+Claude loads the shared skill directory automatically. Cursor and Continue use local files in the workspace.
 
 ## Limits
 

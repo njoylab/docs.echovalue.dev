@@ -35,6 +35,7 @@ docs/
 │       ├── response-headers.mdx
 │       ├── errors.mdx
 │       └── openapi.mdx
+├── agent-config/            # Workspace files for Cursor and Continue
 └── static/                   # Static assets (favicons, openapi.yaml)
 ```
 

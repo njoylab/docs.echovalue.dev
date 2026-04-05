@@ -1,43 +1,115 @@
 #!/bin/bash
 
 # EchoValue Skill Installer
-# Installs the EchoValue API skill for AI agents
+# Installs the EchoValue API skill for Claude and supporting files for other tools.
 
-set -e
+set -euo pipefail
 
-REPO_URL="https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/skill"
-SKILL_DIR="$HOME/.claude/skills/echovalue"
+REPO_URL="https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main"
+CLAUDE_SKILL_DIR="$HOME/.claude/skills/echovalue"
 
-echo "🚀 Installing EchoValue API skill..."
+install_claude=false
+install_cursor=false
+install_continue=false
+workspace_dir=""
 
-# Create skill directory
-mkdir -p "$SKILL_DIR"
+usage() {
+    cat <<'EOF'
+Usage:
+  install-skill.sh [--claude] [--cursor] [--continue] [--all] [--workspace DIR]
 
-# Download skill files
-echo "📥 Downloading SKILL.md..."
-curl -fsSL "$REPO_URL/SKILL.md" -o "$SKILL_DIR/SKILL.md"
+Defaults to --claude when no agent flags are supplied.
 
-echo "📥 Downloading quick-reference.md..."
-curl -fsSL "$REPO_URL/quick-reference.md" -o "$SKILL_DIR/quick-reference.md"
+Examples:
+  curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/install-skill.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/install-skill.sh | bash -s -- --all --workspace .
+EOF
+}
 
-# Verify installation
-if [ -f "$SKILL_DIR/SKILL.md" ] && [ -f "$SKILL_DIR/quick-reference.md" ]; then
-    echo "✅ EchoValue API skill installed successfully!"
-    echo ""
-    echo "📁 Installed to: $SKILL_DIR"
-    echo ""
-    echo "🎯 Next steps:"
-    echo "   1. Set your token: export ECHOVALUE_TOKEN='your-token'"
-    echo "   2. Restart your AI agent session"
-    echo "   3. Use the skill: just ask about echoValue!"
-    echo ""
-    echo "💡 Example usage:"
-    echo "   'Configure a Slack webhook for echoValue'"
-    echo "   'Check my echoValue balance'"
-    echo "   'Store a value in echoValue'"
-    echo ""
-    echo "📖 Documentation: https://docs.echovalue.dev"
-else
-    echo "❌ Installation failed. Please check your internet connection and try again."
-    exit 1
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --claude) install_claude=true ;;
+        --cursor) install_cursor=true ;;
+        --continue) install_continue=true ;;
+        --all)
+            install_claude=true
+            install_cursor=true
+            install_continue=true
+            ;;
+        --workspace)
+            shift
+            workspace_dir="${1:-}"
+            if [ -z "$workspace_dir" ]; then
+                echo "Missing value for --workspace"
+                usage
+                exit 1
+            fi
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+if [ "$install_claude" = false ] && [ "$install_cursor" = false ] && [ "$install_continue" = false ]; then
+    install_claude=true
 fi
+
+if [ -z "$workspace_dir" ]; then
+    workspace_dir="$(pwd)"
+fi
+
+download() {
+    curl -fsSL "$1" -o "$2"
+}
+
+install_claude_skill() {
+    echo "🚀 Installing Claude skill..."
+    mkdir -p "$CLAUDE_SKILL_DIR"
+    download "$REPO_URL/skill/SKILL.md" "$CLAUDE_SKILL_DIR/SKILL.md"
+    download "$REPO_URL/skill/quick-reference.md" "$CLAUDE_SKILL_DIR/quick-reference.md"
+    echo "✅ Claude skill installed to $CLAUDE_SKILL_DIR"
+}
+
+install_cursor_rules() {
+    local cursor_dir="$workspace_dir/.cursor/rules"
+    echo "🚀 Installing Cursor rules..."
+    mkdir -p "$cursor_dir"
+    download "$REPO_URL/agent-config/cursor/echovalue.mdc" "$cursor_dir/echovalue.mdc"
+    echo "✅ Cursor rules installed to $cursor_dir/echovalue.mdc"
+}
+
+install_continue_rules() {
+    local continue_dir="$workspace_dir/.continue/rules"
+    echo "🚀 Installing Continue rules..."
+    mkdir -p "$continue_dir"
+    download "$REPO_URL/agent-config/continue/echovalue.md" "$continue_dir/echovalue.md"
+    echo "✅ Continue rules installed to $continue_dir/echovalue.md"
+}
+
+if [ "$install_claude" = true ]; then
+    install_claude_skill
+fi
+
+if [ "$install_cursor" = true ]; then
+    install_cursor_rules
+fi
+
+if [ "$install_continue" = true ]; then
+    install_continue_rules
+fi
+
+echo ""
+echo "🎯 Next steps:"
+echo "   1. Set your token: export ECHOVALUE_TOKEN='your-token'"
+echo "   2. Restart your agent or editor session"
+echo "   3. Use echoValue from the agent you installed"
+echo ""
+echo "📖 Documentation: https://docs.echovalue.dev"
