@@ -75,20 +75,56 @@ All operations consume credits from your wallet. New tokens include **100 free c
 | Email processed (no attachments) | 2 credits |
 | Email processed (with attachments) | 5 credits |
 
-## LLM Access
+## AI Integration
 
-This documentation is available in machine-readable format for AI assistants and LLMs:
+### Documentation for LLMs
+
+This documentation is available in machine-readable format for AI assistants:
 
 - [`/llms.txt`](https://docs.echovalue.dev/llms.txt) — index of all documentation pages
 - [`/llms-full.txt`](https://docs.echovalue.dev/llms-full.txt) — full documentation in a single file
+
+### AI Agent Skill
+
+Install the echoValue skill to let your AI agent execute operations on your behalf:
+
+**Quick Install:**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/njoylab/docs.echovalue.dev/main/install-skill.sh | bash
+```
+
+**Setup:**
+
+```sh
+export ECHOVALUE_TOKEN="your-token-here"
+```
+
+**What the skill can do:**
+
+- ✅ Configure webhooks (Slack, Discord, Teams, Telegram, PagerDuty)
+- ✅ Execute key-value operations (get/set/delete)
+- ✅ Manage tokens (check balance, view logs)
+- ✅ Share state between AI agents
+
+**Usage:**
+
+Once installed, just ask your agent:
+
+- "Configure a Slack webhook for echoValue"
+- "Check my echoValue balance"
+- "Store a value in echoValue"
+- "How do I share state between AI agents?"
+
+The skill activates automatically when you mention echoValue or related topics.
+
+:::note
+See [installation details](https://github.com/njoylab/docs.echovalue.dev/blob/main/INSTALL.md) for manual install and advanced setup.
+:::
 
 ## Limits
 
 | Constraint | Value |
 | ---------- | ----- |
-| Max key/group name length | 30 characters |
-| Max value length | 1000 characters (~1 KB) |
-| Max TTL | 2,592,000 seconds (30 days) |
-| Default TTL (if omitted) | 30 days |
 | Log retention | 7 days |
 | Token inactivity before deletion | 2 years |
