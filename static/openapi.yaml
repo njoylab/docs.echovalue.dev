@@ -8,7 +8,7 @@ info:
   version: "1.0.0"
   contact:
     name: EchoValue
-    url: https://docs.echovalue.dev
+    url: https://doc.echovalue.dev
 
 tags:
   - name: KV API
@@ -223,9 +223,9 @@ components:
         mailboxId:
           type: string
           description: Opaque mailbox identifier. Omit on create, include on update.
-        id:
+        name:
           type: string
-          description: Optional webhook label (e.g. `slack`, `myserver`). Defaults to `0` if omitted.
+          description: Human-friendly webhook name. Optional on create/update.
         url:
           type: string
           description: Callback URL to receive webhook events
@@ -271,9 +271,9 @@ components:
     WebhookResponse:
       type: object
       properties:
-        id:
+        name:
           type: string
-          description: Webhook identifier
+          description: Webhook name
         webhook:
           type: string
           description: Configured callback URL
@@ -547,6 +547,7 @@ paths:
           schema:
             type: integer
             minimum: 1
+            maximum: 100
             default: 5
           description: Number of log entries to return
         - name: type
@@ -563,17 +564,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LogsResponse"
-          headers:
-            X-Balance:
-              schema:
-                type: integer
-            X-Cost:
-              schema:
-                type: integer
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
 
   /token/settings:
     servers:

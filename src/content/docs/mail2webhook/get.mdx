@@ -104,7 +104,7 @@ func main() {
   "webhooks": [
     {
       "mailboxId": "r_abcd1234",
-      "id": "slack",
+      "name": "slack",
       "webhook": "https://hooks.slack.com/services/T00/B00/XXX",
       "headers": {},
       "format": "slack",
@@ -115,7 +115,7 @@ func main() {
     },
     {
       "mailboxId": "r_wxyz6789",
-      "id": "0",
+      "name": "0",
       "webhook": "https://yourdomain.com/webhook",
       "headers": { "Authorization": "<redacted>" },
       "options": {},
@@ -136,7 +136,7 @@ func main() {
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `mailboxId` | string | Opaque mailbox identifier used for update/delete/test operations |
-| `id` | string | Optional webhook label (e.g. `slack`, `0`) |
+| `name` | string | Webhook name (optional label) |
 | `webhook` | string | Your configured callback URL |
 | `headers` | object | Custom headers (values are redacted) |
 | `format` | string | Configured native format, if any (e.g. `slack`, `telegram`, `custom`) |
@@ -145,6 +145,15 @@ func main() {
 | `includeAttachments` | boolean | Whether attachments are included in webhook payload |
 | `email` | string | Opaque mailbox address that triggers this webhook (`<mailboxId>@hook.echovalue.dev`) |
 | `hash` | string | SHA256 hash of your token — use this to identify incoming payloads |
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Tokens consumed (1) |
+
+See [Response Headers](/response-headers) for details.
 
 | Status | Meaning |
 | ------ | ------- |

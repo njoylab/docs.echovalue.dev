@@ -134,6 +134,15 @@ On failure:
 | `success` | boolean | Whether the test webhook was successfully delivered |
 | `message` | string | Confirmation or error message |
 
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Tokens consumed (1) |
+
+See [Response Headers](/response-headers) for details.
+
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Test call processed |

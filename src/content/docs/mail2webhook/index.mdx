@@ -7,7 +7,7 @@ sidebar:
 
 The Mail2Webhook service assigns each webhook an opaque email address in the form `<mailboxId>@hook.echovalue.dev`. Emails sent to those addresses are forwarded as JSON POST requests to your configured webhook URLs.
 
-Each webhook has an opaque `mailboxId` used for management operations (`update`, `delete`, `test`). The `id` field is an optional label and defaults to `0` when omitted.
+Each webhook has an opaque `mailboxId` used for management operations (`update`, `delete`, `test`). The `name` field is an optional label for human-friendly identification.
 
 ## Native Format Support
 
@@ -20,6 +20,7 @@ Set `format` when configuring your webhook to have echoValue transform incoming 
 | `teams` | [Microsoft Teams](/mail2webhook-teams) |
 | `telegram` | [Telegram Bot API](/mail2webhook-telegram) |
 | `pagerduty` | [PagerDuty Events API v2](/mail2webhook-pagerduty) |
+| `custom` | [Custom JSON template](/mail2webhook-custom) |
 
 Without a `format`, the raw email payload is forwarded as-is (see [Webhook Payload](/mail2webhook/payload)).
 
