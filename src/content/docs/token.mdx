@@ -138,10 +138,6 @@ Returns remaining credits and token metadata.
 | `wallet` | integer | Remaining credit balance |
 | `created` | string (ISO 8601) | Date when the token was created |
 | `hash` | string | SHA256 hash of your token — use this in webhook payloads instead of the raw token |
-| `low_balance_threshold` | integer | Threshold for low balance notifications (0 = disabled) |
-| `low_balance_webhook` | string | Webhook URL for low balance alerts (if configured) |
-| `low_balance_email` | string | Email address for low balance alerts (if configured) |
-| `low_balance_notified_at` | string (ISO 8601) | Timestamp of the last low balance notification |
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">

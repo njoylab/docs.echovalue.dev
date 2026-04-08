@@ -8,7 +8,7 @@ info:
   version: "1.0.0"
   contact:
     name: EchoValue
-    url: https://doc.echovalue.dev
+    url: https://docs.echovalue.dev
 
 tags:
   - name: KV API
