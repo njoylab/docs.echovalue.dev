@@ -7,7 +7,7 @@ sidebar:
 
 The Mail2Webhook service assigns each webhook an opaque email address in the form `<mailboxId>@hook.echovalue.dev`. Emails sent to those addresses are forwarded as JSON POST requests to your configured webhook URLs.
 
-Each wallet supports multiple webhooks, identified by unique `id` values (default: `0`).
+Each webhook has an opaque `mailboxId` used for management operations (`update`, `delete`, `test`). The `id` field is an optional label and defaults to `0` when omitted.
 
 ## Native Format Support
 

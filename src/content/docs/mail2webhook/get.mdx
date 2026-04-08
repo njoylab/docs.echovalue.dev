@@ -103,6 +103,7 @@ func main() {
 {
   "webhooks": [
     {
+      "mailboxId": "r_abcd1234",
       "id": "slack",
       "webhook": "https://hooks.slack.com/services/T00/B00/XXX",
       "headers": {},
@@ -113,6 +114,7 @@ func main() {
       "hash": "a1b2c3d4e5f6..."
     },
     {
+      "mailboxId": "r_wxyz6789",
       "id": "0",
       "webhook": "https://yourdomain.com/webhook",
       "headers": { "Authorization": "<redacted>" },
@@ -133,7 +135,8 @@ func main() {
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `id` | string | Webhook identifier (e.g. `slack`, `0`) |
+| `mailboxId` | string | Opaque mailbox identifier used for update/delete/test operations |
+| `id` | string | Optional webhook label (e.g. `slack`, `0`) |
 | `webhook` | string | Your configured callback URL |
 | `headers` | object | Custom headers (values are redacted) |
 | `format` | string | Configured native format, if any (e.g. `slack`, `telegram`, `custom`) |

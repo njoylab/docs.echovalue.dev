@@ -138,6 +138,10 @@ Returns remaining credits and token metadata.
 | `wallet` | integer | Remaining credit balance |
 | `created` | string (ISO 8601) | Date when the token was created |
 | `hash` | string | SHA256 hash of your token — use this in webhook payloads instead of the raw token |
+| `low_balance_threshold` | integer | Threshold for low balance notifications (0 = disabled) |
+| `low_balance_webhook` | string | Webhook URL for low balance alerts (if configured) |
+| `low_balance_email` | string | Email address for low balance alerts (if configured) |
+| `low_balance_notified_at` | string (ISO 8601) | Timestamp of the last low balance notification |
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
@@ -321,4 +325,291 @@ Follow the returned URL to complete the payment.
 
 :::note
 The card transaction will appear as **nJoyLab** on your statement.
+:::
+
+---
+
+## Low Balance Settings
+
+Configure automatic notifications when your wallet balance falls below a threshold. Notifications are sent at most once every 24 hours per wallet.
+
+### Get Settings
+
+`GET https://api.echovalue.dev/token/settings`
+
+Returns the current low balance notification settings.
+
+**Request headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Response:** `200` — JSON object.
+
+```json
+{
+  "low_balance_threshold": 10,
+  "low_balance_webhook": {
+    "url": "https://yourdomain.com/alert",
+    "headers": {},
+    "format": "slack"
+  },
+  "low_balance_email": "alerts@example.com"
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `low_balance_threshold` | integer | Balance threshold that triggers notifications (0 = disabled) |
+| `low_balance_webhook` | object | Webhook configuration (see below) |
+| `low_balance_email` | string | Email address for notifications |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/token/settings' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/token/settings', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/token/settings',
+  headers={'x-token': 'mytoken'}
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/token/settings');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response, true));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/settings", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    body, _ := io.ReadAll(resp.Body)
+    var result map[string]interface{}
+    json.Unmarshal(body, &result)
+    fmt.Println(result)
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+**Cost:** Free (0 credits)
+:::
+
+### Update Settings
+
+`PUT https://api.echovalue.dev/token/settings`
+
+Configures low balance notifications.
+
+**Request headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `Content-Type` | Must be `application/json` |
+
+**Body** (`application/json`):
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `low_balance_threshold` | integer | Balance threshold that triggers notifications. Set to `0` to disable. | No |
+| `low_balance_webhook` | object | Webhook configuration (see below) | No |
+| `low_balance_email` | string | Email address to receive notifications | No |
+
+**Webhook configuration object:**
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `url` | string | HTTPS URL to receive the notification | Yes |
+| `headers` | object | Custom headers to include in the webhook request | No |
+| `format` | string | Native payload format: `slack`, `discord`, `teams`, `telegram`, `custom` | No |
+| `template` | object | JSON template when `format` is `custom`. Supports `{{wallet}}`, `{{threshold}}`, `{{token_hash}}` placeholders | No |
+| `options` | object | Format-specific options (e.g. `chat_id` for Telegram) | No |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/token/settings' \
+  -X PUT \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "low_balance_threshold": 10,
+    "low_balance_webhook": {
+      "url": "https://yourdomain.com/alert",
+      "format": "slack"
+    },
+    "low_balance_email": "alerts@example.com"
+  }'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/token/settings', {
+  method: 'PUT',
+  headers: {
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    low_balance_threshold: 10,
+    low_balance_webhook: {
+      url: 'https://yourdomain.com/alert',
+      format: 'slack'
+    },
+    low_balance_email: 'alerts@example.com'
+  })
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.put('https://api.echovalue.dev/token/settings',
+  headers={
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  json={
+    'low_balance_threshold': 10,
+    'low_balance_webhook': {
+      'url': 'https://yourdomain.com/alert',
+      'format': 'slack'
+    },
+    'low_balance_email': 'alerts@example.com'
+  }
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$data = json_encode([
+  'low_balance_threshold' => 10,
+  'low_balance_webhook' => [
+    'url' => 'https://yourdomain.com/alert',
+    'format' => 'slack'
+  ],
+  'low_balance_email' => 'alerts@example.com'
+]);
+$ch = curl_init('https://api.echovalue.dev/token/settings');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  'x-token: mytoken',
+  'Content-Type: application/json'
+]);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "net/http"
+)
+
+func main() {
+    payload := map[string]interface{}{
+        "low_balance_threshold": 10,
+        "low_balance_webhook": map[string]interface{}{
+            "url":    "https://yourdomain.com/alert",
+            "format": "slack",
+        },
+        "low_balance_email": "alerts@example.com",
+    }
+    jsonData, _ := json.Marshal(payload)
+
+    req, _ := http.NewRequest("PUT", "https://api.echovalue.dev/token/settings", bytes.NewBuffer(jsonData))
+    req.Header.Set("x-token", "mytoken")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
+
+**Response:** `200 OK`
+
+```
+OK
+```
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Settings updated |
+| `400` | Invalid webhook URL (must be HTTPS) or invalid threshold |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+
+:::note
+**Cost:** 1 credit
 :::

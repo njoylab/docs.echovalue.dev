@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `DELETE https://api.echovalue.dev/webhook`
 
-Removes a specific webhook from your wallet. If no `id` is provided, deletes the default webhook (`0`).
+Removes a specific webhook from your wallet using its `mailboxId`.
 
 :::note
 **Cost:** 1 credit
@@ -25,15 +25,15 @@ Removes a specific webhook from your wallet. If no `id` is provided, deletes the
 
 **Query parameters:**
 
-| Parameter | Type | Description | Default |
-| --------- | ---- | ----------- | ------- |
-| `id` | string | ID of the webhook to delete | `0` |
+| Parameter | Type | Description | Required |
+| --------- | ---- | ----------- | -------- |
+| `mailboxId` | string | Opaque mailbox identifier to delete | Yes |
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
 
 ```sh
-curl 'https://api.echovalue.dev/webhook?id=slack' \
+curl 'https://api.echovalue.dev/webhook?mailboxId=r_abcd1234' \
   -H 'x-token: mytoken' \
   -X DELETE
 ```
@@ -42,7 +42,7 @@ curl 'https://api.echovalue.dev/webhook?id=slack' \
 <TabItem label="JavaScript">
 
 ```js
-fetch('https://api.echovalue.dev/webhook?id=slack', {
+fetch('https://api.echovalue.dev/webhook?mailboxId=r_abcd1234', {
   method: 'DELETE',
   headers: { 'x-token': 'mytoken' }
 });
@@ -56,7 +56,7 @@ import requests
 
 requests.delete('https://api.echovalue.dev/webhook',
   headers={'x-token': 'mytoken'},
-  params={'id': 'slack'}
+  params={'mailboxId': 'r_abcd1234'}
 )
 ```
 
@@ -65,7 +65,7 @@ requests.delete('https://api.echovalue.dev/webhook',
 
 ```php
 <?php
-$ch = curl_init('https://api.echovalue.dev/webhook?id=slack');
+$ch = curl_init('https://api.echovalue.dev/webhook?mailboxId=r_abcd1234');
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_exec($ch);
@@ -82,7 +82,7 @@ package main
 import "net/http"
 
 func main() {
-    req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/webhook?id=slack", nil)
+    req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/webhook?mailboxId=r_abcd1234", nil)
     req.Header.Set("x-token", "mytoken")
 
     client := &http.Client{}

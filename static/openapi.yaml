@@ -8,7 +8,7 @@ info:
   version: "1.0.0"
   contact:
     name: EchoValue
-    url: https://doc.echovalue.dev
+    url: https://docs.echovalue.dev
 
 tags:
   - name: KV API
@@ -310,9 +310,12 @@ components:
       type: object
       required: [url]
       properties:
+        mailboxId:
+          type: string
+          description: Opaque mailbox identifier. Omit on create, include on update.
         id:
           type: string
-          description: Unique identifier for this webhook (e.g. `slack`, `myserver`). Defaults to `0` if omitted.
+          description: Optional webhook label (e.g. `slack`, `myserver`). Defaults to `0` if omitted.
         url:
           type: string
           description: Callback URL to receive webhook events
@@ -383,6 +386,9 @@ components:
         includeAttachments:
           type: boolean
           description: Whether attachments are included in webhook payload (true = include, false = stripped)
+        mailboxId:
+          type: string
+          description: Opaque mailbox identifier for management operations
         email:
           type: string
           description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev)
@@ -772,8 +778,7 @@ paths:
       tags: [Webhook API]
       summary: Create or update webhook
       description: |
-        Sets or updates a webhook for this wallet. Costs 1 token.
-        Multiple webhooks can be created using different IDs.
+        Creates a new webhook when `mailboxId` is omitted, or updates an existing mailbox-owned webhook when `mailboxId` is provided. Costs 1 token.
         URL must be HTTPS pointing to a public host.
       security:
         - TokenAuth: []
@@ -816,13 +821,12 @@ paths:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
-        - name: id
+        - name: mailboxId
           in: query
-          required: false
+          required: true
           schema:
             type: string
-            default: "0"
-          description: ID of the webhook to delete
+          description: Opaque mailbox identifier to delete
       responses:
         "200":
           description: Webhook deleted
@@ -861,13 +865,12 @@ paths:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
-        - name: id
+        - name: mailboxId
           in: query
-          required: false
+          required: true
           schema:
             type: string
-            default: "0"
-          description: ID of the webhook to test
+          description: Opaque mailbox identifier to test
       responses:
         "200":
           description: Test call processed (check `success` field for delivery status)

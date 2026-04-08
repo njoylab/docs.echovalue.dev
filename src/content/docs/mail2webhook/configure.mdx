@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `POST https://api.echovalue.dev/webhook`
 
-Creates or updates a webhook for your wallet (upsert). Multiple webhooks can be created using different `id` values.
+Creates a new webhook when `mailboxId` is omitted, or updates an existing mailbox-owned webhook when `mailboxId` is provided.
 
 :::note
 **Cost:** 1 credit
@@ -28,13 +28,16 @@ Creates or updates a webhook for your wallet (upsert). Multiple webhooks can be 
 
 | Field | Type | Description | Required |
 | ----- | ---- | ----------- | -------- |
-| `id` | string | Unique identifier for this webhook (e.g. `slack`, `myserver`). Defaults to `0` if omitted. | No |
+| `mailboxId` | string | Opaque mailbox identifier. Omit on create, include on update. | No |
+| `id` | string | Optional webhook label (e.g. `slack`, `myserver`). Defaults to `0` if omitted. | No |
 | `url` | string | Callback URL (must be HTTPS, publicly reachable) | Yes |
 | `headers` | object | Custom headers to include in the callback request | No |
 | `format` | string | Native message format: `slack`, `discord`, `teams`, `telegram`, `pagerduty`, `custom` | No |
 | `template` | object | JSON template for `custom` format. Supports placeholders like `{{subject}}`, `{{from.name}}`, `{{attachments[0].filename}}`, fallback chains `{{text\|html}}`, and literal fallbacks `{{sender\|"unknown"}}`. Max 2048 bytes, 5 nesting levels. | No |
 | `options` | object | Format-specific options (e.g. `chat_id` for Telegram, `routing_key` for PagerDuty). Max 10 keys, values up to 500 chars. | No |
 | `includeAttachments` | boolean | Include email attachments in webhook payload (default: `true`). If `false`, attachments are stripped from the payload. | No |
+
+Use `GET /webhook` to retrieve each webhook's `mailboxId` for update, delete, and test operations.
 
 For platform-specific setup guides see: [Slack](/mail2webhook-slack), [Discord](/mail2webhook-discord), [Teams](/mail2webhook-teams), [Telegram](/mail2webhook-telegram), [PagerDuty](/mail2webhook-pagerduty).
 
@@ -141,11 +144,34 @@ func main() {
 
 ## Response
 
-`200 OK`
+`200 OK` — JSON object.
 
+```json
+{
+  "id": "0",
+  "webhook": "https://hooks.slack.com/services/T00/B00/XXX",
+  "headers": {},
+  "format": "slack",
+  "options": {},
+  "includeAttachments": true,
+  "mailboxId": "r_abcd1234",
+  "email": "r_abcd1234@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
+}
 ```
-OK
-```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `id` | string | Webhook identifier |
+| `webhook` | string | Configured callback URL |
+| `headers` | object | Custom headers |
+| `format` | string | Native format, if configured (e.g. `slack`, `telegram`, `custom`) |
+| `template` | object | Custom template object (only present when format is `custom`) |
+| `options` | object | Format options (sensitive values are redacted) |
+| `includeAttachments` | boolean | Whether attachments are included in webhook payload |
+| `mailboxId` | string | Opaque mailbox identifier for management operations |
+| `email` | string | Opaque mailbox address (`<mailboxId>@hook.echovalue.dev`) |
+| `hash` | string | SHA256 hash of your token |
 
 | Status | Meaning |
 | ------ | ------- |

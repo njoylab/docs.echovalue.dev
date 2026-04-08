@@ -9,7 +9,7 @@ sidebar:
 
 It provides two main services:
 
-- **Key-Value Store** — persist and retrieve string data organized in named groups
+- **Key-Value Store** — persist and retrieve string data organized in named buckets
 - **Mail2Webhook** — receive emails at a dedicated address and forward them as JSON to your webhook
 
 :::caution
@@ -45,7 +45,7 @@ curl 'https://api.echovalue.dev/webhook' \
   -H 'x-token: YOUR_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{"url":"https://yourdomain.com/webhook"}'
-# → {"id":"0","webhook":"https://yourdomain.com/webhook","email":"r_abcd1234@hook.echovalue.dev",...}
+# → {"mailboxId":"r_abcd1234","id":"0","webhook":"https://yourdomain.com/webhook","email":"r_abcd1234@hook.echovalue.dev",...}
 # Emails sent to the returned mailbox address now POST to your URL
 ```
 
@@ -53,7 +53,7 @@ curl 'https://api.echovalue.dev/webhook' \
 
 | Service | Description |
 | ------- | ----------- |
-| **Key-Value Store** | Store, retrieve, and delete key-value pairs organized in groups |
+| **Key-Value Store** | Store, retrieve, and delete key-value pairs organized in buckets |
 | **Mail2Webhook** | Receive emails at an opaque mailbox address (`<mailboxId>@hook.echovalue.dev`) and forward them to your webhook |
 | **Logs** | Inspect your recent API call history |
 | **Token Management** | Check your credit balance and recharge |
@@ -72,6 +72,9 @@ All operations consume credits from your wallet. New tokens include **100 free c
 | Configure webhook | 1 credit |
 | Get webhook config | 1 credit |
 | Delete webhook | 1 credit |
+| Test webhook | 1 credit |
+| Check low balance settings | Free |
+| Update low balance settings | 1 credit |
 | Email processed (no attachments) | 2 credits |
 | Email processed (with attachments) | 5 credits |
 

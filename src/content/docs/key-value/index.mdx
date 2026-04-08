@@ -5,13 +5,13 @@ sidebar:
   order: 4
 ---
 
-The key-value store lets you persist string data organized in named groups. All operations require authentication via the `x-token` header.
+The key-value store lets you persist string data organized in named buckets. All operations require authentication via the `x-token` header.
 
-**Base URL:** `https://api.echovalue.dev/kv/<group>/<key>`
+**Base URL:** `https://api.echovalue.dev/kv/<bucket>/<key>`
 
 | URL Parameter | Description | Max length |
 | ------------- | ----------- | ---------- |
-| `group` | Logical namespace for keys (e.g. `default`) | 30 characters |
+| `bucket` | Logical namespace for keys (e.g. `default`) | 30 characters |
 | `key` | Key identifier | 30 characters |
 
 ## Pricing
@@ -26,7 +26,8 @@ The key-value store lets you persist string data organized in named groups. All 
 
 | Constraint | Value |
 | ---------- | ----- |
-| Max key/group name length | 30 characters |
+| Max key/bucket name length | 30 characters |
 | Max value length | 1000 characters (~1 KB) |
 | Max TTL | 2,592,000 seconds (30 days) |
 | Default TTL (if omitted) | 30 days |
+| Group naming | Cannot start with `reserved-` or end with `---` |

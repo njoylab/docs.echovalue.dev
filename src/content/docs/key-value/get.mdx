@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-`GET https://api.echovalue.dev/kv/<group>/<key>`
+`GET https://api.echovalue.dev/kv/<bucket>/<key>`
 
 Retrieves the stored value for a key.
 
@@ -105,6 +105,7 @@ hello world
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Value returned |
+| `400` | Invalid parameters |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
 | `404` | Key does not exist or has expired |

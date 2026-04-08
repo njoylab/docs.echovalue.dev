@@ -25,15 +25,15 @@ Sends a dummy email payload to the specified webhook URL to verify it is working
 
 **Query parameters:**
 
-| Parameter | Type | Description | Default |
-| --------- | ---- | ----------- | ------- |
-| `id` | string | ID of the webhook to test | `0` |
+| Parameter | Type | Description | Required |
+| --------- | ---- | ----------- | -------- |
+| `mailboxId` | string | Opaque mailbox identifier to test | Yes |
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
 
 ```sh
-curl 'https://api.echovalue.dev/webhook/test?id=slack' \
+curl 'https://api.echovalue.dev/webhook/test?mailboxId=r_abcd1234' \
   -H 'x-token: mytoken' \
   -X POST
 ```
@@ -42,7 +42,7 @@ curl 'https://api.echovalue.dev/webhook/test?id=slack' \
 <TabItem label="JavaScript">
 
 ```js
-fetch('https://api.echovalue.dev/webhook/test?id=slack', {
+fetch('https://api.echovalue.dev/webhook/test?mailboxId=r_abcd1234', {
   method: 'POST',
   headers: { 'x-token': 'mytoken' }
 })
@@ -58,7 +58,7 @@ import requests
 
 response = requests.post('https://api.echovalue.dev/webhook/test',
   headers={'x-token': 'mytoken'},
-  params={'id': 'slack'}
+  params={'mailboxId': 'r_abcd1234'}
 )
 print(response.json())
 ```
@@ -68,7 +68,7 @@ print(response.json())
 
 ```php
 <?php
-$ch = curl_init('https://api.echovalue.dev/webhook/test?id=slack');
+$ch = curl_init('https://api.echovalue.dev/webhook/test?mailboxId=r_abcd1234');
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -92,7 +92,7 @@ import (
 )
 
 func main() {
-    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/webhook/test?id=slack", nil)
+    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/webhook/test?mailboxId=r_abcd1234", nil)
     req.Header.Set("x-token", "mytoken")
 
     client := &http.Client{}
