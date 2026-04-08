@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-The Mail2Webhook service assigns each wallet dedicated email addresses at `<token>+<id>@hook.echovalue.dev`. Emails sent to those addresses are forwarded as JSON POST requests to your configured webhook URLs.
+The Mail2Webhook service assigns each webhook an opaque email address in the form `<mailboxId>@hook.echovalue.dev`. Emails sent to those addresses are forwarded as JSON POST requests to your configured webhook URLs.
 
 Each wallet supports multiple webhooks, identified by unique `id` values (default: `0`).
 

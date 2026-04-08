@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-When an email arrives at `<token>+<id>@hook.echovalue.dev`, echoValue sends a `POST` request to your webhook URL with this JSON body:
+When an email arrives at your opaque mailbox address (`<mailboxId>@hook.echovalue.dev`), echoValue sends a `POST` request to your webhook URL with this JSON body:
 
 ```json
 {
@@ -37,7 +37,7 @@ When an email arrives at `<token>+<id>@hook.echovalue.dev`, echoValue sends a `P
 | `externalMessageId` | string | Unique identifier for the email message |
 | `receivedAt` | string (ISO 8601) | When the email was received |
 | `from` | object | Sender: `email` and optional `name` |
-| `to` | object | Recipient: `hash` (SHA256 of your token) |
+| `to` | object | Recipient marker object with `hash` (SHA256 of your token) |
 | `cc` | array | CC recipients: each item has `email` and optional `name` |
 | `subject` | string | Email subject line |
 | `text` | string | Plain text body |
@@ -62,5 +62,5 @@ When an email arrives at `<token>+<id>@hook.echovalue.dev`, echoValue sends a `P
 :::
 
 :::note
-Use the `to.hash` field to verify that incoming webhook requests originate from echoValue without exposing your raw token.
+Use `to.hash` to map deliveries to your wallet identity without exposing the raw token.
 :::

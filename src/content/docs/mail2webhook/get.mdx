@@ -109,7 +109,7 @@ func main() {
       "format": "slack",
       "options": {},
       "includeAttachments": true,
-      "email": "mytoken+slack@hook.echovalue.dev",
+      "email": "r_abcd1234@hook.echovalue.dev",
       "hash": "a1b2c3d4e5f6..."
     },
     {
@@ -118,7 +118,7 @@ func main() {
       "headers": { "Authorization": "<redacted>" },
       "options": {},
       "includeAttachments": true,
-      "email": "mytoken@hook.echovalue.dev",
+      "email": "r_wxyz6789@hook.echovalue.dev",
       "hash": "a1b2c3d4e5f6..."
     }
   ]
@@ -140,7 +140,7 @@ func main() {
 | `template` | object | Custom template object (only present when format is `custom`) |
 | `options` | object | Format-specific options (sensitive values like `routing_key` are redacted as `***`) |
 | `includeAttachments` | boolean | Whether attachments are included in webhook payload |
-| `email` | string | The email address that triggers this webhook (`<token>+<id>@hook.echovalue.dev`) |
+| `email` | string | Opaque mailbox address that triggers this webhook (`<mailboxId>@hook.echovalue.dev`) |
 | `hash` | string | SHA256 hash of your token — use this to identify incoming payloads |
 
 | Status | Meaning |

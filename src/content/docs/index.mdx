@@ -45,8 +45,8 @@ curl 'https://api.echovalue.dev/webhook' \
   -H 'x-token: YOUR_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{"url":"https://yourdomain.com/webhook"}'
-# → OK
-# Emails sent to YOUR_TOKEN@hook.echovalue.dev now POST to your URL
+# → {"id":"0","webhook":"https://yourdomain.com/webhook","email":"r_abcd1234@hook.echovalue.dev",...}
+# Emails sent to the returned mailbox address now POST to your URL
 ```
 
 ## Services
@@ -54,7 +54,7 @@ curl 'https://api.echovalue.dev/webhook' \
 | Service | Description |
 | ------- | ----------- |
 | **Key-Value Store** | Store, retrieve, and delete key-value pairs organized in groups |
-| **Mail2Webhook** | Receive emails at `<token>@hook.echovalue.dev` and forward them to your webhook |
+| **Mail2Webhook** | Receive emails at an opaque mailbox address (`<mailboxId>@hook.echovalue.dev`) and forward them to your webhook |
 | **Logs** | Inspect your recent API call history |
 | **Token Management** | Check your credit balance and recharge |
 

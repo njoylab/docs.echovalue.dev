@@ -385,7 +385,7 @@ components:
           description: Whether attachments are included in webhook payload (true = include, false = stripped)
         email:
           type: string
-          description: Specific email address for this webhook (<token>+<id>@hook.echovalue.dev)
+          description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev)
         hash:
           type: string
           description: SHA256 hash of the wallet token
@@ -789,10 +789,9 @@ paths:
         "200":
           description: Webhook saved
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                example: "OK"
+                $ref: "#/components/schemas/WebhookResponse"
           headers:
             X-Balance:
               schema:
