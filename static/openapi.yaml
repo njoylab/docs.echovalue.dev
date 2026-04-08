@@ -8,7 +8,7 @@ info:
   version: "1.0.0"
   contact:
     name: EchoValue
-    url: https://docs.echovalue.dev
+    url: https://doc.echovalue.dev
 
 tags:
   - name: KV API
@@ -114,19 +114,6 @@ components:
         hash:
           type: string
           description: SHA256 hash of the wallet token (used for identification in webhook payloads)
-        low_balance_threshold:
-          type: integer
-          description: Threshold for low balance notifications (0 = disabled)
-        low_balance_webhook:
-          type: string
-          description: Webhook URL to call when balance falls below threshold
-        low_balance_email:
-          type: string
-          description: Email address to notify when balance falls below threshold
-        low_balance_notified_at:
-          type: string
-          format: date-time
-          description: Timestamp of the last low balance notification
 
     CustomerSettings:
       type: object
@@ -175,20 +162,6 @@ components:
           additionalProperties:
             type: string
           description: Format-specific options (e.g., `chat_id` for Telegram)
-
-    LowBalancePayload:
-      type: object
-      description: Payload sent to the configured webhook when low balance is triggered
-      properties:
-        wallet:
-          type: integer
-          description: Current wallet balance
-        threshold:
-          type: integer
-          description: Configured threshold value
-        token_hash:
-          type: string
-          description: SHA256 hash of the wallet token for identification
 
     LogEntry:
       type: object
@@ -242,69 +215,6 @@ components:
         message:
           type: string
           description: Confirmation message
-
-    TestWebhookPayload:
-      type: object
-      description: Dummy payload sent to your webhook during a test call
-      properties:
-        externalMessageId:
-          type: string
-          example: "test-msg-123"
-        receivedAt:
-          type: string
-          format: date-time
-          example: "2024-01-01T00:00:00Z"
-        from:
-          type: object
-          properties:
-            email:
-              type: string
-              example: "test@example.com"
-            name:
-              type: string
-              example: "Test User"
-        to:
-          type: object
-          properties:
-            hash:
-              type: string
-              description: SHA256 hash of your wallet token
-        cc:
-          type: array
-          description: CC recipients from the original email
-          items:
-            type: object
-            additionalProperties: true
-        subject:
-          type: string
-          example: "Test webhook"
-        text:
-          type: string
-          example: "This is a test message from echovalue.dev"
-        html:
-          type: string
-          example: "<p>This is a test message</p>"
-        attachments:
-          type: array
-          items:
-            type: object
-            properties:
-              filename:
-                type: string
-                example: "sample.pdf"
-              size:
-                type: integer
-                example: 14
-              contentType:
-                type: string
-                example: "application/pdf"
-              downloadUrl:
-                type: string
-                example: "https://pdfobject.com/pdf/sample.pdf"
-              downloadUrlExpiresAt:
-                type: string
-                format: date-time
-                description: Expiration time of the download URL (1 hour from test call)
 
     WebhookRequest:
       type: object
@@ -674,7 +584,7 @@ paths:
     get:
       tags: [Token API]
       summary: Get low balance settings
-      description: Returns the current low balance notification settings. Free endpoint.
+      description: Returns the current low balance notification settings. Costs 1 token.
       security:
         - TokenAuth: []
       parameters:
@@ -687,13 +597,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/CustomerSettings"
           headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Wallet balance after this call
             X-Cost:
               schema:
                 type: integer
-                enum: [0]
-              description: Free endpoint (costs 0 tokens)
+                enum: [1]
+              description: Costs 1 token
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
 
     put:
       tags: [Token API]
