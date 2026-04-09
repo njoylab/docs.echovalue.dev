@@ -3,12 +3,12 @@ info:
   title: EchoValue API
   description: |
     Serverless key-value storage and wallet management.
-    Each `api` call costs 1 wallet token. `token` info and log requests also cost tokens.
+    Each `api` call costs 1 wallet token. `token` info requests also cost tokens. Log requests are free.
     Empty wallets return **402 Payment Required**.
   version: "1.0.0"
   contact:
     name: EchoValue
-    url: https://doc.echovalue.dev
+    url: https://docs.echovalue.dev
 
 tags:
   - name: KV API
@@ -318,7 +318,7 @@ components:
     Unauthorized:
       description: Missing or invalid X-Token header (min 10 chars)
     PaymentRequired:
-      description: Wallet has 0 tokens. Recharge at https://doc.echovalue.dev/#wallet-recharge
+      description: Wallet has 0 tokens. Recharge at https://docs.echovalue.dev/#wallet-recharge
     NotFound:
       description: Key not found or expired
     BadRequest:

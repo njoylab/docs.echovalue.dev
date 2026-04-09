@@ -45,7 +45,7 @@ curl 'https://api.echovalue.dev/webhook' \
   -H 'x-token: YOUR_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{"url":"https://yourdomain.com/webhook"}'
-# → {"mailboxId":"r_abcd1234","id":"0","webhook":"https://yourdomain.com/webhook","email":"r_abcd1234@hook.echovalue.dev",...}
+# → {"mailboxId":"r_abcd1234","webhook":"https://yourdomain.com/webhook","email":"r_abcd1234@hook.echovalue.dev",...}
 # Emails sent to the returned mailbox address now POST to your URL
 ```
 
