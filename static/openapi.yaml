@@ -145,13 +145,14 @@ components:
           description: Optional custom headers to include in the webhook request
         format:
           type: string
-          enum: ["", "slack", "discord", "teams", "telegram", "custom"]
+          enum: ["", "slack", "discord", "teams", "telegram", "pagerduty", "custom"]
           description: |
             Native payload format for the webhook. When set, the payload is transformed:
             - `slack` — `{"text": "..."}` format
             - `discord` — `{"content": "..."}` format
             - `teams` — `{"text": "..."}` Adaptive Card text
             - `telegram` — `{"chat_id": "...", "text": "...", "parse_mode": "HTML"}` (requires `options.chat_id`)
+            - `pagerduty` — Events API v2 trigger payload (requires `options.routing_key`)
             - `custom` — user-defined JSON template with placeholders (requires `template` field)
         template:
           type: object
@@ -161,7 +162,7 @@ components:
           type: object
           additionalProperties:
             type: string
-          description: Format-specific options (e.g., `chat_id` for Telegram)
+          description: Format-specific options (e.g., `chat_id` for Telegram, `routing_key` for PagerDuty)
 
     LogEntry:
       type: object
@@ -609,7 +610,7 @@ paths:
       description: |
         Configures low balance notifications. When wallet balance falls below the threshold,
         a notification is sent to the configured webhook URL and/or email.
-        Notifications are sent at most once every 24 hours per wallet.
+        Notifications are sent at most once per low-balance incident (i.e. the cooldown resets when the balance rises back above the threshold).
         Costs 1 token.
       security:
         - TokenAuth: []

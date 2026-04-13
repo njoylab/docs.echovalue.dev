@@ -341,7 +341,7 @@ The card transaction will appear as **nJoyLab** on your statement.
 
 ## Low Balance Settings
 
-Configure automatic notifications when your wallet balance falls below a threshold. Notifications are sent at most once every 24 hours per wallet.
+Configure automatic notifications when your wallet balance falls below a threshold. Notifications are sent at most once per low-balance incident — the cooldown resets when your balance rises back above the threshold.
 
 ### Get Settings
 
@@ -491,9 +491,9 @@ Configures low balance notifications.
 | ----- | ---- | ----------- | -------- |
 | `url` | string | HTTPS URL to receive the notification | Yes |
 | `headers` | object | Custom headers to include in the webhook request | No |
-| `format` | string | Native payload format: `slack`, `discord`, `teams`, `telegram`, `custom` | No |
+| `format` | string | Native payload format: `slack`, `discord`, `teams`, `telegram`, `pagerduty`, `custom` | No |
 | `template` | object | JSON template when `format` is `custom`. Supports `{{wallet}}`, `{{threshold}}`, `{{token_hash}}` placeholders | No |
-| `options` | object | Format-specific options (e.g. `chat_id` for Telegram) | No |
+| `options` | object | Format-specific options (e.g. `chat_id` for Telegram, `routing_key` for PagerDuty) | No |
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
