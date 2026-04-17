@@ -217,16 +217,13 @@ components:
           type: string
           description: Confirmation message
 
-    WebhookRequest:
+    WebhookCreateReplaceRequest:
       type: object
       required: [url]
       properties:
-        mailboxId:
-          type: string
-          description: Opaque mailbox identifier. Omit on create, include on update.
         name:
           type: string
-          description: Human-friendly webhook name. Optional on create/update.
+          description: Human-friendly webhook name.
         url:
           type: string
           description: Callback URL to receive webhook events
@@ -268,6 +265,42 @@ components:
           type: boolean
           default: true
           description: Whether to include email attachments in the webhook payload. If false, attachments are stripped from the payload. When email contains attachments, costs 5 tokens; without attachments costs 2 tokens.
+      additionalProperties: false
+
+    WebhookPatchRequest:
+      type: object
+      description: |
+        Partial update payload for `PATCH /webhook/{mailboxId}`.
+        Only provided fields are updated.
+        `headers`, `options`, and `template` replace the full field value (no deep merge).
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        headers:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string
+          description: Set `{}` to clear all headers.
+        format:
+          type: string
+          enum: ["", "slack", "discord", "teams", "telegram", "pagerduty", "custom"]
+        template:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Set `null` to remove template.
+        options:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string
+          description: Set `{}` to clear all options.
+        includeAttachments:
+          type: boolean
+      additionalProperties: false
 
     WebhookResponse:
       type: object
@@ -685,9 +718,10 @@ paths:
 
     post:
       tags: [Webhook API]
-      summary: Create or update webhook
+      summary: Create webhook
       description: |
-        Creates a new webhook when `mailboxId` is omitted, or updates an existing mailbox-owned webhook when `mailboxId` is provided. Costs 1 token.
+        Creates a new webhook. Costs 1 token.
+        `mailboxId` in request body is not allowed.
         URL must be HTTPS pointing to a public host.
       security:
         - TokenAuth: []
@@ -698,10 +732,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WebhookRequest"
+              $ref: "#/components/schemas/WebhookCreateReplaceRequest"
       responses:
         "200":
-          description: Webhook saved
+          description: Webhook created
           content:
             application/json:
               schema:
@@ -722,6 +756,106 @@ paths:
         "500":
           description: Internal server error
 
+  /webhook/{mailboxId}:
+    servers:
+      - url: https://api.echovalue.dev
+        description: Production - Consolidated API
+      - url: https://dev-api.echovalue.dev
+        description: Development - Consolidated API
+    put:
+      tags: [Webhook API]
+      summary: Replace webhook
+      description: |
+        Replaces the full webhook document for the specified mailbox. Costs 1 token.
+        `url` is required. `mailboxId` in request body is not allowed.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Opaque mailbox identifier to replace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookCreateReplaceRequest"
+      responses:
+        "200":
+          description: Webhook replaced
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          description: Webhook not found
+        "500":
+          description: Internal server error
+
+    patch:
+      tags: [Webhook API]
+      summary: Patch webhook
+      description: |
+        Updates only provided fields on a webhook. Costs 1 token.
+        `mailboxId` in request body is not allowed.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+        - name: mailboxId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Opaque mailbox identifier to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookPatchRequest"
+      responses:
+        "200":
+          description: Webhook updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          description: Webhook not found
+        "500":
+          description: Internal server error
+
     delete:
       tags: [Webhook API]
       summary: Delete webhook
@@ -731,7 +865,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
         - name: mailboxId
-          in: query
+          in: path
           required: true
           schema:
             type: string
