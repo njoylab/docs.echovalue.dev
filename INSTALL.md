@@ -1,6 +1,6 @@
 # AI Agent Skill Installation
 
-This repository includes an AI agent skill plus reusable skill files for Codex and ChatGPT, and local files for Cursor and Continue that let agents execute EchoValue API operations on your behalf.
+This repository includes shared skill assets plus agent-specific files for Claude Code, Codex, ChatGPT, Cursor, and Continue so those tools can execute EchoValue API operations on your behalf.
 
 ## What This Skill Does
 
@@ -92,5 +92,7 @@ Once installed, ask the agent:
 ## More Information
 
 - [Skill README](./skill/README.md) - Detailed usage guide
-- [EchoValue Documentation](https://docs.echovalue.dev) -Full API docs
-- [LLM-optimized docs](https://docs.echovalue.dev/llms-small.txt) - For AI consumption
+- [EchoValue Documentation](https://docs.echovalue.dev) - Full API docs
+- [LLMs index](https://docs.echovalue.dev/llms.txt) - Machine-readable doc entrypoint
+- [LLMs abridged docs](https://docs.echovalue.dev/llms-small.txt) - Compact version for agent context windows
+- [LLMs full docs](https://docs.echovalue.dev/llms-full.txt) - Complete machine-readable documentation

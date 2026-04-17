@@ -22,6 +22,8 @@ npm run preview   # preview production build
 ```
 docs/
 ├── astro.config.mjs          # Astro + Starlight configuration
+├── INSTALL.md                # Agent skill installation guide
+├── install-skill.sh          # Installer for local agent/workspace files
 ├── src/
 │   ├── assets/               # Processed assets (logo)
 │   ├── content.config.ts     # Content collection schema
@@ -29,15 +31,34 @@ docs/
 │       ├── index.mdx
 │       ├── authentication.mdx
 │       ├── token.mdx
-│       ├── key-value.mdx
-│       ├── mail2webhook.mdx
 │       ├── logs.mdx
 │       ├── response-headers.mdx
 │       ├── errors.mdx
-│       └── openapi.mdx
-├── agent-config/            # Skill/config files for Codex, ChatGPT, Cursor, and Continue
+│       ├── openapi.mdx
+│       ├── key-value/
+│       │   ├── index.mdx
+│       │   ├── set.mdx
+│       │   ├── get.mdx
+│       │   ├── delete.mdx
+│       │   └── agent-state.mdx
+│       └── mail2webhook/
+│           ├── index.mdx
+│           ├── configure.mdx
+│           ├── get.mdx
+│           ├── delete.mdx
+│           ├── test.mdx
+│           └── payload.mdx
+├── skill/                    # Shared skill assets and quick reference
+├── agent-config/             # Agent-specific files for Codex, ChatGPT, Cursor, and Continue
 └── static/                   # Static assets (favicons, openapi.yaml)
 ```
+
+## AI Resources
+
+- **Install Guide**: [INSTALL.md](https://github.com/njoylab/docs.echovalue.dev/blob/main/INSTALL.md)
+- **LLMs Index**: [docs.echovalue.dev/llms.txt](https://docs.echovalue.dev/llms.txt)
+- **LLMs Abridged**: [docs.echovalue.dev/llms-small.txt](https://docs.echovalue.dev/llms-small.txt)
+- **LLMs Full**: [docs.echovalue.dev/llms-full.txt](https://docs.echovalue.dev/llms-full.txt)
 
 ## Links
 
