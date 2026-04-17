@@ -84,7 +84,7 @@ func main() {
 
 ## Response Headers
 
-Every API response includes these headers:
+Paid API endpoints document these headers:
 
 | Header | Description |
 | ------ | ----------- |
@@ -92,7 +92,7 @@ Every API response includes these headers:
 | `x-balance` | Credits remaining in your wallet after this request |
 
 :::note
-Use `x-balance` to monitor your credit balance — it's available on every response at no extra cost, making it more efficient than calling the balance endpoint separately.
+Use `x-balance` to monitor your credit balance on paid endpoints instead of calling `GET /token` separately.
 :::
 
 ## Error Responses

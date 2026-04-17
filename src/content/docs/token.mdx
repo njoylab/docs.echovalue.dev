@@ -106,10 +106,6 @@ func main() {
 New tokens include **100 free credits**.
 :::
 
-:::note
-**Rate limit:** 1 request every 10 seconds.
-:::
-
 :::caution
 Tokens unused for two years are automatically deactivated and all associated data is deleted.
 :::
@@ -229,7 +225,7 @@ func main() {
 </Tabs>
 
 :::note
-**Cost:** 1 credit. For ongoing balance monitoring, use the `x-balance` response header instead — it's available on every request at no extra cost.
+**Cost:** 1 credit. For ongoing balance monitoring, use the `x-balance` response header on paid endpoints instead of calling this endpoint separately.
 :::
 
 ---

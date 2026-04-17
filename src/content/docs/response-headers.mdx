@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Every API response includes these headers:
+The OpenAPI specification defines these headers on wallet-consuming endpoints:
 
 | Header | Type | Description |
 | ------ | ---- | ----------- |
@@ -15,7 +15,7 @@ Every API response includes these headers:
 | `x-balance` | integer | Credits remaining in your wallet after this request |
 
 :::note
-`x-balance` is the most efficient way to monitor your balance — it's included on every response at no extra cost, so you don't need to call the balance endpoint separately.
+Use `x-balance` to monitor your balance on paid endpoints instead of calling `GET /token` separately.
 :::
 
 ## Reading Headers

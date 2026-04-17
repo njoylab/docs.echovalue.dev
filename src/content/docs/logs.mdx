@@ -20,7 +20,7 @@ You can filter logs by endpoint type using the `type` parameter.
 | Type | Description |
 | ---- | ----------- |
 | `kv` | Key-value operations (`GET`, `POST`, `DELETE` on `/kv/*`) |
-| `webhook` | Webhook calls (`/webhook/call`) |
+| `webhook` | Webhook management and test calls |
 | `token` | Wallet info requests (`GET /token`) |
 | `service` | Recharge operations |
 
@@ -45,7 +45,7 @@ You can filter logs by endpoint type using the `type` parameter.
     {
       "id": "jd9kImh8U4In3odfNeKf",
       "method": "GET",
-      "path": "/default/mykey",
+      "path": "/kv/default/mykey",
       "endpoint": "kv",
       "status_code": 200,
       "response_time_ms": 513,

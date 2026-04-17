@@ -1,15 +1,23 @@
 ---
 title: Configure Webhook
-description: Create or update a webhook URL for your echoValue wallet
+description: Create, replace, or patch a webhook URL for your echoValue wallet
 sidebar:
   order: 1
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
+Use `POST /webhook` to create a webhook, `PUT /webhook/<mailboxId>` to replace one, and `PATCH /webhook/<mailboxId>` to update only selected fields.
+
+Use `GET /webhook` to retrieve each webhook's `mailboxId` for replace, patch, delete, and test operations.
+
+For platform-specific setup guides see: [Slack](/mail2webhook-slack), [Discord](/mail2webhook-discord), [Teams](/mail2webhook-teams), [Telegram](/mail2webhook-telegram), [PagerDuty](/mail2webhook-pagerduty).
+
+## Create Webhook
+
 `POST https://api.echovalue.dev/webhook`
 
-Creates a new webhook when `mailboxId` is omitted, or updates an existing mailbox-owned webhook when `mailboxId` is provided.
+Creates a new webhook.
 
 :::note
 **Cost:** 1 credit
@@ -28,8 +36,7 @@ Creates a new webhook when `mailboxId` is omitted, or updates an existing mailbo
 
 | Field | Type | Description | Required |
 | ----- | ---- | ----------- | -------- |
-| `mailboxId` | string | Opaque mailbox identifier. Omit on create, include on update. | No |
-| `name` | string | Human-friendly webhook name. Optional on create/update. | No |
+| `name` | string | Human-friendly webhook name. | No |
 | `url` | string | Callback URL (must be HTTPS, publicly reachable) | Yes |
 | `headers` | object | Custom headers to include in the callback request | No |
 | `format` | string | Native message format: `slack`, `discord`, `teams`, `telegram`, `pagerduty`, `custom` | No |
@@ -37,9 +44,7 @@ Creates a new webhook when `mailboxId` is omitted, or updates an existing mailbo
 | `options` | object | Format-specific options (e.g. `chat_id` for Telegram, `routing_key` for PagerDuty). Max 10 keys, values up to 500 chars. | No |
 | `includeAttachments` | boolean | Include email attachments in webhook payload (default: `true`). If `false`, attachments are stripped from the payload. When email contains attachments, costs 5 tokens; without attachments costs 2 tokens. | No |
 
-Use `GET /webhook` to retrieve each webhook's `mailboxId` for update, delete, and test operations.
-
-For platform-specific setup guides see: [Slack](/mail2webhook-slack), [Discord](/mail2webhook-discord), [Teams](/mail2webhook-teams), [Telegram](/mail2webhook-telegram), [PagerDuty](/mail2webhook-pagerduty).
+`mailboxId` is not allowed in the create request body.
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
@@ -184,10 +189,82 @@ See [Response Headers](/response-headers) for details.
 
 | Status | Meaning |
 | ------ | ------- |
-| `200` | Webhook saved |
+| `200` | Webhook created |
 | `400` | Invalid URL or malformed request |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
+| `500` | Internal server error |
+
+## Replace Existing Webhook
+
+`PUT https://api.echovalue.dev/webhook/<mailboxId>`
+
+Replaces the full webhook document for the specified mailbox. `url` is required.
+
+`mailboxId` is a path parameter and is not allowed in the request body.
+
+```sh
+curl 'https://api.echovalue.dev/webhook/r_abcd1234' \
+  -X PUT \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "slack-prod",
+    "url": "https://hooks.slack.com/services/T00/B00/XXX",
+    "format": "slack",
+    "includeAttachments": false
+  }'
+```
+
+Response body and response headers are the same as create.
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook replaced |
+| `400` | Invalid URL or malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Webhook not found |
+| `500` | Internal server error |
+
+## Patch Existing Webhook
+
+`PATCH https://api.echovalue.dev/webhook/<mailboxId>`
+
+Updates only the fields you provide.
+
+`mailboxId` is a path parameter and is not allowed in the request body.
+
+**Patch semantics:**
+
+| Field | Behavior |
+| ----- | -------- |
+| `name`, `url`, `format`, `includeAttachments` | Replaced when provided |
+| `headers` | Replaces the full headers object. Use `{}` to clear it. |
+| `options` | Replaces the full options object. Use `{}` to clear it. |
+| `template` | Replaces the template. Use `null` to remove it. |
+
+```sh
+curl 'https://api.echovalue.dev/webhook/r_abcd1234' \
+  -X PATCH \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "headers": {},
+    "includeAttachments": false
+  }'
+```
+
+Response body and response headers are the same as create.
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook updated |
+| `400` | Invalid URL or malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Webhook not found |
+| `500` | Internal server error |
 
 :::caution
 The webhook URL must be HTTPS and publicly reachable. Localhost and private IP addresses are not accepted.
