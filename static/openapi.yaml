@@ -100,6 +100,14 @@ components:
         minimum: 1
       description: Number of tokens to add
 
+    ServiceHash:
+      name: hash
+      in: query
+      required: false
+      schema:
+        type: string
+      description: SHA256 hash of the wallet ID. Use instead of `token` when the caller should not know the raw wallet ID.
+
   schemas:
     WalletInfo:
       type: object
@@ -536,7 +544,7 @@ paths:
     get:
       tags: [Token API]
       summary: Get recharge link
-      description: returns a Stripe checkout link
+      description: Returns a Stripe checkout link with the wallet hash in `client_reference_id`.
       security:
         - TokenAuth: []
       parameters:
