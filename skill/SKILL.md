@@ -13,6 +13,7 @@ Activate automatically when the user:
 - Asks to configure webhooks for email (Slack, Discord, Teams, Telegram, PagerDuty, custom)
 - Wants to store/retrieve temporary data without backend setup
 - Wants to inspect the caller public IP address or geo metadata
+- Wants to analyze a public URL and extract metadata or summaries
 
 ## Token Management
 
@@ -190,6 +191,23 @@ curl -s 'https://api.echovalue.dev/myip' \
 ```
 
 This returns the caller IP plus geo metadata such as country, region, city, timezone, and whether the current request used IPv6.
+
+### Use Case 6: URL Metadata Extraction
+
+When user wants to inspect a public page and extract metadata or a summary:
+
+```bash
+curl -s 'https://api.echovalue.dev/url-to-metadata' \
+  -H "x-token: $ECHOVALUE_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://example.com/article",
+    "aiSummary": "short",
+    "summaryLanguage": "en"
+  }'
+```
+
+Use this for public URL inspection, metadata extraction, and optional AI summaries. Mention that the response schema is flexible and upstream-driven.
 
 ## API Operations Reference
 

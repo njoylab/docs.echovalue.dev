@@ -8,6 +8,7 @@ Token:      https://api.echovalue.dev/token
 Logs:       https://api.echovalue.dev/token/logs
 Recharge:   https://api.echovalue.dev/recharge
 My IP:      https://api.echovalue.dev/myip
+Metadata:   https://api.echovalue.dev/url-to-metadata
 ```
 
 ## Authentication
@@ -115,6 +116,21 @@ curl -s 'https://api.echovalue.dev/myip' \
 # Response: {"ip":"203.0.113.42","country":"IT","city":"Rome",...}
 ```
 
+## URL To Metadata
+
+### Analyze A Public URL
+```bash
+curl -s 'https://api.echovalue.dev/url-to-metadata' \
+  -H "x-token: $ECHOVALUE_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://example.com/article",
+    "aiSummary": "short",
+    "summaryLanguage": "en"
+  }'
+# Response: {"title":"...","summary":"...",...}
+```
+
 ## Pricing
 
 | Operation | Cost |
@@ -122,6 +138,7 @@ curl -s 'https://api.echovalue.dev/myip' \
 | Generate token | Free (100 credits included) |
 | Check balance | 1 credit |
 | Get caller IP | 1 credit |
+| URL metadata analysis | 55 credits base, 800 credits with AI summary enrichment |
 | Key-Value ops (get/set/delete) | 1 credit each |
 | Webhook config (set/get/delete/test) | 1 credit each |
 | Email processed (no attachments) | 2 credits |

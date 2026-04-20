@@ -1,0 +1,205 @@
+---
+title: URL To Metadata
+description: Fetch URL metadata and optional summaries through the echoValue URL To Metadata API
+sidebar:
+  order: 6
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`POST https://api.echovalue.dev/url-to-metadata`
+
+Fetches metadata for a public URL by proxying your request to the configured upstream scraper service.
+
+:::note
+**Cost:** `55` credits for the base scrape. `aiSummary: short|medium|long` enables AI enrichment and costs `800` credits. Malformed requests and upstream non-`5xx` failures consume `1` credit. Upstream `5xx` responses consume `0` credits.
+:::
+
+The request is authenticated with `x-token`, logged by echoValue, and forwarded upstream with `proxy=false` forced by the backend even if you send a different value.
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `content-type` | Must be `application/json` |
+
+**Body:**
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `url` | string | Yes | Public URL to analyze |
+| `language` | string | No | Optional source-language hint forwarded upstream |
+| `ignoreRobots` | boolean | No | Ignore `robots` restrictions when supported upstream |
+| `ignoreExternalLinks` | boolean | No | Skip external link extraction |
+| `ignoreInternalLinks` | boolean | No | Skip internal link extraction |
+| `aiSummary` | string | No | AI enrichment level: `none`, `short`, `medium`, or `long`. `none` is the default |
+| `summaryLanguage` | string | No | Optional output language hint for generated summaries |
+
+Additional fields may be forwarded upstream. If you send `proxy`, the backend overrides it to `false`.
+
+**Examples:**
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/url-to-metadata' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://example.com/article",
+    "aiSummary": "short",
+    "summaryLanguage": "en"
+  }'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/url-to-metadata', {
+  method: 'POST',
+  headers: {
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    url: 'https://example.com/article',
+    aiSummary: 'short',
+    summaryLanguage: 'en'
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.post(
+    'https://api.echovalue.dev/url-to-metadata',
+    headers={
+        'x-token': 'mytoken',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'url': 'https://example.com/article',
+        'aiSummary': 'short',
+        'summaryLanguage': 'en'
+    }
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/url-to-metadata');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  'x-token: mytoken',
+  'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+  'url' => 'https://example.com/article',
+  'aiSummary' => 'short',
+  'summaryLanguage' => 'en'
+]));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response, true));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    payload := map[string]interface{}{
+        "url":             "https://example.com/article",
+        "aiSummary":       "short",
+        "summaryLanguage": "en",
+    }
+
+    body, _ := json.Marshal(payload)
+    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/url-to-metadata", bytes.NewReader(body))
+    req.Header.Set("x-token", "mytoken")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    responseBody, _ := io.ReadAll(resp.Body)
+    fmt.Println(string(responseBody))
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response
+
+`200 OK` returns the JSON payload produced by the upstream scraper.
+
+```json
+{
+  "url": "https://example.com/article",
+  "title": "Example article",
+  "description": "Short page description",
+  "summary": "Short generated summary",
+  "keyFacts": [
+    "First fact",
+    "Second fact"
+  ]
+}
+```
+
+The response shape is intentionally flexible. echoValue returns the upstream JSON as-is, so fields may vary depending on the target URL and the options you send.
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Credits consumed for this request |
+
+See [Response Headers](/response-headers/) for details.
+
+## Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Metadata returned successfully |
+| `400` | Invalid request body or upstream validation error |
+| `401` | Invalid token |
+| `402` | Wallet has insufficient credits |
+| `405` | Method not allowed |
+| `500` | Upstream scraper returned an internal error response |
+| `502` | Upstream scraper unavailable |
+| `503` | Scraper unavailable or not configured |
+
+## Notes
+
+- The target URL must be publicly reachable by the upstream scraper.
+- This endpoint is best suited for metadata extraction, link analysis, and optional summary generation over public pages.

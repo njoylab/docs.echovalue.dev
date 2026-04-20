@@ -12,7 +12,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Returns a list of recent API calls made with your token. Logs have a TTL of 7 days and are deleted within 24 hours after expiration.
 
 :::note
-**Cost:** free. By default the API returns 5 logs when `n` is not provided. The maximum number of logs you can request in a single call is 100.
+**Cost:** free. By default the API returns 5 logs when `n` is not provided. The maximum number of logs you can request in a single call is 100. The current OpenAPI file declares an `x-cost` response header on `200`, but the operation is still documented as free.
 :::
 
 You can filter logs by endpoint type using the `type` parameter.
@@ -24,8 +24,11 @@ You can filter logs by endpoint type using the `type` parameter.
 | Type | Description |
 | ---- | ----------- |
 | `kv` | Key-value operations (`GET`, `POST`, `DELETE` on `/kv/*`) |
-| `webhook` | Webhook management and test calls |
 | `token` | Wallet info requests (`GET /token`) |
+| `settings` | Low-balance settings reads and updates |
+| `webhook` | Webhook management and test calls |
+| `url-to-metadata` | URL metadata and scraping requests |
+| `myip` | Caller IP lookup requests |
 | `service` | Recharge operations |
 
 **Request headers:**
@@ -39,7 +42,7 @@ You can filter logs by endpoint type using the `type` parameter.
 | Parameter | Type | Description | Default |
 | --------- | ---- | ----------- | ------- |
 | `n` | integer | Number of log entries to retrieve. Min: `1`. Default: `5`. | `5` |
-| `type` | string | Filter logs by endpoint type. Values: `kv`, `webhook`, `token`, `service`. If omitted, returns all logs. | — |
+| `type` | string | Optional endpoint filter forwarded to log storage. Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`, `myip`, and `service`. | — |
 
 ## Response
 
@@ -78,7 +81,7 @@ You can filter logs by endpoint type using the `type` parameter.
 | `id` | string | Unique log entry ID |
 | `method` | string | HTTP method used (`GET`, `POST`, `DELETE`) |
 | `path` | string | Full request path including query parameters |
-| `endpoint` | string | API category (`kv`, `token`, `webhook`) |
+| `endpoint` | string | API category such as `kv`, `token`, `settings`, `webhook`, `url-to-metadata`, `myip`, or `service` |
 | `status_code` | integer | HTTP status code returned by the request |
 | `response_time_ms` | integer | Response time in milliseconds for the request |
 | `error` | string | Error message, if any (omitted on success) |
@@ -93,6 +96,12 @@ You can filter logs by endpoint type using the `type` parameter.
 | ------ | ------- |
 | `200` | Logs returned |
 | `401` | Invalid token |
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-cost` | Present in the current OpenAPI file for `200` responses, despite the endpoint being free |
 
 ## Examples
 

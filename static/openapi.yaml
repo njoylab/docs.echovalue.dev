@@ -1,30 +1,31 @@
-openapi: "3.0.3"
+openapi: 3.0.3
 info:
   title: EchoValue API
-  description: |
-    Serverless key-value storage and wallet management.
-    Each `api` call costs 1 wallet token. `token` info requests also cost tokens. Log requests are free.
+  description: 'Serverless key-value storage and wallet management.
+
+    Each `api` call costs 1 wallet token. `token` info requests also cost tokens.
+    Log requests are free.
+
     Empty wallets return **402 Payment Required**.
-  version: "1.0.0"
+
+    '
+  version: 1.0.0
   contact:
     name: EchoValue
     url: https://docs.echovalue.dev
-
 tags:
-  - name: KV API
-    description: Read/write/delete key-value entries (each call costs 1 token)
-  - name: Token API
-    description: Wallet creation, balance, logs, and recharge links
-  - name: Webhook API
-    description: Manage multiple webhooks per wallet (each call costs 1 token)
-  - name: Webhook Test API
-    description: Test your configured webhook with a dummy payload (costs 1 token)
-  - name: URL To Metadata API
-    description: Proxy URL summary requests to the configured AWS Lambda scraper
-  - name: My IP API
-    description: Return the caller IP and geo headers (costs 1 token)
-    description: Internal admin operations for charging wallets and writing logs
-
+- name: KV API
+  description: Read/write/delete key-value entries (each call costs 1 token)
+- name: Token API
+  description: Wallet creation, balance, logs, and recharge links
+- name: Webhook API
+  description: Manage multiple webhooks per wallet (each call costs 1 token)
+- name: Webhook Test API
+  description: Test your configured webhook with a dummy payload (costs 1 token)
+- name: URL To Metadata API
+  description: Proxy URL summary requests to the configured AWS Lambda scraper
+- name: My IP API
+  description: Return the caller IP and geo headers (costs 1 token)
 components:
   securitySchemes:
     TokenAuth:
@@ -32,7 +33,22 @@ components:
       in: header
       name: X-Token
       description: Wallet ID (minimum 10 characters)
+  headers:
+    XBalance:
+      description: Wallet balance after the request, when the endpoint emits balance
+        headers.
+      schema:
+        type: integer
+        example: 42
+    XCost:
+      description: 'Tokens charged for the request, when the endpoint emits cost headers.
 
+        For free endpoints such as `GET /token/logs`, this value is `0`.
+
+        '
+      schema:
+        type: integer
+        example: 1
   parameters:
     TokenHeader:
       name: X-Token
@@ -42,23 +58,22 @@ components:
         type: string
         minLength: 10
       description: Wallet ID
-
     ServiceAuthHeader:
       name: X-Service-Key
       in: header
       required: true
       schema:
         type: string
-      description: Shared secret for internal service-to-service calls, matched against SERVICE_AUTH_KEY (single key or comma-separated list)
-
+      description: Shared secret for internal service-to-service calls, matched against
+        SERVICE_AUTH_KEY (single key or comma-separated list)
     MailboxSecretHeader:
       name: X-Mailbox-Secret
       in: header
       required: true
       schema:
         type: string
-      description: Shared secret for call endpoint, matched against MAILBOX_SECRET (single key or comma-separated list)
-
+      description: Shared secret for call endpoint, matched against MAILBOX_SECRET
+        (single key or comma-separated list)
     Bucket:
       name: bucket
       in: path
@@ -67,7 +82,6 @@ components:
         type: string
         maxLength: 30
       description: Bucket name (cannot start with `reserved-` or end with `---`)
-
     Key:
       name: key
       in: path
@@ -76,7 +90,13 @@ components:
         type: string
         maxLength: 30
       description: Key name
-
+    WebhookId:
+      name: webhookId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Public webhook identifier
     TTL:
       name: ttl
       in: query
@@ -87,7 +107,6 @@ components:
         maximum: 2592000
         default: 2592000
       description: Time-to-live in seconds (0 or missing = max 30 days)
-
     ServiceToken:
       name: token
       in: query
@@ -95,7 +114,6 @@ components:
       schema:
         type: string
       description: Wallet ID
-
     RechargeValue:
       name: value
       in: query
@@ -104,15 +122,14 @@ components:
         type: integer
         minimum: 1
       description: Number of tokens to add
-
     ServiceHash:
       name: hash
       in: query
       required: false
       schema:
         type: string
-      description: SHA256 hash of the wallet ID. Use instead of `token` when the caller should not know the raw wallet ID.
-
+      description: SHA256 hash of the wallet ID. Use instead of `token` when the caller
+        should not know the raw wallet ID.
   schemas:
     MyIPInfo:
       type: object
@@ -148,37 +165,77 @@ components:
           type: string
         postalCode:
           type: string
-
     SummaryRequest:
       type: object
-      required: [url]
+      description: 'Request forwarded to the upstream URL metadata scraper after local
+        charging and logging.
+
+        Known public fields are documented below. Additional fields may be forwarded
+        upstream.
+
+        If `proxy` is supplied by the client, the backend overrides it to `false`.
+
+        '
+      required:
+      - url
+      additionalProperties: true
       properties:
         url:
           type: string
           format: uri
+          description: Absolute URL to analyze.
+          example: https://example.com/articles/launch
         language:
           type: string
+          description: Optional source-language hint forwarded upstream.
+          example: en
         ignoreRobots:
           type: boolean
+          description: Optional upstream flag to ignore robots directives.
+          example: false
         ignoreExternalLinks:
           type: boolean
-        ignoreInteralLinks:
-          type: boolean
-        generateSummary:
-          type: boolean
-        summaryLength:
+          description: Optional upstream flag to skip crawling external links.
+          example: true
+        aiSummary:
           type: string
-          enum: [short, medium, long]
-        extractKeyFacts:
-          type: boolean
+          enum:
+          - none
+          - short
+          - medium
+          - long
+          default: none
+          description: 'Controls AI enrichment level.
+
+            `none` disables AI summary generation and key-fact extraction.
+
+            `short`, `medium`, and `long` enable both and request an approximate summary
+            length of 50, 150, and 300 words respectively.
+
+            '
+          example: none
         summaryLanguage:
           type: string
-
+          description: Optional output language hint for generated summaries.
+          example: en
+      example:
+        url: https://example.com/articles/launch
+        aiSummary: none
+        ignoreExternalLinks: true
     SummaryResponse:
       type: object
-      description: Opaque upstream payload returned by the AWS Lambda scraper.
-      additionalProperties: true
+      description: 'Opaque upstream payload returned by the AWS Lambda scraper.
 
+        Response shape is not fixed by this API and may vary with the upstream scraper
+        configuration.
+
+        '
+      additionalProperties: true
+      example:
+        success: true
+        url: https://example.com/articles/launch
+        title: Example article
+        summary: Short generated summary
     WalletInfo:
       type: object
       properties:
@@ -191,31 +248,33 @@ components:
           description: Wallet creation timestamp
         hash:
           type: string
-          description: SHA256 hash of the wallet token (used for identification in webhook payloads)
-
+          description: SHA256 hash of the wallet token (used for identification in
+            webhook payloads)
     CustomerSettings:
       type: object
       properties:
         low_balance_threshold:
           type: integer
           minimum: 0
-          description: Wallet balance threshold that triggers low balance notifications. Set to 0 to disable notifications.
+          description: Wallet balance threshold that triggers low balance notifications.
+            Set to 0 to disable notifications.
         low_balance_webhook:
-          $ref: "#/components/schemas/LowBalanceWebhookConfig"
+          $ref: '#/components/schemas/LowBalanceWebhookConfig'
         low_balance_email:
           type: string
           format: email
           description: Email address to receive low balance notifications.
-
     LowBalanceWebhookConfig:
       type: object
       description: Webhook configuration for low balance notifications
-      required: [url]
+      required:
+      - url
       properties:
         url:
           type: string
           format: uri
-          description: HTTPS URL to receive webhook when balance falls below threshold. Must be a valid HTTPS URL.
+          description: HTTPS URL to receive webhook when balance falls below threshold.
+            Must be a valid HTTPS URL.
         headers:
           type: object
           additionalProperties:
@@ -223,25 +282,33 @@ components:
           description: Optional custom headers to include in the webhook request
         format:
           type: string
-          enum: ["", "slack", "discord", "teams", "telegram", "pagerduty", "custom"]
-          description: |
-            Native payload format for the webhook. When set, the payload is transformed:
-            - `slack` — `{"text": "..."}` format
-            - `discord` — `{"content": "..."}` format
-            - `teams` — `{"text": "..."}` Adaptive Card text
-            - `telegram` — `{"chat_id": "...", "text": "...", "parse_mode": "HTML"}` (requires `options.chat_id`)
-            - `pagerduty` — Events API v2 trigger payload (requires `options.routing_key`)
-            - `custom` — user-defined JSON template with placeholders (requires `template` field)
+          enum:
+          - ''
+          - slack
+          - discord
+          - teams
+          - telegram
+          - pagerduty
+          - custom
+          description: "Native payload format for the webhook. When set, the payload\
+            \ is transformed:\n- `slack` \u2014 `{\"text\": \"...\"}` format\n- `discord`\
+            \ \u2014 `{\"content\": \"...\"}` format\n- `teams` \u2014 `{\"text\"\
+            : \"...\"}` Adaptive Card text\n- `telegram` \u2014 `{\"chat_id\": \"\
+            ...\", \"text\": \"...\", \"parse_mode\": \"HTML\"}` (requires `options.chat_id`)\n\
+            - `pagerduty` \u2014 Events API v2 trigger payload (requires `options.routing_key`)\n\
+            - `custom` \u2014 user-defined JSON template with placeholders (requires\
+            \ `template` field)\n"
         template:
           type: object
-          description: JSON template when `format` is `custom`. Supports `{{wallet}}`, `{{threshold}}`, `{{token_hash}}` placeholders.
+          description: JSON template when `format` is `custom`. Supports `{{wallet}}`,
+            `{{threshold}}`, `{{token_hash}}` placeholders.
           additionalProperties: true
         options:
           type: object
           additionalProperties:
             type: string
-          description: Format-specific options (e.g., `chat_id` for Telegram, `routing_key` for PagerDuty)
-
+          description: Format-specific options (e.g., `chat_id` for Telegram, `routing_key`
+            for PagerDuty)
     LogEntry:
       type: object
       properties:
@@ -254,7 +321,7 @@ components:
           description: Full request path including query parameters
         endpoint:
           type: string
-          description: API category (e.g. `kv`, `token`, `webhook`, `service`, `manage`)
+          description: API category (e.g. `kv`, `token`, `webhook`, `service`)
         status_code:
           type: integer
           description: HTTP response status code
@@ -273,18 +340,79 @@ components:
           type: integer
         balance:
           type: integer
-
     LogsResponse:
       type: object
       properties:
         logs:
           type: array
           items:
-            $ref: "#/components/schemas/LogEntry"
+            $ref: '#/components/schemas/LogEntry'
         n:
           type: integer
           description: Number of log entries returned
-
+    CallInboundPayload:
+      type: object
+      required:
+      - to
+      properties:
+        externalMessageId:
+          type: string
+          description: Message identifier from the inbound mail provider
+        receivedAt:
+          type: string
+          description: ISO-8601 timestamp when the message was received
+        from:
+          type: object
+          description: Sender information
+          additionalProperties: true
+        to:
+          type: array
+          description: Recipient list from the inbound mail provider
+          items:
+            type: object
+            required:
+            - email
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+        cc:
+          type: array
+          description: CC recipients from the inbound mail provider
+          items:
+            type: object
+            additionalProperties: true
+        subject:
+          type: string
+        text:
+          type: string
+        html:
+          type: string
+        headers:
+          type: object
+          additionalProperties: true
+        attachments:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        url:
+          type: string
+        provider:
+          type: string
+        raw:
+          type: object
+          additionalProperties: true
+    CallResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Whether the webhook was successfully called
+        message:
+          type: string
+          description: The target address
     TestResponse:
       type: object
       properties:
@@ -294,14 +422,15 @@ components:
         message:
           type: string
           description: Confirmation message
-
     WebhookCreateReplaceRequest:
       type: object
-      required: [url]
+      required:
+      - url
       properties:
         webhookId:
           type: string
-          description: Public webhook identifier used for management endpoints. Defaults to `default` when omitted.
+          description: Public webhook identifier used for management endpoints. Defaults
+            to `default` when omitted.
         url:
           type: string
           description: Callback URL to receive webhook events
@@ -312,45 +441,65 @@ components:
           description: Optional custom headers to include in the callback request
         format:
           type: string
-          enum: ["", "slack", "discord", "teams", "telegram", "pagerduty", "custom"]
-          description: |
-            Native payload format. When set, the webhook body is transformed into the platform's native message format instead of forwarding the raw email payload.
-            - `slack` — `{"text": "..."}` with bold subject and From
-            - `discord` — `{"content": "..."}` with bold subject and From
-            - `teams` — `{"text": "..."}` Adaptive Card text
-            - `telegram` — `{"chat_id": "...", "text": "...", "parse_mode": "HTML"}` (requires `options.chat_id`)
-            - `pagerduty` — Events API v2 trigger payload (requires `options.routing_key`)
-            - `custom` — user-defined JSON template with placeholders (requires `template` field)
+          enum:
+          - ''
+          - slack
+          - discord
+          - teams
+          - telegram
+          - pagerduty
+          - custom
+          description: "Native payload format. When set, the webhook body is transformed\
+            \ into the platform's native message format instead of forwarding the\
+            \ raw email payload.\n- `slack` \u2014 `{\"text\": \"...\"}` with bold\
+            \ subject and From\n- `discord` \u2014 `{\"content\": \"...\"}` with bold\
+            \ subject and From\n- `teams` \u2014 `{\"text\": \"...\"}` Adaptive Card\
+            \ text\n- `telegram` \u2014 `{\"chat_id\": \"...\", \"text\": \"...\"\
+            , \"parse_mode\": \"HTML\"}` (requires `options.chat_id`)\n- `pagerduty`\
+            \ \u2014 Events API v2 trigger payload (requires `options.routing_key`)\n\
+            - `custom` \u2014 user-defined JSON template with placeholders (requires\
+            \ `template` field)\n"
         template:
           type: object
-          description: |
-            JSON template used when `format` is `custom`. Supports placeholders:
+          description: 'JSON template used when `format` is `custom`. Supports placeholders:
+
             - Dot notation: `{{from.name}}`, `{{subject}}`
-            - Array index: `{{attachments[0].filename}}`, `{{attachments[-1].filename}}` (negative = from end)
+
+            - Array index: `{{attachments[0].filename}}`, `{{attachments[-1].filename}}`
+            (negative = from end)
+
             - Fallback chain: `{{text|html}}` (first non-empty wins)
+
             - Literal fallback: `{{sender|"unknown"}}`
+
             Max 2048 bytes, max 5 nesting levels.
+
+            '
           additionalProperties: true
         options:
           type: object
           additionalProperties:
             type: string
-          description: |
-            Format-specific options (max 10 keys, values up to 500 chars each).
-            - `chat_id` — required for `telegram` format
-            - `routing_key` — required for `pagerduty` format
+          description: "Format-specific options (max 10 keys, values up to 500 chars\
+            \ each).\n- `chat_id` \u2014 required for `telegram` format\n- `routing_key`\
+            \ \u2014 required for `pagerduty` format\n"
         includeAttachments:
           type: boolean
           default: true
-          description: Whether to include email attachments in the webhook payload. If false, attachments are stripped from the payload. When email contains attachments, costs 5 tokens; without attachments costs 2 tokens.
+          description: Whether to include email attachments in the webhook payload.
+            If false, attachments are stripped from the payload. When email contains
+            attachments, costs 5 tokens; without attachments costs 2 tokens.
       additionalProperties: false
-
     WebhookPatchRequest:
       type: object
-      description: |
-        Partial update payload for `PATCH /webhook/{webhookId}`.
+      description: 'Partial update payload for `PATCH /webhook/{webhookId}`.
+
         Only provided fields are updated.
-        `headers`, `options`, and `template` replace the full field value (no deep merge).
+
+        `headers`, `options`, and `template` replace the full field value (no deep
+        merge).
+
+        '
       properties:
         url:
           type: string
@@ -362,7 +511,14 @@ components:
           description: Set `{}` to clear all headers.
         format:
           type: string
-          enum: ["", "slack", "discord", "teams", "telegram", "pagerduty", "custom"]
+          enum:
+          - ''
+          - slack
+          - discord
+          - teams
+          - telegram
+          - pagerduty
+          - custom
         template:
           type: object
           nullable: true
@@ -377,7 +533,6 @@ components:
         includeAttachments:
           type: boolean
       additionalProperties: false
-
     WebhookResponse:
       type: object
       properties:
@@ -405,50 +560,49 @@ components:
           description: Format options with sensitive values redacted
         includeAttachments:
           type: boolean
-          description: Whether attachments are included in webhook payload (true = include, false = stripped)
+          description: Whether attachments are included in webhook payload (true =
+            include, false = stripped)
         email:
           type: string
           description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev)
         hash:
           type: string
           description: SHA256 hash of the wallet token
-
     WebhookListResponse:
       type: object
       properties:
         webhooks:
           type: array
           items:
-            $ref: "#/components/schemas/WebhookResponse"
-
+            $ref: '#/components/schemas/WebhookResponse'
   responses:
     Unauthorized:
       description: Missing or invalid X-Token header (min 10 chars)
     PaymentRequired:
-      description: Wallet has 0 tokens. Recharge at https://docs.echovalue.dev/#wallet-recharge
+      description: Wallet has insufficient tokens for the requested operation.
     NotFound:
       description: Key not found or expired
     BadRequest:
       description: Invalid parameters
-
 paths:
-  # ─────────────────────────────── KV API ───────────────────────────────
   /kv/{bucket}/{key}:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     get:
-      tags: [KV API]
+      tags:
+      - KV API
+      operationId: getKVValue
       summary: Get value
       description: Returns the stored value for the given bucket/key. Costs 1 token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - $ref: "#/components/parameters/Bucket"
-        - $ref: "#/components/parameters/Key"
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/Bucket'
+      - $ref: '#/components/parameters/Key'
       responses:
-        "200":
+        '200':
           description: The stored value
           content:
             text/plain:
@@ -456,33 +610,30 @@ paths:
                 type: string
           headers:
             X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed (1)
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "404":
-          $ref: "#/components/responses/NotFound"
-
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
-      tags: [KV API]
+      tags:
+      - KV API
+      operationId: storeKVValue
       summary: Store value
       description: Stores a raw body value with TTL. Costs 1 token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - $ref: "#/components/parameters/Bucket"
-        - $ref: "#/components/parameters/Key"
-        - $ref: "#/components/parameters/TTL"
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/Bucket'
+      - $ref: '#/components/parameters/Key'
+      - $ref: '#/components/parameters/TTL'
       requestBody:
         required: true
         content:
@@ -491,714 +642,690 @@ paths:
               type: string
               maxLength: 1000
       responses:
-        "200":
+        '200':
           description: Value stored successfully
           content:
             text/plain:
               schema:
                 type: string
-                example: "OK"
+                example: OK
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
     delete:
-      tags: [KV API]
+      tags:
+      - KV API
+      operationId: deleteKVValue
       summary: Delete key
       description: Deletes the key from the bucket. Costs 1 token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - $ref: "#/components/parameters/Bucket"
-        - $ref: "#/components/parameters/Key"
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/Bucket'
+      - $ref: '#/components/parameters/Key'
       responses:
-        "200":
+        '200':
           description: Key deleted
           content:
             text/plain:
               schema:
                 type: string
-                example: "OK"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-
-  # ─────────────────────────────── Token API ───────────────────────────────
+                example: OK
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
   /token:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     get:
-      tags: [Token API]
+      tags:
+      - Token API
+      operationId: getWalletInfo
       summary: Get wallet info
       description: Returns wallet JSON. Costs 1 token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
+      - $ref: '#/components/parameters/TokenHeader'
       responses:
-        "200":
+        '200':
           description: Wallet info
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WalletInfo"
+                $ref: '#/components/schemas/WalletInfo'
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
     post:
-      tags: [Token API]
+      tags:
+      - Token API
+      operationId: createWallet
       summary: Create wallet
-      description: |
-        - `token=new` — creates a new wallet with DEFAULT_WALLET credits, returns wallet ID
+      description: "- `token=new` \u2014 creates a new wallet with DEFAULT_WALLET\
+        \ credits, returns wallet ID\n"
       requestBody:
         required: true
         content:
           application/x-www-form-urlencoded:
             schema:
               type: object
-              required: [token]
+              required:
+              - token
               properties:
                 token:
                   type: string
-                  enum: [new]
+                  enum:
+                  - new
                   description: Action to perform
       responses:
-        "200":
+        '200':
           description: Wallet ID string
           content:
             text/plain:
               schema:
                 type: string
-        "400":
+        '400':
           description: Bad request
-
   /recharge:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Token API
+    - url: https://api.echovalue.dev
+      description: Production - Token API
     get:
-      tags: [Token API]
+      tags:
+      - Token API
+      operationId: getRechargeLink
       summary: Get recharge link
       description: Returns a Stripe checkout link with the wallet hash in `client_reference_id`.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - name: amount
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: ["1", "3"]
-            default: "1"
-          description: Recharge tier
+      - $ref: '#/components/parameters/TokenHeader'
+      - name: amount
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - '1'
+          - '3'
+          default: '1'
+        description: Recharge tier
       responses:
-        "200":
+        '200':
           description: Stripe checkout URL
           content:
             text/plain:
               schema:
                 type: string
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "405":
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '405':
           description: Method not allowed
-
   /token/logs:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     get:
-      tags: [Token API]
+      tags:
+      - Token API
+      operationId: getWalletLogs
       summary: Get request logs
-      description: Returns the latest n log entries. Free endpoint.
+      description: Returns the latest `n` log entries. This endpoint is free and does
+        not deduct wallet balance.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - name: n
-          in: query
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 5
-          description: Number of log entries to return
-        - name: type
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [kv, webhook, token, service]
-          description: Filter logs by endpoint type. If omitted, returns all logs.
+      - $ref: '#/components/parameters/TokenHeader'
+      - name: n
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 5
+        description: Number of log entries to return
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Optional endpoint filter. The implementation forwards this value
+          to log storage as-is.
+
+          Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`,
+          `myip`, and `service`.
+
+          '
       responses:
-        "200":
+        '200':
           description: Log entries
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LogsResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
+                $ref: '#/components/schemas/LogsResponse'
+          headers:
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /token/settings:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     get:
-      tags: [Token API]
+      tags:
+      - Token API
+      operationId: getWalletSettings
       summary: Get low balance settings
-      description: Returns the current low balance notification settings. Costs 1 token.
+      description: Returns the current low balance notification settings. Costs 1
+        token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
+      - $ref: '#/components/parameters/TokenHeader'
       responses:
-        "200":
+        '200':
           description: Low balance settings
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CustomerSettings"
+                $ref: '#/components/schemas/CustomerSettings'
           headers:
             X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-                enum: [1]
-              description: Costs 1 token
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
     put:
-      tags: [Token API]
+      tags:
+      - Token API
+      operationId: updateWalletSettings
       summary: Update low balance settings
-      description: |
-        Configures low balance notifications. When wallet balance falls below the threshold,
+      description: 'Configures low balance notifications. When wallet balance falls
+        below the threshold,
+
         a notification is sent to the configured webhook URL and/or email.
-        Notifications are sent at most once per low-balance incident (i.e. the cooldown resets when the balance rises back above the threshold).
+
+        Notifications are sent at most once per low-balance incident (i.e. the cooldown
+        resets when the balance rises back above the threshold).
+
         Costs 1 token.
+
+        '
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
+      - $ref: '#/components/parameters/TokenHeader'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CustomerSettings"
+              $ref: '#/components/schemas/CustomerSettings'
       responses:
-        "200":
+        '200':
           description: Settings updated successfully
           content:
             text/plain:
               schema:
                 type: string
-                example: "OK"
+                example: OK
           headers:
             X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-                enum: [1]
-              description: Tokens consumed (1)
-        "400":
+              $ref: '#/components/headers/XCost'
+        '400':
           description: Invalid webhook URL (must be HTTPS) or invalid threshold value
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-
-  # ─────────────────────────────── Webhook API ───────────────────────────────
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
   /webhook:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     get:
-      tags: [Webhook API]
+      tags:
+      - Webhook API
+      operationId: listWebhooks
       summary: List webhooks
       description: Returns all configured webhooks for this wallet. Costs 1 token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
+      - $ref: '#/components/parameters/TokenHeader'
       responses:
-        "200":
+        '200':
           description: Webhook list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebhookListResponse"
+                $ref: '#/components/schemas/WebhookListResponse'
           headers:
             X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed (1)
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
     post:
-      tags: [Webhook API]
+      tags:
+      - Webhook API
+      operationId: createWebhook
       summary: Create webhook
-      description: |
-        Creates a new webhook. Costs 1 token.
+      description: 'Creates a new webhook. Costs 1 token.
+
         URL must be HTTPS pointing to a public host.
+
+        '
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
+      - $ref: '#/components/parameters/TokenHeader'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WebhookCreateReplaceRequest"
+              $ref: '#/components/schemas/WebhookCreateReplaceRequest'
       responses:
-        "200":
+        '200':
           description: Webhook created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebhookResponse"
+                $ref: '#/components/schemas/WebhookResponse'
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "409":
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '409':
           description: Webhook ID already exists for this wallet
-        "500":
+        '500':
           description: Internal server error
-
   /webhook/{webhookId}:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     get:
-      tags: [Webhook API]
+      tags:
+      - Webhook API
+      operationId: getWebhook
       summary: Get webhook by ID
       description: Returns a specific webhook by `webhookId`. Costs 1 token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - name: webhookId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Public webhook identifier
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
       responses:
-        "200":
+        '200':
           description: Webhook found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebhookResponse"
+                $ref: '#/components/schemas/WebhookResponse'
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "404":
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
           description: Webhook not found
-
     put:
-      tags: [Webhook API]
+      tags:
+      - Webhook API
+      operationId: replaceWebhook
       summary: Replace webhook
-      description: |
-        Replaces the full webhook document for the specified `webhookId`. Costs 1 token.
+      description: 'Replaces the full webhook document for the specified `webhookId`.
+        Costs 1 token.
+
         `url` is required.
+
+        '
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - name: webhookId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Public webhook identifier to replace
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WebhookCreateReplaceRequest"
+              $ref: '#/components/schemas/WebhookCreateReplaceRequest'
       responses:
-        "200":
+        '200':
           description: Webhook replaced
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebhookResponse"
+                $ref: '#/components/schemas/WebhookResponse'
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "404":
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
           description: Webhook not found
-        "500":
+        '500':
           description: Internal server error
-
     patch:
-      tags: [Webhook API]
+      tags:
+      - Webhook API
+      operationId: patchWebhook
       summary: Patch webhook
-      description: |
-        Updates only provided fields on a webhook. Costs 1 token.
+      description: 'Updates only provided fields on a webhook. Costs 1 token.
+
+        '
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - name: webhookId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Public webhook identifier to update
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WebhookPatchRequest"
+              $ref: '#/components/schemas/WebhookPatchRequest'
       responses:
-        "200":
+        '200':
           description: Webhook updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WebhookResponse"
+                $ref: '#/components/schemas/WebhookResponse'
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "404":
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
           description: Webhook not found
-        "500":
+        '500':
           description: Internal server error
-
     delete:
-      tags: [Webhook API]
+      tags:
+      - Webhook API
+      operationId: deleteWebhook
       summary: Delete webhook
       description: Removes a specific webhook. Costs 1 token.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - name: webhookId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Public webhook identifier to delete
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
       responses:
-        "200":
+        '200':
           description: Webhook deleted
           content:
             text/plain:
               schema:
                 type: string
-                example: "OK"
+                example: OK
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "404":
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
           description: No webhook configured
-
-  # ─────────────────────────────── Webhook Test API ───────────────────────────────
   /webhook/{webhookId}/test:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     post:
-      tags: [Webhook Test API]
+      tags:
+      - Webhook Test API
+      operationId: testWebhook
       summary: Test a specific webhook
-      description: |
-        Sends a dummy payload to the specified webhook URL. Costs 1 token.
+      description: 'Sends a dummy payload to the specified webhook URL. Costs 1 token.
+
+        '
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-        - name: webhookId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Public webhook identifier to test
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
       responses:
-        "200":
+        '200':
           description: Test call processed (check `success` field for delivery status)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TestResponse"
+                $ref: '#/components/schemas/TestResponse'
               examples:
                 success:
                   summary: Delivery success
                   value:
                     success: true
-                    message: "test webhook delivered"
+                    message: test webhook delivered
                 failure:
                   summary: Delivery failure
                   value:
                     success: false
-                    message: "webhook call failed: context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+                    message: 'webhook call failed: context deadline exceeded (Client.Timeout
+                      exceeded while awaiting headers)'
           headers:
             X-Balance:
-              schema:
-                type: integer
-              description: Caller wallet balance after this call
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed (1)
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "405":
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '405':
           description: Method not POST
-
-  # ─────────────────────────────── Call API ───────────────────────────────
-  /webhook/call:
-    servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
-    post:
-      tags: [Call API]
-      summary: Invoke webhook by mailbox address
-      description: |
-        Server-to-server endpoint used by the inbound mail worker.
-        Accepts the canonical inbound payload and forwards it to the webhook configured for the recipient mailbox.
-        Destination is resolved by direct lookup of the opaque mailbox local-part (`mailboxes/{mailboxId}`).
-        Costs 2-5 tokens depending on whether attachments are included and configured:
-        - 2 tokens: email without attachments, or with attachments but webhook has `includeAttachments: false`
-        - 5 tokens: email with attachments and webhook has `includeAttachments: true` (default)
-        Requires X-Mailbox-Secret (shared secret). The charged wallet is the owner of the resolved mailbox.
-        Webhook URLs must be HTTPS pointing to public hosts.
-        Request body limited to 1MB. Outbound calls have a 10s timeout.
-      parameters:
-        - $ref: "#/components/parameters/MailboxSecretHeader"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CallInboundPayload"
-      responses:
-        "200":
-          description: Call processed (check `success` field for delivery status)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CallResponse"
-          headers:
-            X-Balance:
-              schema:
-                type: integer
-              description: Target mailbox owner wallet balance after this call
-            X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed (2-5 depending on attachments)
-        "400":
-          description: Invalid JSON or invalid `to` address
-        "401":
-          description: Missing/invalid X-Mailbox-Secret
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "404":
-          description: Target wallet not found
-        "405":
-          description: Method not POST
-
-  # ─────────────────────────────── URL To Metadata API ───────────────────────────────
   /url-to-metadata:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     post:
-      tags: [URL To Metadata API]
+      tags:
+      - URL To Metadata API
+      operationId: analyzeUrlMetadata
       summary: Analyze URL metadata
-      description: |
-        Proxies the request body to the configured AWS Lambda summary scraper endpoint.
-        The wallet is authenticated with `X-Token`, charged locally, and the request is logged.
-        The backend always forces `proxy=false` before forwarding the request upstream.
+      description: 'Proxies the request body to the configured AWS Lambda summary
+        scraper endpoint.
+
+        The wallet is authenticated with `X-Token`, charged locally, and the request
+        is logged.
+
+        The backend always forces `proxy=false` before forwarding the request upstream,
+        even if the client sends a different value.
+
+        Successful requests cost `55` for base scraping. `aiSummary` defaults to `none`;
+        `short`, `medium`, and `long` enable AI enrichment and cost `800`.
+
+        Malformed requests and upstream non-`5xx` failures cost `1`. Upstream `5xx`
+        responses cost `0`.
+
+        '
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
+      - $ref: '#/components/parameters/TokenHeader'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SummaryRequest"
+              $ref: '#/components/schemas/SummaryRequest'
+            examples:
+              basic:
+                summary: Base scrape without AI enrichment
+                value:
+                  url: https://example.com/articles/launch
+              aiSummary:
+                summary: AI-enriched scrape with summary generation
+                value:
+                  url: https://example.com/articles/launch
+                  aiSummary: medium
+                  summaryLanguage: en
+              noAiSummary:
+                summary: Base scrape without AI enrichment
+                value:
+                  url: https://example.com/articles/launch
+                  ignoreExternalLinks: true
       responses:
-        "200":
+        '200':
           description: Successful upstream response
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SummaryResponse"
+                $ref: '#/components/schemas/SummaryResponse'
+              examples:
+                success:
+                  summary: Example upstream payload
+                  value:
+                    success: true
+                    url: https://example.com/articles/launch
+                    title: Example article
+                    summary: Short generated summary
           headers:
             X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed. `55` for base scrape or `800` when AI enrichment is requested.
-        "400":
+              $ref: '#/components/headers/XCost'
+        '400':
           description: Invalid request or upstream validation error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SummaryResponse"
+                $ref: '#/components/schemas/SummaryResponse'
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed. `1` for malformed requests and upstream `4xx` failures.
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "405":
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '405':
           description: Method not allowed
-        "502":
+        '500':
+          description: Upstream summary service returned an internal error response
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+        '502':
           description: Upstream summary service unavailable
           headers:
             X-Balance:
-              schema:
-                type: integer
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed. `1` for transport failures, `0` when the Lambda returns `5xx`.
-        "503":
-          description: Summary service not configured
+              $ref: '#/components/headers/XCost'
+        '503':
+          description: 'Summary service unavailable.
 
-  # ─────────────────────────────── My IP API ───────────────────────────────
+            This may indicate missing local scraper configuration before the upstream
+            call, or a `503` response returned by the upstream scraper.
+
+            '
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
   /myip:
     servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
     get:
-      tags: [My IP API]
+      tags:
+      - My IP API
+      operationId: getMyIpInfo
       summary: Get caller IP
-      description: Returns caller IP data and geo headers. Costs 1 token and writes a request log entry.
+      description: Returns caller IP data and geo headers. Costs 1 token and writes
+        a request log entry.
       security:
-        - TokenAuth: []
+      - TokenAuth: []
       parameters:
-        - $ref: "#/components/parameters/TokenHeader"
+      - $ref: '#/components/parameters/TokenHeader'
       responses:
-        "200":
+        '200':
           description: Caller IP and geo metadata
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MyIPInfo"
+                $ref: '#/components/schemas/MyIPInfo'
           headers:
             X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
+              $ref: '#/components/headers/XBalance'
             X-Cost:
-              schema:
-                type: integer
-                enum: [1]
-              description: Tokens consumed (1)
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "405":
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '405':
           description: Method not allowed

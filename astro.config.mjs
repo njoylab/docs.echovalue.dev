@@ -70,6 +70,7 @@ export default defineConfig({
           label: 'Utilities',
           items: [
             { label: 'My IP', link: '/myip/' },
+            { label: 'URL To Metadata', link: '/url-to-metadata/' },
           ],
         },
         {

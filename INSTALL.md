@@ -8,6 +8,7 @@ This repository includes shared skill assets plus agent-specific files for Claud
 ✅ Execute key-value store operations (get/set/delete)  
 ✅ Manage tokens (generate, check balance, retrieve logs)  
 ✅ Inspect caller IP and geo metadata  
+✅ Analyze public URLs and extract metadata or summaries  
 ✅ Share state between AI agents  
 
 ## Compatible Agents
