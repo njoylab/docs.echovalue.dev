@@ -11,10 +11,6 @@ info:
     url: https://docs.echovalue.dev
 
 tags:
-  - name: My IP API
-    description: Return the caller IP and geo headers (costs 1 token)
-  - name: Scrape API
-    description: Proxy URL summary requests to the configured AWS Lambda scraper (costs 1 token)
   - name: KV API
     description: Read/write/delete key-value entries (each call costs 1 token)
   - name: Token API
@@ -23,6 +19,11 @@ tags:
     description: Manage multiple webhooks per wallet (each call costs 1 token)
   - name: Webhook Test API
     description: Test your configured webhook with a dummy payload (costs 1 token)
+  - name: URL To Metadata API
+    description: Proxy URL summary requests to the configured AWS Lambda scraper
+  - name: My IP API
+    description: Return the caller IP and geo headers (costs 1 token)
+    description: Internal admin operations for charging wallets and writing logs
 
 components:
   securitySchemes:
@@ -431,113 +432,6 @@ components:
       description: Invalid parameters
 
 paths:
-  # ─────────────────────────────── Scrape API ───────────────────────────────
-  /scrape:
-    servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
-    post:
-      tags: [Scrape API]
-      summary: Scrape URL metadata
-      description: |
-        Proxies the request body to the configured AWS Lambda summary scraper endpoint.
-        The wallet is authenticated with `X-Token`, charged locally, and the request is logged.
-      security:
-        - TokenAuth: []
-      parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SummaryRequest"
-      responses:
-        "200":
-          description: Successful upstream response
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SummaryResponse"
-          headers:
-            X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
-            X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed. `55` for base scrape, `800` when AI enrichment is requested.
-        "400":
-          description: Invalid request or upstream validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SummaryResponse"
-          headers:
-            X-Balance:
-              schema:
-                type: integer
-            X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed. `55` for base scrape, `800` when AI enrichment is requested.
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "405":
-          description: Method not allowed
-        "502":
-          description: Upstream summary service unavailable
-          headers:
-            X-Balance:
-              schema:
-                type: integer
-            X-Cost:
-              schema:
-                type: integer
-              description: Tokens consumed. `55` for base scrape, `800` when AI enrichment is requested.
-        "503":
-          description: Summary service not configured
-
-  # ─────────────────────────────── My IP API ───────────────────────────────
-  /myip:
-    servers:
-      - url: https://api.echovalue.dev
-        description: Production - Consolidated API
-    get:
-      tags: [My IP API]
-      summary: Get caller IP
-      description: Returns caller IP data and geo headers. Costs 1 token and writes a request log entry.
-      security:
-        - TokenAuth: []
-      parameters:
-        - $ref: "#/components/parameters/TokenHeader"
-      responses:
-        "200":
-          description: Caller IP and geo metadata
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MyIPInfo"
-          headers:
-            X-Balance:
-              schema:
-                type: integer
-              description: Wallet balance after this call
-            X-Cost:
-              schema:
-                type: integer
-                enum: [1]
-              description: Tokens consumed (1)
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "402":
-          $ref: "#/components/responses/PaymentRequired"
-        "405":
-          description: Method not allowed
-
   # ─────────────────────────────── KV API ───────────────────────────────
   /kv/{bucket}/{key}:
     servers:
@@ -1147,3 +1041,164 @@ paths:
           $ref: "#/components/responses/PaymentRequired"
         "405":
           description: Method not POST
+
+  # ─────────────────────────────── Call API ───────────────────────────────
+  /webhook/call:
+    servers:
+      - url: https://api.echovalue.dev
+        description: Production - Consolidated API
+    post:
+      tags: [Call API]
+      summary: Invoke webhook by mailbox address
+      description: |
+        Server-to-server endpoint used by the inbound mail worker.
+        Accepts the canonical inbound payload and forwards it to the webhook configured for the recipient mailbox.
+        Destination is resolved by direct lookup of the opaque mailbox local-part (`mailboxes/{mailboxId}`).
+        Costs 2-5 tokens depending on whether attachments are included and configured:
+        - 2 tokens: email without attachments, or with attachments but webhook has `includeAttachments: false`
+        - 5 tokens: email with attachments and webhook has `includeAttachments: true` (default)
+        Requires X-Mailbox-Secret (shared secret). The charged wallet is the owner of the resolved mailbox.
+        Webhook URLs must be HTTPS pointing to public hosts.
+        Request body limited to 1MB. Outbound calls have a 10s timeout.
+      parameters:
+        - $ref: "#/components/parameters/MailboxSecretHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallInboundPayload"
+      responses:
+        "200":
+          description: Call processed (check `success` field for delivery status)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Target mailbox owner wallet balance after this call
+            X-Cost:
+              schema:
+                type: integer
+              description: Tokens consumed (2-5 depending on attachments)
+        "400":
+          description: Invalid JSON or invalid `to` address
+        "401":
+          description: Missing/invalid X-Mailbox-Secret
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          description: Target wallet not found
+        "405":
+          description: Method not POST
+
+  # ─────────────────────────────── URL To Metadata API ───────────────────────────────
+  /url-to-metadata:
+    servers:
+      - url: https://api.echovalue.dev
+        description: Production - Consolidated API
+    post:
+      tags: [URL To Metadata API]
+      summary: Analyze URL metadata
+      description: |
+        Proxies the request body to the configured AWS Lambda summary scraper endpoint.
+        The wallet is authenticated with `X-Token`, charged locally, and the request is logged.
+        The backend always forces `proxy=false` before forwarding the request upstream.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SummaryRequest"
+      responses:
+        "200":
+          description: Successful upstream response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Wallet balance after this call
+            X-Cost:
+              schema:
+                type: integer
+              description: Tokens consumed. `55` for base scrape or `800` when AI enrichment is requested.
+        "400":
+          description: Invalid request or upstream validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+              description: Tokens consumed. `1` for malformed requests and upstream `4xx` failures.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "405":
+          description: Method not allowed
+        "502":
+          description: Upstream summary service unavailable
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+              description: Tokens consumed. `1` for transport failures, `0` when the Lambda returns `5xx`.
+        "503":
+          description: Summary service not configured
+
+  # ─────────────────────────────── My IP API ───────────────────────────────
+  /myip:
+    servers:
+      - url: https://api.echovalue.dev
+        description: Production - Consolidated API
+    get:
+      tags: [My IP API]
+      summary: Get caller IP
+      description: Returns caller IP data and geo headers. Costs 1 token and writes a request log entry.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      responses:
+        "200":
+          description: Caller IP and geo metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyIPInfo"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Wallet balance after this call
+            X-Cost:
+              schema:
+                type: integer
+                enum: [1]
+              description: Tokens consumed (1)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "405":
+          description: Method not allowed
