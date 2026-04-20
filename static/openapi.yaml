@@ -23,7 +23,7 @@ tags:
 - name: Webhook Test API
   description: Test your configured webhook with a dummy payload (costs 1 token)
 - name: URL To Metadata API
-  description: Proxy URL summary requests to the configured AWS Lambda scraper
+  description: Analyze a URL and return extracted metadata
 - name: My IP API
   description: Return the caller IP and geo headers (costs 1 token)
 components:
@@ -167,36 +167,18 @@ components:
           type: string
     SummaryRequest:
       type: object
-      description: 'Request forwarded to the upstream URL metadata scraper after local
-        charging and logging.
-
-        Known public fields are documented below. Additional fields may be forwarded
-        upstream.
-
-        If `proxy` is supplied by the client, the backend overrides it to `false`.
+      description: 'Request body for URL metadata analysis.
 
         '
       required:
       - url
-      additionalProperties: true
+      additionalProperties: false
       properties:
         url:
           type: string
           format: uri
           description: Absolute URL to analyze.
           example: https://example.com/articles/launch
-        language:
-          type: string
-          description: Optional source-language hint forwarded upstream.
-          example: en
-        ignoreRobots:
-          type: boolean
-          description: Optional upstream flag to ignore robots directives.
-          example: false
-        ignoreExternalLinks:
-          type: boolean
-          description: Optional upstream flag to skip crawling external links.
-          example: true
         aiSummary:
           type: string
           enum:
@@ -214,28 +196,97 @@ components:
 
             '
           example: none
-        summaryLanguage:
-          type: string
-          description: Optional output language hint for generated summaries.
-          example: en
       example:
         url: https://example.com/articles/launch
         aiSummary: none
-        ignoreExternalLinks: true
     SummaryResponse:
       type: object
-      description: 'Opaque upstream payload returned by the AWS Lambda scraper.
+      description: 'Metadata extracted from the requested URL.
 
-        Response shape is not fixed by this API and may vary with the upstream scraper
-        configuration.
+        Response fields may vary depending on the analyzed page.
 
         '
       additionalProperties: true
       example:
         success: true
-        url: https://example.com/articles/launch
-        title: Example article
-        summary: Short generated summary
+        data:
+          seo:
+            title: Example Company - Leading SaaS Platform
+            description: Enterprise software for team collaboration
+            keywords:
+            - saas
+            - collaboration
+            - enterprise
+            canonical: https://example.com
+          social:
+            x: https://x.com/exampleco
+            linkedin: https://linkedin.com/company/exampleco
+          contact:
+            email: hello@example.com
+            phone: +1-555-0123
+          technical:
+            statusCode: 200
+            finalUrl: https://example.com
+            originalUrl: https://example.com
+            robotsAllowed: true
+            isSecure: true
+            contentType: text/html; charset=utf-8
+          links:
+            internal:
+              total: 12
+              urls:
+              - /about
+              - /pricing
+              - /contact
+            external:
+              total: 5
+              urls:
+              - https://github.com/example
+              domains:
+              - github.com
+          ai:
+            summary:
+              short: Example Company provides cloud-based collaboration software for
+                enterprises, offering project management and team communication tools.
+              medium: Example Company is a leading SaaS platform offering comprehensive
+                team collaboration tools designed for enterprise organizations. The
+                platform combines project management, document sharing, and real-time
+                communication features to help teams work more efficiently. With over
+                10,000 customers worldwide, Example Company has established itself
+                as a trusted solution for businesses looking to improve productivity
+                and streamline workflows.
+              long: Example Company is an innovative SaaS provider that has been transforming
+                enterprise collaboration since 2015. Based in San Francisco, the company
+                offers a comprehensive suite of tools designed to help teams communicate,
+                collaborate, and manage projects more effectively. The platform integrates
+                seamlessly with popular business applications and provides enterprise-grade
+                security features. Example Company serves organizations of all sizes,
+                from startups to Fortune 500 companies, with a particular focus on
+                technology, finance, and healthcare sectors. The company's mission
+                is to make workplace collaboration simple, efficient, and enjoyable
+                for everyone.
+              contentLength: 5240
+              truncated: false
+            keyFacts:
+              companyName: Example Company Inc.
+              companyType: B2B SaaS
+              industry: Enterprise Software
+              services:
+              - Team Collaboration
+              - Project Management
+              - Document Sharing
+              - Real-time Communication
+              targetAudience: Enterprise teams and organizations
+              businessModel: Subscription
+              headquarters: San Francisco, CA
+              foundedYear: 2015
+              keyFeatures:
+              - Real-time collaboration
+              - Enterprise security
+              - Third-party integrations
+              - Mobile apps
+            processingTime: 2340
+        timestamp: '2025-06-19T15:54:01.821Z'
     WalletInfo:
       type: object
       properties:
@@ -321,7 +372,7 @@ components:
           description: Full request path including query parameters
         endpoint:
           type: string
-          description: API category (e.g. `kv`, `token`, `webhook`, `service`)
+          description: API category (e.g. `kv`, `token`, `webhook`, `service`, `manage`)
         status_code:
           type: integer
           description: HTTP response status code
@@ -822,7 +873,7 @@ paths:
           to log storage as-is.
 
           Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`,
-          `myip`, and `service`.
+          `myip`, `service`, and `manage`.
 
           '
       responses:
@@ -1191,20 +1242,14 @@ paths:
       - URL To Metadata API
       operationId: analyzeUrlMetadata
       summary: Analyze URL metadata
-      description: 'Proxies the request body to the configured AWS Lambda summary
-        scraper endpoint.
+      description: 'Analyzes a URL and returns extracted metadata.
 
-        The wallet is authenticated with `X-Token`, charged locally, and the request
-        is logged.
-
-        The backend always forces `proxy=false` before forwarding the request upstream,
-        even if the client sends a different value.
+        The wallet is authenticated with `X-Token`, charged, and the request is logged.
 
         Successful requests cost `55` for base scraping. `aiSummary` defaults to `none`;
         `short`, `medium`, and `long` enable AI enrichment and cost `800`.
 
-        Malformed requests and upstream non-`5xx` failures cost `1`. Upstream `5xx`
-        responses cost `0`.
+        Malformed requests and non-`5xx` failures cost `1`. `5xx` responses cost `0`.
 
         '
       security:
@@ -1227,34 +1272,111 @@ paths:
                 value:
                   url: https://example.com/articles/launch
                   aiSummary: medium
-                  summaryLanguage: en
               noAiSummary:
                 summary: Base scrape without AI enrichment
                 value:
                   url: https://example.com/articles/launch
-                  ignoreExternalLinks: true
       responses:
         '200':
-          description: Successful upstream response
+          description: Successful response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
               examples:
                 success:
-                  summary: Example upstream payload
+                  summary: Example response payload
                   value:
                     success: true
-                    url: https://example.com/articles/launch
-                    title: Example article
-                    summary: Short generated summary
+                    data:
+                      seo:
+                        title: Example Company - Leading SaaS Platform
+                        description: Enterprise software for team collaboration
+                        keywords:
+                        - saas
+                        - collaboration
+                        - enterprise
+                        canonical: https://example.com
+                      social:
+                        x: https://x.com/exampleco
+                        linkedin: https://linkedin.com/company/exampleco
+                      contact:
+                        email: hello@example.com
+                        phone: +1-555-0123
+                      technical:
+                        statusCode: 200
+                        finalUrl: https://example.com
+                        originalUrl: https://example.com
+                        robotsAllowed: true
+                        isSecure: true
+                        contentType: text/html; charset=utf-8
+                      links:
+                        internal:
+                          total: 12
+                          urls:
+                          - /about
+                          - /pricing
+                          - /contact
+                        external:
+                          total: 5
+                          urls:
+                          - https://github.com/example
+                          domains:
+                          - github.com
+                      ai:
+                        summary:
+                          short: Example Company provides cloud-based collaboration
+                            software for enterprises, offering project management
+                            and team communication tools.
+                          medium: Example Company is a leading SaaS platform offering
+                            comprehensive team collaboration tools designed for enterprise
+                            organizations. The platform combines project management,
+                            document sharing, and real-time communication features
+                            to help teams work more efficiently. With over 10,000
+                            customers worldwide, Example Company has established itself
+                            as a trusted solution for businesses looking to improve
+                            productivity and streamline workflows.
+                          long: Example Company is an innovative SaaS provider that
+                            has been transforming enterprise collaboration since 2015.
+                            Based in San Francisco, the company offers a comprehensive
+                            suite of tools designed to help teams communicate, collaborate,
+                            and manage projects more effectively. The platform integrates
+                            seamlessly with popular business applications and provides
+                            enterprise-grade security features. Example Company serves
+                            organizations of all sizes, from startups to Fortune 500
+                            companies, with a particular focus on technology, finance,
+                            and healthcare sectors. The company's mission is to make
+                            workplace collaboration simple, efficient, and enjoyable
+                            for everyone.
+                          contentLength: 5240
+                          truncated: false
+                        keyFacts:
+                          companyName: Example Company Inc.
+                          companyType: B2B SaaS
+                          industry: Enterprise Software
+                          services:
+                          - Team Collaboration
+                          - Project Management
+                          - Document Sharing
+                          - Real-time Communication
+                          targetAudience: Enterprise teams and organizations
+                          businessModel: Subscription
+                          headquarters: San Francisco, CA
+                          foundedYear: 2015
+                          keyFeatures:
+                          - Real-time collaboration
+                          - Enterprise security
+                          - Third-party integrations
+                          - Mobile apps
+                        processingTime: 2340
+                    timestamp: '2025-06-19T15:54:01.821Z'
           headers:
             X-Balance:
               $ref: '#/components/headers/XBalance'
             X-Cost:
               $ref: '#/components/headers/XCost'
         '400':
-          description: Invalid request or upstream validation error
+          description: Invalid request
           content:
             application/json:
               schema:
@@ -1271,26 +1393,21 @@ paths:
         '405':
           description: Method not allowed
         '500':
-          description: Upstream summary service returned an internal error response
+          description: Internal error
           headers:
             X-Balance:
               $ref: '#/components/headers/XBalance'
             X-Cost:
               $ref: '#/components/headers/XCost'
         '502':
-          description: Upstream summary service unavailable
+          description: Service unavailable
           headers:
             X-Balance:
               $ref: '#/components/headers/XBalance'
             X-Cost:
               $ref: '#/components/headers/XCost'
         '503':
-          description: 'Summary service unavailable.
-
-            This may indicate missing local scraper configuration before the upstream
-            call, or a `503` response returned by the upstream scraper.
-
-            '
+          description: Service unavailable
           headers:
             X-Balance:
               $ref: '#/components/headers/XBalance'

@@ -9,13 +9,13 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `POST https://api.echovalue.dev/url-to-metadata`
 
-Fetches metadata for a public URL by proxying your request to the configured upstream scraper service.
+Fetches metadata for a public URL through the echoValue URL To Metadata service.
 
 :::note
-**Cost:** `55` credits for the base scrape. `aiSummary: short|medium|long` enables AI enrichment and costs `800` credits. Malformed requests and upstream non-`5xx` failures consume `1` credit. Upstream `5xx` responses consume `0` credits.
+**Cost:** `55` credits for the base scrape. `aiSummary: short|medium|long` enables AI enrichment and costs `800` credits. Malformed requests and non-`5xx` service failures consume `1` credit. `5xx` service responses consume `0` credits.
 :::
 
-The request is authenticated with `x-token`, logged by echoValue, and forwarded upstream with `proxy=false` forced by the backend even if you send a different value.
+The request is authenticated with `x-token`, logged by echoValue, and processed with `proxy=false` forced by the backend even if you send a different value.
 
 ## Request
 
@@ -31,14 +31,14 @@ The request is authenticated with `x-token`, logged by echoValue, and forwarded 
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
 | `url` | string | Yes | Public URL to analyze |
-| `language` | string | No | Optional source-language hint forwarded upstream |
+| `language` | string | No | Optional source-language hint |
 | `ignoreRobots` | boolean | No | Ignore `robots` restrictions when supported upstream |
 | `ignoreExternalLinks` | boolean | No | Skip external link extraction |
 | `ignoreInternalLinks` | boolean | No | Skip internal link extraction |
 | `aiSummary` | string | No | AI enrichment level: `none`, `short`, `medium`, or `long`. `none` is the default |
 | `summaryLanguage` | string | No | Optional output language hint for generated summaries |
 
-Additional fields may be forwarded upstream. If you send `proxy`, the backend overrides it to `false`.
+Additional fields may be accepted by the service. If you send `proxy`, the backend overrides it to `false`.
 
 **Examples:**
 
@@ -160,22 +160,39 @@ func main() {
 
 ## Response
 
-`200 OK` returns the JSON payload produced by the upstream scraper.
+`200 OK` returns the JSON payload produced by the URL To Metadata service.
 
 ```json
 {
+  "success": true,
   "url": "https://example.com/article",
+  "canonicalUrl": "https://example.com/article",
   "title": "Example article",
-  "description": "Short page description",
-  "summary": "Short generated summary",
+  "description": "A short description extracted from the page metadata.",
+  "language": "en",
+  "contentType": "text/html",
+  "summary": "Example summary generated for the page content.",
   "keyFacts": [
-    "First fact",
-    "Second fact"
-  ]
+    "Launch planned for Q3",
+    "Public beta starts next month"
+  ],
+  "metadata": {
+    "author": "Example Team",
+    "publishedAt": "2026-04-20T09:00:00Z"
+  },
+  "links": {
+    "internal": [
+      "https://example.com/pricing",
+      "https://example.com/docs"
+    ],
+    "external": [
+      "https://status.example.com"
+    ]
+  }
 }
 ```
 
-The response shape is intentionally flexible. echoValue returns the upstream JSON as-is, so fields may vary depending on the target URL and the options you send.
+The response shape is intentionally flexible, so fields may vary depending on the target URL and the options you send. The example above is illustrative, not a fixed response contract.
 
 **Response headers:**
 
@@ -191,15 +208,15 @@ See [Response Headers](/response-headers/) for details.
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Metadata returned successfully |
-| `400` | Invalid request body or upstream validation error |
+| `400` | Invalid request body or validation error |
 | `401` | Invalid token |
 | `402` | Wallet has insufficient credits |
 | `405` | Method not allowed |
-| `500` | Upstream scraper returned an internal error response |
-| `502` | Upstream scraper unavailable |
-| `503` | Scraper unavailable or not configured |
+| `500` | Internal service error |
+| `502` | Metadata service unavailable |
+| `503` | Metadata service unavailable or not configured |
 
 ## Notes
 
-- The target URL must be publicly reachable by the upstream scraper.
+- The target URL must be publicly reachable by the metadata service.
 - This endpoint is best suited for metadata extraction, link analysis, and optional summary generation over public pages.
