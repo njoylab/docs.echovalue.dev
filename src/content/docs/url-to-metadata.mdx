@@ -15,7 +15,7 @@ Fetches metadata for a public URL through the echoValue URL To Metadata service.
 **Cost:** `55` credits for the base scrape. `aiSummary: short|medium|long` enables AI enrichment and costs `800` credits. Malformed requests and non-`5xx` service failures consume `1` credit. `5xx` service responses consume `0` credits.
 :::
 
-The request is authenticated with `x-token`, logged by echoValue, and processed with `proxy=false` forced by the backend even if you send a different value.
+The request is authenticated with `x-token`, charged by echoValue, and logged.
 
 ## Request
 
@@ -31,14 +31,7 @@ The request is authenticated with `x-token`, logged by echoValue, and processed 
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
 | `url` | string | Yes | Public URL to analyze |
-| `language` | string | No | Optional source-language hint |
-| `ignoreRobots` | boolean | No | Ignore `robots` restrictions when supported upstream |
-| `ignoreExternalLinks` | boolean | No | Skip external link extraction |
-| `ignoreInternalLinks` | boolean | No | Skip internal link extraction |
 | `aiSummary` | string | No | AI enrichment level: `none`, `short`, `medium`, or `long`. `none` is the default |
-| `summaryLanguage` | string | No | Optional output language hint for generated summaries |
-
-Additional fields may be accepted by the service. If you send `proxy`, the backend overrides it to `false`.
 
 **Examples:**
 
@@ -51,8 +44,7 @@ curl 'https://api.echovalue.dev/url-to-metadata' \
   -H 'Content-Type: application/json' \
   -d '{
     "url": "https://example.com/article",
-    "aiSummary": "short",
-    "summaryLanguage": "en"
+    "aiSummary": "short"
   }'
 ```
 
@@ -68,8 +60,7 @@ fetch('https://api.echovalue.dev/url-to-metadata', {
   },
   body: JSON.stringify({
     url: 'https://example.com/article',
-    aiSummary: 'short',
-    summaryLanguage: 'en'
+    aiSummary: 'short'
   })
 })
 .then(response => response.json())
@@ -90,8 +81,7 @@ response = requests.post(
     },
     json={
         'url': 'https://example.com/article',
-        'aiSummary': 'short',
-        'summaryLanguage': 'en'
+        'aiSummary': 'short'
     }
 )
 print(response.json())
@@ -110,8 +100,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 ]);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
   'url' => 'https://example.com/article',
-  'aiSummary' => 'short',
-  'summaryLanguage' => 'en'
+  'aiSummary' => 'short'
 ]));
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
@@ -136,9 +125,8 @@ import (
 
 func main() {
     payload := map[string]interface{}{
-        "url":             "https://example.com/article",
-        "aiSummary":       "short",
-        "summaryLanguage": "en",
+        "url":       "https://example.com/article",
+        "aiSummary": "short",
     }
 
     body, _ := json.Marshal(payload)
