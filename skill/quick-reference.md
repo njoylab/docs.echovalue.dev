@@ -7,6 +7,7 @@ Webhook:    https://api.echovalue.dev/webhook
 Token:      https://api.echovalue.dev/token
 Logs:       https://api.echovalue.dev/token/logs
 Recharge:   https://api.echovalue.dev/recharge
+My IP:      https://api.echovalue.dev/myip
 ```
 
 ## Authentication
@@ -106,17 +107,27 @@ curl -s 'https://api.echovalue.dev/token/logs?n=5' \
 # Response: {"logs":[...],"n":5}
 ```
 
+## My IP
+
+### Get Caller IP And Geo Metadata
+```bash
+curl -s 'https://api.echovalue.dev/myip' \
+  -H "x-token: $ECHOVALUE_TOKEN"
+# Response: {"ip":"203.0.113.42","country":"IT","city":"Rome",...}
+```
+
 ## Pricing
 
 | Operation | Cost |
 |-----------|------|
 | Generate token | Free (100 credits included) |
 | Check balance | 1 credit |
+| Get caller IP | 1 credit |
 | Key-Value ops (get/set/delete) | 1 credit each |
 | Webhook config (set/get/delete/test) | 1 credit each |
 | Email processed (no attachments) | 2 credits |
 | Email processed (with attachments) | 5 credits |
-| Logs retrieval | 1 credit per log entry |
+| Logs retrieval | Free |
 
 ## Limits
 

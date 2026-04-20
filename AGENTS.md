@@ -114,6 +114,7 @@ When editing documentation:
 3. **Credit costs**: Always document operation costs in `:::note` blocks
 4. **Constraints**: Document length/size/time limits (30 char key/group limits, TTL ranges, etc.)
 5. **Auth header**: Use `x-token` for authentication; document `x-cost` and `x-balance` response headers
+6. **Endpoint sync is mandatory**: Whenever an endpoint is added, removed, or changed in `static/openapi.yaml`, update the human docs in `src/content/docs/` and the agent-facing docs (`skill/`, `agent-config/`, and install/setup docs if they summarize capabilities) in the same change.
 
 ## Important Notes
 

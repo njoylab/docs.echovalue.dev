@@ -11,6 +11,8 @@ info:
     url: https://docs.echovalue.dev
 
 tags:
+  - name: My IP API
+    description: Return the caller IP and geo headers (costs 1 token)
   - name: KV API
     description: Read/write/delete key-value entries (each call costs 1 token)
   - name: Token API
@@ -109,6 +111,41 @@ components:
       description: SHA256 hash of the wallet ID. Use instead of `token` when the caller should not know the raw wallet ID.
 
   schemas:
+    MyIPInfo:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: IPv4 address when available. Empty for native IPv6 callers.
+        ipv6:
+          type: string
+          description: Raw IPv6 address when the current caller IP is IPv6.
+        isCurrentIpv6:
+          type: boolean
+          description: True when the incoming client IP header contains an IPv6 address.
+        userAgent:
+          type: string
+        acceptLanguage:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        continent:
+          type: string
+        latitude:
+          type: string
+        longitude:
+          type: string
+        region:
+          type: string
+        regionCode:
+          type: string
+        timezone:
+          type: string
+        postalCode:
+          type: string
+
     WalletInfo:
       type: object
       properties:
@@ -367,13 +404,48 @@ components:
       description: Invalid parameters
 
 paths:
+  # ─────────────────────────────── My IP API ───────────────────────────────
+  /myip:
+    servers:
+      - url: https://api.echovalue.dev
+        description: Production - Consolidated API
+    get:
+      tags: [My IP API]
+      summary: Get caller IP
+      description: Returns caller IP data and geo headers. Costs 1 token and writes a request log entry.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      responses:
+        "200":
+          description: Caller IP and geo metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyIPInfo"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Wallet balance after this call
+            X-Cost:
+              schema:
+                type: integer
+                enum: [1]
+              description: Tokens consumed (1)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "405":
+          description: Method not allowed
+
   # ─────────────────────────────── KV API ───────────────────────────────
   /kv/{bucket}/{key}:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Consolidated API
     get:
       tags: [KV API]
       summary: Get value
@@ -479,8 +551,6 @@ paths:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Consolidated API
     get:
       tags: [Token API]
       summary: Get wallet info
@@ -539,8 +609,6 @@ paths:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Token API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Token API
     get:
       tags: [Token API]
       summary: Get recharge link
@@ -573,8 +641,6 @@ paths:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Consolidated API
     get:
       tags: [Token API]
       summary: Get request logs
@@ -613,8 +679,6 @@ paths:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Consolidated API
     get:
       tags: [Token API]
       summary: Get low balance settings
@@ -693,8 +757,6 @@ paths:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Consolidated API
     get:
       tags: [Webhook API]
       summary: List webhooks
@@ -768,8 +830,6 @@ paths:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Consolidated API
     put:
       tags: [Webhook API]
       summary: Replace webhook
@@ -905,8 +965,6 @@ paths:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-      - url: https://dev-api.echovalue.dev
-        description: Development - Consolidated API
     post:
       tags: [Webhook Test API]
       summary: Test a specific webhook

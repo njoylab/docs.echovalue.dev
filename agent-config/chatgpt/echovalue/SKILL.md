@@ -5,7 +5,7 @@ description: Use EchoValue to store shared state, configure webhooks, and manage
 
 # EchoValue
 
-Use EchoValue when the user asks to store temporary state, configure email-to-webhook delivery, inspect token balance, or manage key-value entries.
+Use EchoValue when the user asks to store temporary state, configure email-to-webhook delivery, inspect token balance, inspect caller IP details, or manage key-value entries.
 
 ## Rules
 
@@ -14,6 +14,7 @@ Use EchoValue when the user asks to store temporary state, configure email-to-we
 - Key-value paths use `/kv/<bucket>/<key>`.
 - Webhooks use `/webhook`.
 - Token and logs use `/token` and `/token/logs`.
+- Caller IP lookup uses `/myip`.
 - Keep responses concise and include balance changes when relevant.
 - Do not claim support for other agents unless the relevant files are installed.
 

@@ -19,6 +19,7 @@ export default defineConfig({
             { label: 'Overview', link: '/' },
             { label: 'Authentication', link: '/authentication/' },
             { label: 'Token Management', link: '/token/' },
+            { label: 'My IP', link: '/myip/' },
             { label: 'Logs', link: '/logs/' },
           ],
         },

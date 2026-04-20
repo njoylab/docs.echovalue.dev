@@ -1,0 +1,162 @@
+---
+title: My IP
+description: Retrieve the caller IP address and geo metadata for your current request
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Get Caller IP
+
+`GET https://api.echovalue.dev/myip`
+
+Returns the IP address seen by echoValue for the current request, plus geo metadata derived from the request headers.
+
+This endpoint is useful when you need to:
+
+- verify the public IP used by your server or client
+- detect whether the current request arrived over IPv4 or IPv6
+- inspect geo metadata such as city, country, timezone, and region
+
+**Request headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Response:** `200` — JSON object.
+
+```json
+{
+  "ip": "203.0.113.42",
+  "ipv6": "",
+  "isCurrentIpv6": false,
+  "userAgent": "curl/8.7.1",
+  "acceptLanguage": "en-US,en;q=0.9",
+  "city": "Rome",
+  "country": "IT",
+  "continent": "EU",
+  "latitude": "41.9028",
+  "longitude": "12.4964",
+  "region": "Lazio",
+  "regionCode": "62",
+  "timezone": "Europe/Rome",
+  "postalCode": "00100"
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `ip` | string | IPv4 address when available. Empty for native IPv6 callers. |
+| `ipv6` | string | Raw IPv6 address when the current caller IP is IPv6. |
+| `isCurrentIpv6` | boolean | `true` when the incoming request IP is IPv6. |
+| `userAgent` | string | Caller user agent string. |
+| `acceptLanguage` | string | Caller `Accept-Language` header when present. |
+| `city` | string | Detected city. |
+| `country` | string | Detected country code. |
+| `continent` | string | Detected continent code. |
+| `latitude` | string | Latitude associated with the caller IP. |
+| `longitude` | string | Longitude associated with the caller IP. |
+| `region` | string | Detected region or state name. |
+| `regionCode` | string | Region code. |
+| `timezone` | string | Detected IANA timezone. |
+| `postalCode` | string | Detected postal code. |
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Tokens consumed (1) |
+
+See [Response Headers](/response-headers) for details.
+
+**HTTP status codes:**
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | IP data returned |
+| `401` | Invalid token |
+| `402` | Wallet empty |
+| `405` | Method not allowed |
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/myip' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/myip', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/myip',
+  headers={'x-token': 'mytoken'}
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/myip');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response, true));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/myip", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    body, _ := io.ReadAll(resp.Body)
+    var result map[string]interface{}
+    json.Unmarshal(body, &result)
+    fmt.Println(result)
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+**Cost:** 1 credit. This request also writes a log entry, so you can audit when and from where the endpoint was called.
+:::

@@ -12,6 +12,7 @@ Activate automatically when the user:
 - Talks about "share state between agents", "agent state sharing"
 - Asks to configure webhooks for email (Slack, Discord, Teams, Telegram, PagerDuty, custom)
 - Wants to store/retrieve temporary data without backend setup
+- Wants to inspect the caller public IP address or geo metadata
 
 ## Token Management
 
@@ -179,6 +180,17 @@ When user asks to integrate echoValue in a project:
 4. Explain CRUD operations
 5. Mention error handling (401: bad token, 402: no credits, 404: not found)
 
+### Use Case 5: Caller IP Inspection
+
+When user wants to know which public IP echoValue sees for the current request:
+
+```bash
+curl -s 'https://api.echovalue.dev/myip' \
+  -H "x-token: $ECHOVALUE_TOKEN"
+```
+
+This returns the caller IP plus geo metadata such as country, region, city, timezone, and whether the current request used IPv6.
+
 ## API Operations Reference
 
 ### List Webhooks
@@ -206,6 +218,12 @@ curl -s 'https://api.echovalue.dev/token/logs?n=10' \
   -H "x-token: $ECHOVALUE_TOKEN"
 ```
 
+### Get Caller IP
+```bash
+curl -s 'https://api.echovalue.dev/myip' \
+  -H "x-token: $ECHOVALUE_TOKEN"
+```
+
 ## Important Constraints
 
 **Limits:**
@@ -219,11 +237,12 @@ curl -s 'https://api.echovalue.dev/token/logs?n=10' \
 **Pricing:**
 - Generate token: Free (100 credits included)
 - Check balance: 1 credit
+- Get caller IP: 1 credit
 - KV operations (get/set/delete): 1 credit each
 - Webhook config (set/get/delete/test): 1 credit each
 - Email processed (no attachments): 2 credits
 - Email processed (with attachments): 5 credits
-- Logs: 1 credit per log entry returned
+- Logs: free
 
 **Error Codes:**
 - `400`: Bad Request - Invalid parameters
