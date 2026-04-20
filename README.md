@@ -2,9 +2,8 @@
 
 [![Astro](https://img.shields.io/badge/Astro-6-orange.svg)](https://astro.build)
 [![Starlight](https://img.shields.io/badge/Starlight-0.38-purple.svg)](https://starlight.astro.build)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-Official API documentation for [EchoValue](https://www.echovalue.dev) - a lightweight key-value database service designed for freelancers and small projects.
+Official API documentation for [EchoValue](https://www.echovalue.dev), an API-first platform for key-value storage, webhooks, and lightweight automation workflows.
 
 🔗 **Live Documentation**: [docs.echovalue.dev](https://docs.echovalue.dev)
 
@@ -81,14 +80,3 @@ docs/
 - **EchoValue Website**: [echovalue.dev](https://www.echovalue.dev)
 - **OpenAPI Specification**: [docs.echovalue.dev/openapi.yaml](https://docs.echovalue.dev/openapi.yaml)
 - **Starlight**: [starlight.astro.build](https://starlight.astro.build)
-
-## Editorial Structure
-
-- `Overview` pages should use: intro, endpoints, pricing, limits, related pages when relevant.
-- `Endpoint` pages should use: request, response, status codes, examples.
-- `Integration` or `Guide` pages should stay separate from endpoint reference sections.
-- Use `Pricing` only on overview pages.
-- Use `:::note` cost callouts only on endpoint pages.
-- Use `credits`, not `tokens`, when describing billing.
-- Use internal doc links with trailing slashes.
-- Avoid decorative `---` separators inside page bodies.
