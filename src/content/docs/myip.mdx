@@ -19,67 +19,15 @@ This endpoint is useful when you need to:
 - detect whether the current request arrived over IPv4 or IPv6
 - inspect geo metadata such as city, country, timezone, and region
 
-**Request headers:**
+## Request
+
+**Headers:**
 
 | Header | Description |
 | ------ | ----------- |
 | `x-token` | Your API token |
 
-**Response:** `200` — JSON object.
-
-```json
-{
-  "ip": "203.0.113.42",
-  "ipv6": "",
-  "isCurrentIpv6": false,
-  "userAgent": "curl/8.7.1",
-  "acceptLanguage": "en-US,en;q=0.9",
-  "city": "Rome",
-  "country": "IT",
-  "continent": "EU",
-  "latitude": "41.9028",
-  "longitude": "12.4964",
-  "region": "Lazio",
-  "regionCode": "62",
-  "timezone": "Europe/Rome",
-  "postalCode": "00100"
-}
-```
-
-| Field | Type | Description |
-| ----- | ---- | ----------- |
-| `ip` | string | IPv4 address when available. Empty for native IPv6 callers. |
-| `ipv6` | string | Raw IPv6 address when the current caller IP is IPv6. |
-| `isCurrentIpv6` | boolean | `true` when the incoming request IP is IPv6. |
-| `userAgent` | string | Caller user agent string. |
-| `acceptLanguage` | string | Caller `Accept-Language` header when present. |
-| `city` | string | Detected city. |
-| `country` | string | Detected country code. |
-| `continent` | string | Detected continent code. |
-| `latitude` | string | Latitude associated with the caller IP. |
-| `longitude` | string | Longitude associated with the caller IP. |
-| `region` | string | Detected region or state name. |
-| `regionCode` | string | Region code. |
-| `timezone` | string | Detected IANA timezone. |
-| `postalCode` | string | Detected postal code. |
-
-**Response headers:**
-
-| Header | Description |
-| ------ | ----------- |
-| `x-balance` | Wallet balance after this call |
-| `x-cost` | Tokens consumed (1) |
-
-See [Response Headers](/response-headers) for details.
-
-**HTTP status codes:**
-
-| Status | Meaning |
-| ------ | ------- |
-| `200` | IP data returned |
-| `401` | Invalid token |
-| `402` | Wallet empty |
-| `405` | Method not allowed |
+**Examples:**
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
@@ -156,6 +104,66 @@ func main() {
 
 </TabItem>
 </Tabs>
+
+## Response
+
+**Response:** `200` — JSON object.
+
+```json
+{
+  "ip": "203.0.113.42",
+  "ipv6": "",
+  "isCurrentIpv6": false,
+  "userAgent": "curl/8.7.1",
+  "acceptLanguage": "en-US,en;q=0.9",
+  "city": "Rome",
+  "country": "IT",
+  "continent": "EU",
+  "latitude": "41.9028",
+  "longitude": "12.4964",
+  "region": "Lazio",
+  "regionCode": "62",
+  "timezone": "Europe/Rome",
+  "postalCode": "00100"
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `ip` | string | IPv4 address when available. Empty for native IPv6 callers. |
+| `ipv6` | string | Raw IPv6 address when the current caller IP is IPv6. |
+| `isCurrentIpv6` | boolean | `true` when the incoming request IP is IPv6. |
+| `userAgent` | string | Caller user agent string. |
+| `acceptLanguage` | string | Caller `Accept-Language` header when present. |
+| `city` | string | Detected city. |
+| `country` | string | Detected country code. |
+| `continent` | string | Detected continent code. |
+| `latitude` | string | Latitude associated with the caller IP. |
+| `longitude` | string | Longitude associated with the caller IP. |
+| `region` | string | Detected region or state name. |
+| `regionCode` | string | Region code. |
+| `timezone` | string | Detected IANA timezone. |
+| `postalCode` | string | Detected postal code. |
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Tokens consumed (1) |
+
+See [Response Headers](/response-headers) for details.
+
+**HTTP status codes:**
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | IP data returned |
+| `401` | Invalid token |
+| `402` | Wallet empty |
+| `405` | Method not allowed |
+
+## Pricing
 
 :::note
 **Cost:** 1 credit. This request also writes a log entry, so you can audit when and from where the endpoint was called.

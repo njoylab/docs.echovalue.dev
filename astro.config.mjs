@@ -23,12 +23,6 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Utilities',
-          items: [
-            { label: 'My IP', link: '/myip/' },
-          ],
-        },
-        {
           label: 'Key-Value Store',
           items: [
             { label: 'Overview', link: '/key-value/' },
@@ -58,6 +52,12 @@ export default defineConfig({
                 { label: 'Custom', link: '/mail2webhook-custom/' },
               ],
             },
+          ],
+        },
+        {
+          label: 'Utilities',
+          items: [
+            { label: 'My IP', link: '/myip/' },
           ],
         },
         {
