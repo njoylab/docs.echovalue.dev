@@ -115,6 +115,7 @@ When editing documentation:
 4. **Constraints**: Document length/size/time limits (30 char key/group limits, TTL ranges, etc.)
 5. **Auth header**: Use `x-token` for authentication; document `x-cost` and `x-balance` response headers
 6. **Endpoint sync is mandatory**: Whenever an endpoint is added, removed, or changed in `static/openapi.yaml`, update the human docs in `src/content/docs/` and the agent-facing docs (`skill/`, `agent-config/`, and install/setup docs if they summarize capabilities) in the same change.
+7. **Use a Utilities section for cross-cutting endpoints**: Endpoints that do not fit primary product areas like token management, key-value, or mail2webhook (for example `GET /myip`) should live under a dedicated sidebar group such as `Utilities`.
 
 ## Important Notes
 
