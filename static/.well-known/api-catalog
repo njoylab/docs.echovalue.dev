@@ -1,0 +1,29 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://api.echovalue.dev/",
+      "service-desc": [
+        {
+          "href": "https://docs.echovalue.dev/openapi.yaml",
+          "type": "text/yaml"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://docs.echovalue.dev/",
+          "type": "text/html"
+        },
+        {
+          "href": "https://docs.echovalue.dev/openapi/",
+          "type": "text/html"
+        }
+      ],
+      "service-meta": [
+        {
+          "href": "https://docs.echovalue.dev/llms.txt",
+          "type": "text/plain"
+        }
+      ]
+    }
+  ]
+}

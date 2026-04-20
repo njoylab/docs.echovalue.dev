@@ -64,10 +64,30 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: 'https://github.com/njoylab/docs.echovalue.dev/edit/main/src/content/docs/',
+        baseUrl: 'https://github.com/njoylab/docs.echovalue.dev/edit/main/',
       },
       lastUpdated: true,
-      plugins: [starlightLlmsTxt()],
+      plugins: [
+        starlightLlmsTxt({
+          details: [
+            'Primary API base: `https://api.echovalue.dev`.',
+            'Authenticate paid endpoints with the `x-token` header.',
+            'Main resources: key-value store under `/kv/<bucket>/<key>`, webhooks under `/webhook`, token management under `/token`.',
+          ].join('\n'),
+          optionalLinks: [
+            {
+              label: 'OpenAPI specification',
+              url: 'https://docs.echovalue.dev/openapi.yaml',
+              description: 'Machine-readable API schema for client generation and validation.',
+            },
+            {
+              label: 'Agent installation guide',
+              url: 'https://github.com/njoylab/docs.echovalue.dev/blob/main/INSTALL.md',
+              description: 'Setup guide for Claude, Codex, ChatGPT, Cursor, and Continue.',
+            },
+          ],
+        }),
+      ],
     }),
   ],
 });

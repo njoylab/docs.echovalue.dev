@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 # LLM-friendly documentation
 Sitemap: https://docs.echovalue.dev/sitemap-index.xml

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "echovalue-api",
+      "type": "skill-md",
+      "description": "Use the echoValue API to manage shared key-value state, mailbox-to-webhook integrations, wallet credits, and webhook tests.",
+      "url": "/.well-known/agent-skills/echovalue-api/SKILL.md",
+      "digest": "sha256:e8c9fdb9d23ce630de91f7966d6da0b3c33008cf8f34c846b3199fbae0ff683a"
+    }
+  ]
+}
