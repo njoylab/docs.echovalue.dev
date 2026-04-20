@@ -7,11 +7,13 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-## Get Caller IP
-
 `GET https://api.echovalue.dev/myip`
 
 Returns the IP address seen by echoValue for the current request, plus geo metadata derived from the request headers.
+
+:::note
+**Cost:** 1 credit. This request also writes a log entry, so you can audit when and from where the endpoint was called.
+:::
 
 This endpoint is useful when you need to:
 
@@ -150,11 +152,11 @@ func main() {
 | Header | Description |
 | ------ | ----------- |
 | `x-balance` | Wallet balance after this call |
-| `x-cost` | Tokens consumed (1) |
+| `x-cost` | Credits consumed |
 
-See [Response Headers](/response-headers) for details.
+See [Response Headers](/response-headers/) for details.
 
-**HTTP status codes:**
+## Status Codes
 
 | Status | Meaning |
 | ------ | ------- |
@@ -163,8 +165,4 @@ See [Response Headers](/response-headers) for details.
 | `402` | Wallet empty |
 | `405` | Method not allowed |
 
-## Pricing
-
-:::note
-**Cost:** 1 credit. This request also writes a log entry, so you can audit when and from where the endpoint was called.
-:::
+## Examples

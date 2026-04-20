@@ -84,16 +84,7 @@ func main() {
 
 ## Response Headers
 
-Paid API endpoints document these headers:
-
-| Header | Description |
-| ------ | ----------- |
-| `x-cost` | Credits deducted from your wallet for this request |
-| `x-balance` | Credits remaining in your wallet after this request |
-
-:::note
-Use `x-balance` to monitor your credit balance on paid endpoints instead of calling `GET /token` separately.
-:::
+Paid endpoints return `x-cost` and `x-balance` headers. See [Response Headers](/response-headers/) for details and language examples.
 
 ## Error Responses
 

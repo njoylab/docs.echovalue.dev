@@ -5,13 +5,58 @@ sidebar:
   order: 4
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 `PUT https://api.echovalue.dev/webhook/<webhookId>`
 
 Replaces the full webhook document for the specified `webhookId`. `url` is required.
 
 `webhookId` is a path parameter and is not allowed in the request body.
 
+:::note
+**Cost:** 1 credit for each `PUT` or `PATCH` call.
+:::
+
 ## Replace Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `Content-Type` | Must be `application/json` |
+
+**Body** (`application/json`):
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `name` | string | Human-friendly webhook name | No |
+| `url` | string | Callback URL; must be HTTPS and publicly reachable | Yes |
+| `headers` | object | Custom headers to include in the callback request | No |
+| `format` | string | Native message format | No |
+| `template` | object | Custom template when `format` is `custom` | No |
+| `options` | object | Format-specific options | No |
+| `includeAttachments` | boolean | Whether attachments are included in payloads | No |
+
+## Replace Response
+
+Response body and response headers are the same as [Create Webhook](/mail2webhook/create/).
+
+## Replace Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook replaced |
+| `400` | Invalid URL or malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Webhook not found |
+| `500` | Internal server error |
+
+## Replace Examples
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
 
 ```sh
 curl 'https://api.echovalue.dev/webhook/slack' \
@@ -26,18 +71,100 @@ curl 'https://api.echovalue.dev/webhook/slack' \
   }'
 ```
 
-Response body and response headers are the same as [Create Webhook](/mail2webhook/create/).
+</TabItem>
+<TabItem label="JavaScript">
 
-## Replace Status Codes
+```js
+fetch('https://api.echovalue.dev/webhook/slack', {
+  method: 'PUT',
+  headers: {
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'slack-prod',
+    url: 'https://hooks.slack.com/services/T00/B00/XXX',
+    format: 'slack',
+    includeAttachments: false
+  })
+});
+```
 
-| Status | Meaning |
-| ------ | ------- |
-| `200` | Webhook replaced |
-| `400` | Invalid URL or malformed request |
-| `401` | Invalid token |
-| `402` | Insufficient credits |
-| `404` | Webhook not found |
-| `500` | Internal server error |
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.put('https://api.echovalue.dev/webhook/slack',
+  headers={
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  json={
+    'name': 'slack-prod',
+    'url': 'https://hooks.slack.com/services/T00/B00/XXX',
+    'format': 'slack',
+    'includeAttachments': False
+  }
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$data = json_encode([
+  'name' => 'slack-prod',
+  'url' => 'https://hooks.slack.com/services/T00/B00/XXX',
+  'format' => 'slack',
+  'includeAttachments' => false
+]);
+$ch = curl_init('https://api.echovalue.dev/webhook/slack');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  'x-token: mytoken',
+  'Content-Type: application/json'
+]);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "net/http"
+)
+
+func main() {
+    payload := map[string]interface{}{
+        "name": "slack-prod",
+        "url": "https://hooks.slack.com/services/T00/B00/XXX",
+        "format": "slack",
+        "includeAttachments": false,
+    }
+    jsonData, _ := json.Marshal(payload)
+
+    req, _ := http.NewRequest("PUT", "https://api.echovalue.dev/webhook/slack", bytes.NewBuffer(jsonData))
+    req.Header.Set("x-token", "mytoken")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
 
 ## Patch Endpoint
 
@@ -58,16 +185,14 @@ Updates only the fields you provide.
 
 ## Patch Request
 
-```sh
-curl 'https://api.echovalue.dev/webhook/slack' \
-  -X PATCH \
-  -H 'x-token: mytoken' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "headers": {},
-    "includeAttachments": false
-  }'
-```
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `Content-Type` | Must be `application/json` |
+
+## Patch Response
 
 Response body and response headers are the same as [Create Webhook](/mail2webhook/create/).
 
@@ -81,6 +206,109 @@ Response body and response headers are the same as [Create Webhook](/mail2webhoo
 | `402` | Insufficient credits |
 | `404` | Webhook not found |
 | `500` | Internal server error |
+
+## Patch Examples
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/webhook/slack' \
+  -X PATCH \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "headers": {},
+    "includeAttachments": false
+  }'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/webhook/slack', {
+  method: 'PATCH',
+  headers: {
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    headers: {},
+    includeAttachments: false
+  })
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.patch('https://api.echovalue.dev/webhook/slack',
+  headers={
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  json={
+    'headers': {},
+    'includeAttachments': False
+  }
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$data = json_encode([
+  'headers' => (object)[],
+  'includeAttachments' => false
+]);
+$ch = curl_init('https://api.echovalue.dev/webhook/slack');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  'x-token: mytoken',
+  'Content-Type: application/json'
+]);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "net/http"
+)
+
+func main() {
+    payload := map[string]interface{}{
+        "headers": map[string]interface{}{},
+        "includeAttachments": false,
+    }
+    jsonData, _ := json.Marshal(payload)
+
+    req, _ := http.NewRequest("PATCH", "https://api.echovalue.dev/webhook/slack", bytes.NewBuffer(jsonData))
+    req.Header.Set("x-token", "mytoken")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>
 
 :::caution
 The webhook URL must be HTTPS and publicly reachable. Localhost and private IP addresses are not accepted.

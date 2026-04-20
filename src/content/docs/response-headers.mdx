@@ -18,7 +18,11 @@ The OpenAPI specification defines these headers on wallet-consuming endpoints:
 Use `x-balance` to monitor your balance on paid endpoints instead of calling `GET /token` separately.
 :::
 
-## Reading Headers
+## Response Headers
+
+These headers appear on wallet-consuming endpoints such as key-value operations, Mail2Webhook management endpoints, and token balance/settings endpoints. `GET /token/logs` is free and does not return wallet headers.
+
+## Examples
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">

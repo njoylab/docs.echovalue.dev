@@ -34,7 +34,12 @@ export default defineConfig({
             { label: 'Set Key/Value', link: '/key-value/set/' },
             { label: 'Get Key/Value', link: '/key-value/get/' },
             { label: 'Delete Key/Value', link: '/key-value/delete/' },
-            { label: 'Agent Shared State', link: '/key-value/agent-state/' },
+          ],
+        },
+        {
+          label: 'Guides',
+          items: [
+            { label: 'Agent Shared State', link: '/guides/agent-shared-state/' },
           ],
         },
         {

@@ -9,14 +9,11 @@ The echoValue API is fully documented using the **OpenAPI 3.0** specification fo
 
 ## Download
 
-📥 **[Download openapi.yaml](/openapi.yaml)**
+Download the latest spec here: [openapi.yaml](/openapi.yaml)
 
 ## View & Test Interactively
 
-**Swagger UI:**
 [Open in Swagger UI](https://petstore.swagger.io/?url=https://docs.echovalue.dev/openapi.yaml)
-
----
 
 ## Use Cases
 
@@ -60,18 +57,16 @@ test('GET /default/mykey returns valid response', async () => {
 ### Mock Server
 
 ```sh
-# Using Prism
 npx @stoplight/prism-cli mock \
   https://docs.echovalue.dev/openapi.yaml
 
-# Mock server runs at http://127.0.0.1:4010
+# Runs at http://127.0.0.1:4010
 ```
 
----
+## Notes
 
-The OpenAPI specification is automatically updated with each documentation release. Always use the latest version from:
-
-**https://docs.echovalue.dev/openapi.yaml**
+- The OpenAPI specification is updated alongside documentation releases.
+- Always use `https://docs.echovalue.dev/openapi.yaml` for the latest published version.
 
 :::note
 The specification is version-controlled alongside the documentation. Check the [GitHub repository](https://github.com/njoylab/docs.echovalue.dev) for the full history of changes.

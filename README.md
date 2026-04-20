@@ -45,8 +45,9 @@ docs/
 │       │   ├── index.mdx
 │       │   ├── set.mdx
 │       │   ├── get.mdx
-│       │   ├── delete.mdx
-│       │   └── agent-state.mdx
+│       │   └── delete.mdx
+│       ├── guides/
+│       │   └── agent-shared-state.mdx
 │       └── mail2webhook/
 │           ├── index.mdx
 │           ├── create.mdx
@@ -80,3 +81,14 @@ docs/
 - **EchoValue Website**: [echovalue.dev](https://www.echovalue.dev)
 - **OpenAPI Specification**: [docs.echovalue.dev/openapi.yaml](https://docs.echovalue.dev/openapi.yaml)
 - **Starlight**: [starlight.astro.build](https://starlight.astro.build)
+
+## Editorial Structure
+
+- `Overview` pages should use: intro, endpoints, pricing, limits, related pages when relevant.
+- `Endpoint` pages should use: request, response, status codes, examples.
+- `Integration` or `Guide` pages should stay separate from endpoint reference sections.
+- Use `Pricing` only on overview pages.
+- Use `:::note` cost callouts only on endpoint pages.
+- Use `credits`, not `tokens`, when describing billing.
+- Use internal doc links with trailing slashes.
+- Avoid decorative `---` separators inside page bodies.

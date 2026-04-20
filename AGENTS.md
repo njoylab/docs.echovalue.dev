@@ -29,9 +29,11 @@ All documentation lives in `src/content/docs/` as `.mdx` files:
 
 - `index.mdx` (order: 1) — Introduction and overview
 - `authentication.mdx` (order: 2) — Authentication with `x-token` header
-- `token.mdx` (order: 3) — Token management (generate, check balance, recharge)
-- `key-value.mdx` (order: 4) — Key-value store operations (GET/POST/DELETE)
-- `mail2webhook.mdx` (order: 5) — Mail2Webhook service
+- `token.mdx` (order: 3) — Token management overview
+- `token/` — Token endpoint reference pages
+- `key-value/` — Key-value overview and endpoint reference pages
+- `guides/` — Product guides and use-case pages
+- `mail2webhook/` — Mail2Webhook overview and endpoint reference pages
 - `logs.mdx` (order: 6) — Logs retrieval API
 - `response-headers.mdx` (order: 7) — Response headers documentation
 - `errors.mdx` (order: 8) — HTTP error codes
@@ -116,6 +118,16 @@ When editing documentation:
 5. **Auth header**: Use `x-token` for authentication; document `x-cost` and `x-balance` response headers
 6. **Endpoint sync is mandatory**: Whenever an endpoint is added, removed, or changed in `static/openapi.yaml`, update the human docs in `src/content/docs/` and the agent-facing docs (`skill/`, `agent-config/`, and install/setup docs if they summarize capabilities) in the same change.
 7. **Use a Utilities section for cross-cutting endpoints**: Endpoints that do not fit primary product areas like token management, key-value, or mail2webhook (for example `GET /myip`) should live under a dedicated sidebar group such as `Utilities`.
+8. **Use fixed page archetypes**:
+   - Overview pages: intro, endpoints, pricing, limits, related pages when relevant
+   - Endpoint pages: request, response, status codes, examples
+   - Integration or guide pages: prerequisites, setup, configuration, output, notes
+9. **Keep guides out of endpoint sections**: Tutorial or use-case content such as agent workflows should live under a dedicated `Guides` section rather than inside API reference groups.
+10. **Terminology and style**:
+   - Use `credits`, not `tokens`, for billing language
+   - Use trailing slashes in internal doc links
+   - Avoid decorative `---` separators in page bodies
+   - Use `Pricing` only on overview pages and `:::note` cost callouts on endpoint pages
 
 ## Important Notes
 
