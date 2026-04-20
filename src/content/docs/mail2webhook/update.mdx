@@ -1,0 +1,87 @@
+---
+title: Update Webhook
+description: Replace or patch an existing Mail2Webhook configuration
+sidebar:
+  order: 4
+---
+
+`PUT https://api.echovalue.dev/webhook/<webhookId>`
+
+Replaces the full webhook document for the specified `webhookId`. `url` is required.
+
+`webhookId` is a path parameter and is not allowed in the request body.
+
+## Replace Request
+
+```sh
+curl 'https://api.echovalue.dev/webhook/slack' \
+  -X PUT \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "slack-prod",
+    "url": "https://hooks.slack.com/services/T00/B00/XXX",
+    "format": "slack",
+    "includeAttachments": false
+  }'
+```
+
+Response body and response headers are the same as [Create Webhook](/mail2webhook/create/).
+
+## Replace Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook replaced |
+| `400` | Invalid URL or malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Webhook not found |
+| `500` | Internal server error |
+
+## Patch Endpoint
+
+`PATCH https://api.echovalue.dev/webhook/<webhookId>`
+
+Updates only the fields you provide.
+
+`webhookId` is a path parameter and is not allowed in the request body.
+
+**Patch semantics:**
+
+| Field | Behavior |
+| ----- | -------- |
+| `name`, `url`, `format`, `includeAttachments` | Replaced when provided |
+| `headers` | Replaces the full headers object. Use `{}` to clear it. |
+| `options` | Replaces the full options object. Use `{}` to clear it. |
+| `template` | Replaces the template. Use `null` to remove it. |
+
+## Patch Request
+
+```sh
+curl 'https://api.echovalue.dev/webhook/slack' \
+  -X PATCH \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "headers": {},
+    "includeAttachments": false
+  }'
+```
+
+Response body and response headers are the same as [Create Webhook](/mail2webhook/create/).
+
+## Patch Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook updated |
+| `400` | Invalid URL or malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Webhook not found |
+| `500` | Internal server error |
+
+:::caution
+The webhook URL must be HTTPS and publicly reachable. Localhost and private IP addresses are not accepted.
+:::

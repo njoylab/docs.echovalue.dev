@@ -9,28 +9,38 @@ The Mail2Webhook service assigns each webhook an opaque email address in the for
 
 Each webhook is managed through a public `webhookId`. If you omit it when creating a webhook, echoValue uses `default`.
 
+## Endpoints
+
+| Page | Endpoint |
+| ---- | -------- |
+| [Create Webhook](/mail2webhook/create/) | `POST /webhook` |
+| [List Webhooks](/mail2webhook/list/) | `GET /webhook` |
+| [Get Webhook](/mail2webhook/get/) | `GET /webhook/<webhookId>` |
+| [Update Webhook](/mail2webhook/update/) | `PUT /webhook/<webhookId>` and `PATCH /webhook/<webhookId>` |
+| [Delete Webhook](/mail2webhook/delete/) | `DELETE /webhook/<webhookId>` |
+| [Test Webhook](/mail2webhook/test/) | `POST /webhook/<webhookId>/test` |
+| [Webhook Payload](/mail2webhook/payload/) | Delivery payload schema |
+
 ## Native Format Support
 
 Set `format` when configuring your webhook to have echoValue transform incoming emails into the native payload format for your platform — no custom handling required on your end.
 
 | Format | Platform |
 | ------ | -------- |
-| `slack` | [Slack Incoming Webhooks](/mail2webhook-slack) |
-| `discord` | [Discord Webhooks](/mail2webhook-discord) |
-| `teams` | [Microsoft Teams](/mail2webhook-teams) |
-| `telegram` | [Telegram Bot API](/mail2webhook-telegram) |
-| `pagerduty` | [PagerDuty Events API v2](/mail2webhook-pagerduty) |
-| `custom` | [Custom JSON template](/mail2webhook-custom) |
+| `slack` | [Slack Incoming Webhooks](/mail2webhook/formats/slack/) |
+| `discord` | [Discord Webhooks](/mail2webhook/formats/discord/) |
+| `teams` | [Microsoft Teams](/mail2webhook/formats/teams/) |
+| `telegram` | [Telegram Bot API](/mail2webhook/formats/telegram/) |
+| `pagerduty` | [PagerDuty Events API v2](/mail2webhook/formats/pagerduty/) |
+| `custom` | [Custom JSON template](/mail2webhook/formats/custom/) |
 
 Without a `format`, the raw email payload is forwarded as-is (see [Webhook Payload](/mail2webhook/payload)).
 
 ## Webhook IDs
 
-- Use `POST /webhook` to create a new webhook.
-- Use `GET /webhook` to list all configured webhooks.
-- Use `GET /webhook/{webhookId}` to fetch one webhook.
-- Use `PUT`, `PATCH`, `DELETE`, and `POST /webhook/{webhookId}/test` to manage a specific webhook.
-- `webhookId` is public and stable for management operations. The email address remains opaque and is returned by the API response.
+- `webhookId` is public and stable for management operations.
+- The email address remains opaque and is returned by the API response.
+- The returned `email` mailbox may not resemble the chosen `webhookId`.
 
 ## Pricing
 

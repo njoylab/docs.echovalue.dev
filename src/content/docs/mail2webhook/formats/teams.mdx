@@ -1,0 +1,56 @@
+---
+title: "Mail2Webhook: Microsoft Teams"
+description: Forward emails to Microsoft Teams using echoValue's Mail2Webhook with native Teams formatting
+sidebar:
+  order: 3
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+When `format` is set to `teams`, incoming emails are converted into Microsoft Teams messages using the incoming webhook format.
+
+## Get the Webhook URL
+
+### Via Workflows
+
+<Steps>
+
+1. In the channel, click **+** next to the message input → **Workflows**.
+2. Select **Post to a channel when a webhook request is received**.
+3. Finish setup and copy the generated URL.
+
+</Steps>
+
+### Via Connectors
+
+<Steps>
+
+1. In the channel, click **···** → **Connectors**.
+2. Search for **Incoming Webhook**, click **Add** → **Configure**.
+3. Give it a name and copy the generated URL.
+
+</Steps>
+
+## Configure in echoValue
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://prod-00.westeurope.logic.azure.com:443/workflows/XXXX/...",
+    "format": "teams"
+  }'
+```
+
+## Output Preview
+
+```
+**Subject line**
+From: Sender Name <sender@example.com>
+Email body text
+```
+
+:::note
+The plain text body is used. HTML is stripped automatically.
+:::

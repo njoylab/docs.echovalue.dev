@@ -1,0 +1,127 @@
+---
+title: Recharge Wallet
+description: Get a Stripe payment link to add credits to your wallet
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`GET https://api.echovalue.dev/recharge`
+
+Returns a Stripe payment link to add credits to your wallet.
+
+:::note
+**Cost:** 1 credit.
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Query parameters:**
+
+| Parameter | Type | Description | Default |
+| --------- | ---- | ----------- | ------- |
+| `amount` | string | Number of million operations to add. Accepted values: `1` or `3`. | `1` |
+
+## Response
+
+`200 OK` — Stripe payment URL as plain text.
+
+```
+https://buy.stripe.com/<productID>?client_reference_id=<hash>
+```
+
+## Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Recharge link returned |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+
+## Examples
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/recharge?amount=1' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/recharge?amount=1', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.text())
+.then(url => window.open(url));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/recharge',
+  headers={'x-token': 'mytoken'},
+  params={'amount': '1'}
+)
+print(response.text)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/recharge?amount=1');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$url = curl_exec($ch);
+curl_close($ch);
+echo $url;
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/recharge?amount=1", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+    body, _ := io.ReadAll(resp.Body)
+    fmt.Println(string(body))
+}
+```
+
+</TabItem>
+</Tabs>
+
+Follow the returned URL to complete the payment.
+
+:::note
+The card transaction appears as **nJoyLab** on your statement.
+:::

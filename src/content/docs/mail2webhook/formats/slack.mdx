@@ -1,0 +1,48 @@
+---
+title: "Mail2Webhook: Slack"
+description: Forward emails to Slack using echoValue's Mail2Webhook with native Slack formatting
+sidebar:
+  order: 1
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+When `format` is set to `slack`, incoming emails are converted into Slack messages using the [Incoming Webhooks](https://api.slack.com/messaging/webhooks) API.
+
+## Get the Webhook URL
+
+<Steps>
+
+1. Go to [api.slack.com/apps](https://api.slack.com/apps) and click **Create New App** → **From scratch**.
+2. In the app settings sidebar, click **Incoming Webhooks** and toggle it **On**.
+3. Click **Add New Webhook to Workspace**, select the target channel, then click **Allow**.
+4. Copy the generated URL:
+   ```
+   https://hooks.slack.com/services/T00000000/B00000000/YOUR_WEBHOOK_PATH
+   ```
+
+</Steps>
+
+## Configure in echoValue
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://hooks.slack.com/services/T00000000/B00000000/YOUR_WEBHOOK_PATH",
+    "format": "slack"
+  }'
+```
+
+## Output Preview
+
+```
+*Subject line*
+From: Sender Name <sender@example.com>
+Email body text
+```
+
+:::note
+The plain text body is used. HTML is stripped automatically.
+:::

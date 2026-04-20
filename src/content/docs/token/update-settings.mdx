@@ -1,0 +1,192 @@
+---
+title: Update Low Balance Settings
+description: Configure low-balance notifications for your wallet
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`PUT https://api.echovalue.dev/token/settings`
+
+Configures low-balance notifications.
+
+:::note
+**Cost:** 1 credit.
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `Content-Type` | Must be `application/json` |
+
+**Body** (`application/json`):
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `low_balance_threshold` | integer | Balance threshold that triggers notifications. Set to `0` to disable. | No |
+| `low_balance_webhook` | object | Webhook configuration | No |
+| `low_balance_email` | string | Email address to receive notifications | No |
+
+**Webhook configuration object:**
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `url` | string | HTTPS URL to receive the notification | Yes |
+| `headers` | object | Custom headers to include in the webhook request | No |
+| `format` | string | Native payload format: `slack`, `discord`, `teams`, `telegram`, `pagerduty`, `custom` | No |
+| `template` | object | JSON template when `format` is `custom`. Supports `{{wallet}}`, `{{threshold}}`, `{{token_hash}}` placeholders | No |
+| `options` | object | Format-specific options such as `chat_id` or `routing_key` | No |
+
+## Response
+
+`200 OK`
+
+```
+OK
+```
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Credits consumed |
+
+See [Response Headers](/response-headers/) for details.
+
+## Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Settings updated |
+| `400` | Invalid webhook URL or invalid threshold |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+
+## Examples
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/token/settings' \
+  -X PUT \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "low_balance_threshold": 10,
+    "low_balance_webhook": {
+      "url": "https://yourdomain.com/alert",
+      "format": "slack"
+    },
+    "low_balance_email": "alerts@example.com"
+  }'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/token/settings', {
+  method: 'PUT',
+  headers: {
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    low_balance_threshold: 10,
+    low_balance_webhook: {
+      url: 'https://yourdomain.com/alert',
+      format: 'slack'
+    },
+    low_balance_email: 'alerts@example.com'
+  })
+});
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+requests.put('https://api.echovalue.dev/token/settings',
+  headers={
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  json={
+    'low_balance_threshold': 10,
+    'low_balance_webhook': {
+      'url': 'https://yourdomain.com/alert',
+      'format': 'slack'
+    },
+    'low_balance_email': 'alerts@example.com'
+  }
+)
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$data = json_encode([
+  'low_balance_threshold' => 10,
+  'low_balance_webhook' => [
+    'url' => 'https://yourdomain.com/alert',
+    'format' => 'slack'
+  ],
+  'low_balance_email' => 'alerts@example.com'
+]);
+$ch = curl_init('https://api.echovalue.dev/token/settings');
+curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  'x-token: mytoken',
+  'Content-Type: application/json'
+]);
+curl_exec($ch);
+curl_close($ch);
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "net/http"
+)
+
+func main() {
+    payload := map[string]interface{}{
+        "low_balance_threshold": 10,
+        "low_balance_webhook": map[string]interface{}{
+            "url":    "https://yourdomain.com/alert",
+            "format": "slack",
+        },
+        "low_balance_email": "alerts@example.com",
+    }
+    jsonData, _ := json.Marshal(payload)
+
+    req, _ := http.NewRequest("PUT", "https://api.echovalue.dev/token/settings", bytes.NewBuffer(jsonData))
+    req.Header.Set("x-token", "mytoken")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    client.Do(req)
+}
+```
+
+</TabItem>
+</Tabs>

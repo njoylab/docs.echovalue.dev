@@ -1,0 +1,138 @@
+---
+title: Get Low Balance Settings
+description: Retrieve the current low-balance notification settings
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`GET https://api.echovalue.dev/token/settings`
+
+Returns the current low-balance notification settings.
+
+:::note
+**Cost:** 1 credit.
+:::
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+## Response
+
+`200 OK` — JSON object.
+
+```json
+{
+  "low_balance_threshold": 10,
+  "low_balance_webhook": {
+    "url": "https://yourdomain.com/alert",
+    "headers": {},
+    "format": "slack"
+  },
+  "low_balance_email": "alerts@example.com"
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `low_balance_threshold` | integer | Balance threshold that triggers notifications (`0` disables notifications) |
+| `low_balance_webhook` | object | Webhook configuration |
+| `low_balance_email` | string | Email address for notifications |
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Credits consumed |
+
+See [Response Headers](/response-headers/) for details.
+
+## Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Settings returned |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+
+## Examples
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/token/settings' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/token/settings', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/token/settings',
+  headers={'x-token': 'mytoken'}
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/token/settings');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response, true));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/settings", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    body, _ := io.ReadAll(resp.Body)
+    fmt.Println(string(body))
+}
+```
+
+</TabItem>
+</Tabs>

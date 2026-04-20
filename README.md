@@ -31,6 +31,12 @@ docs/
 │       ├── index.mdx
 │       ├── authentication.mdx
 │       ├── token.mdx
+│       ├── token/
+│       │   ├── create.mdx
+│       │   ├── balance.mdx
+│       │   ├── recharge.mdx
+│       │   ├── settings.mdx
+│       │   └── update-settings.mdx
 │       ├── logs.mdx
 │       ├── response-headers.mdx
 │       ├── errors.mdx
@@ -43,11 +49,20 @@ docs/
 │       │   └── agent-state.mdx
 │       └── mail2webhook/
 │           ├── index.mdx
-│           ├── configure.mdx
+│           ├── create.mdx
+│           ├── list.mdx
 │           ├── get.mdx
+│           ├── update.mdx
 │           ├── delete.mdx
 │           ├── test.mdx
-│           └── payload.mdx
+│           ├── payload.mdx
+│           └── formats/
+│               ├── slack.mdx
+│               ├── discord.mdx
+│               ├── teams.mdx
+│               ├── telegram.mdx
+│               ├── pagerduty.mdx
+│               └── custom.mdx
 ├── skill/                    # Shared skill assets and quick reference
 ├── agent-config/             # Agent-specific files for Codex, ChatGPT, Cursor, and Continue
 └── static/                   # Static assets (favicons, openapi.yaml)

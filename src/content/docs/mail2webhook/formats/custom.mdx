@@ -1,0 +1,77 @@
+---
+title: "Mail2Webhook: Custom Format"
+description: Create custom webhook payload transformations using echoValue's template engine
+sidebar:
+  order: 6
+---
+
+When `format` is set to `custom`, you define your own JSON template with placeholders. echoValue fills the values from the incoming email and sends the result to your webhook URL.
+
+## Configure in echoValue
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "url": "https://yourdomain.com/webhook",
+    "format": "custom",
+    "template": {
+      "subject": "{{subject}}",
+      "from": "{{from.name}} <{{from.email}}>",
+      "body": "{{text|html}}",
+      "attachments": "{{attachments[0].filename}}"
+    }
+  }'
+```
+
+## Template Placeholders
+
+Placeholders use `{{dot.notation}}` syntax and are resolved against the [webhook payload](/mail2webhook/payload/).
+
+### Dot Notation
+
+```
+{{subject}}
+{{from.name}}
+{{from.email}}
+{{attachments[0].filename}}
+```
+
+### Array Index
+
+```
+{{attachments[0].filename}}
+{{attachments[-1].filename}}
+```
+
+### Fallback Chain
+
+```
+{{text|html}}
+{{from.name|from.email}}
+```
+
+### Literal Fallback
+
+```
+{{from.name|"unknown"}}
+{{text|"No body"}}
+```
+
+## Example Templates
+
+```json
+{
+  "template": {
+    "text": "*{{subject}}*\nFrom: {{from.name}} <{{from.email}}>\n\n{{text|html}}"
+  }
+}
+```
+
+## Limits
+
+| Constraint | Value |
+| ---------- | ----- |
+| Max template size | 2048 bytes |
+| Max nesting depth | 5 levels |
