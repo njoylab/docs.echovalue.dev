@@ -7,9 +7,9 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-`DELETE https://api.echovalue.dev/webhook/<mailboxId>`
+`DELETE https://api.echovalue.dev/webhook/<webhookId>`
 
-Removes a specific webhook from your wallet using its `mailboxId`.
+Removes a specific webhook from your wallet using its public `webhookId`.
 
 :::note
 **Cost:** 1 credit
@@ -27,13 +27,13 @@ Removes a specific webhook from your wallet using its `mailboxId`.
 
 | Parameter | Type | Description | Required |
 | --------- | ---- | ----------- | -------- |
-| `mailboxId` | string | Opaque mailbox identifier to delete | Yes |
+| `webhookId` | string | Public webhook identifier to delete | Yes |
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
 
 ```sh
-curl 'https://api.echovalue.dev/webhook/r_abcd1234' \
+curl 'https://api.echovalue.dev/webhook/slack' \
   -H 'x-token: mytoken' \
   -X DELETE
 ```
@@ -42,7 +42,7 @@ curl 'https://api.echovalue.dev/webhook/r_abcd1234' \
 <TabItem label="JavaScript">
 
 ```js
-fetch('https://api.echovalue.dev/webhook/r_abcd1234', {
+fetch('https://api.echovalue.dev/webhook/slack', {
   method: 'DELETE',
   headers: { 'x-token': 'mytoken' }
 });
@@ -54,7 +54,7 @@ fetch('https://api.echovalue.dev/webhook/r_abcd1234', {
 ```python
 import requests
 
-requests.delete('https://api.echovalue.dev/webhook/r_abcd1234',
+requests.delete('https://api.echovalue.dev/webhook/slack',
   headers={'x-token': 'mytoken'}
 )
 ```
@@ -64,7 +64,7 @@ requests.delete('https://api.echovalue.dev/webhook/r_abcd1234',
 
 ```php
 <?php
-$ch = curl_init('https://api.echovalue.dev/webhook/r_abcd1234');
+$ch = curl_init('https://api.echovalue.dev/webhook/slack');
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_exec($ch);
@@ -81,7 +81,7 @@ package main
 import "net/http"
 
 func main() {
-    req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/webhook/r_abcd1234", nil)
+    req, _ := http.NewRequest("DELETE", "https://api.echovalue.dev/webhook/slack", nil)
     req.Header.Set("x-token", "mytoken")
 
     client := &http.Client{}
@@ -114,4 +114,4 @@ See [Response Headers](/response-headers) for details.
 | `200` | Webhook deleted |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
-| `404` | No webhook configured |
+| `404` | Webhook not found |

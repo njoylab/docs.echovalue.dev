@@ -13,6 +13,8 @@ info:
 tags:
   - name: My IP API
     description: Return the caller IP and geo headers (costs 1 token)
+  - name: Scrape API
+    description: Proxy URL summary requests to the configured AWS Lambda scraper (costs 1 token)
   - name: KV API
     description: Read/write/delete key-value entries (each call costs 1 token)
   - name: Token API
@@ -146,6 +148,36 @@ components:
         postalCode:
           type: string
 
+    SummaryRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+        language:
+          type: string
+        ignoreRobots:
+          type: boolean
+        ignoreExternalLinks:
+          type: boolean
+        ignoreInteralLinks:
+          type: boolean
+        generateSummary:
+          type: boolean
+        summaryLength:
+          type: string
+          enum: [short, medium, long]
+        extractKeyFacts:
+          type: boolean
+        summaryLanguage:
+          type: string
+
+    SummaryResponse:
+      type: object
+      description: Opaque upstream payload returned by the AWS Lambda scraper.
+      additionalProperties: true
+
     WalletInfo:
       type: object
       properties:
@@ -266,9 +298,9 @@ components:
       type: object
       required: [url]
       properties:
-        name:
+        webhookId:
           type: string
-          description: Human-friendly webhook name.
+          description: Public webhook identifier used for management endpoints. Defaults to `default` when omitted.
         url:
           type: string
           description: Callback URL to receive webhook events
@@ -315,12 +347,10 @@ components:
     WebhookPatchRequest:
       type: object
       description: |
-        Partial update payload for `PATCH /webhook/{mailboxId}`.
+        Partial update payload for `PATCH /webhook/{webhookId}`.
         Only provided fields are updated.
         `headers`, `options`, and `template` replace the full field value (no deep merge).
       properties:
-        name:
-          type: string
         url:
           type: string
         headers:
@@ -350,9 +380,9 @@ components:
     WebhookResponse:
       type: object
       properties:
-        name:
+        webhookId:
           type: string
-          description: Webhook name
+          description: Public webhook identifier used for management endpoints
         webhook:
           type: string
           description: Configured callback URL
@@ -375,9 +405,6 @@ components:
         includeAttachments:
           type: boolean
           description: Whether attachments are included in webhook payload (true = include, false = stripped)
-        mailboxId:
-          type: string
-          description: Opaque mailbox identifier for management operations
         email:
           type: string
           description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev)
@@ -404,6 +431,76 @@ components:
       description: Invalid parameters
 
 paths:
+  # ─────────────────────────────── Scrape API ───────────────────────────────
+  /scrape:
+    servers:
+      - url: https://api.echovalue.dev
+        description: Production - Consolidated API
+    post:
+      tags: [Scrape API]
+      summary: Scrape URL metadata
+      description: |
+        Proxies the request body to the configured AWS Lambda summary scraper endpoint.
+        The wallet is authenticated with `X-Token`, charged locally, and the request is logged.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SummaryRequest"
+      responses:
+        "200":
+          description: Successful upstream response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+              description: Wallet balance after this call
+            X-Cost:
+              schema:
+                type: integer
+              description: Tokens consumed. `55` for base scrape, `800` when AI enrichment is requested.
+        "400":
+          description: Invalid request or upstream validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SummaryResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+              description: Tokens consumed. `55` for base scrape, `800` when AI enrichment is requested.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "405":
+          description: Method not allowed
+        "502":
+          description: Upstream summary service unavailable
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+              description: Tokens consumed. `55` for base scrape, `800` when AI enrichment is requested.
+        "503":
+          description: Summary service not configured
+
   # ─────────────────────────────── My IP API ───────────────────────────────
   /myip:
     servers:
@@ -791,7 +888,6 @@ paths:
       summary: Create webhook
       description: |
         Creates a new webhook. Costs 1 token.
-        `mailboxId` in request body is not allowed.
         URL must be HTTPS pointing to a public host.
       security:
         - TokenAuth: []
@@ -823,29 +919,68 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "409":
+          description: Webhook ID already exists for this wallet
         "500":
           description: Internal server error
 
-  /webhook/{mailboxId}:
+  /webhook/{webhookId}:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
-    put:
+    get:
       tags: [Webhook API]
-      summary: Replace webhook
-      description: |
-        Replaces the full webhook document for the specified mailbox. Costs 1 token.
-        `url` is required. `mailboxId` in request body is not allowed.
+      summary: Get webhook by ID
+      description: Returns a specific webhook by `webhookId`. Costs 1 token.
       security:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
-        - name: mailboxId
+        - name: webhookId
           in: path
           required: true
           schema:
             type: string
-          description: Opaque mailbox identifier to replace
+          description: Public webhook identifier
+      responses:
+        "200":
+          description: Webhook found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+          headers:
+            X-Balance:
+              schema:
+                type: integer
+            X-Cost:
+              schema:
+                type: integer
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "404":
+          description: Webhook not found
+
+    put:
+      tags: [Webhook API]
+      summary: Replace webhook
+      description: |
+        Replaces the full webhook document for the specified `webhookId`. Costs 1 token.
+        `url` is required.
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: "#/components/parameters/TokenHeader"
+        - name: webhookId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Public webhook identifier to replace
       requestBody:
         required: true
         content:
@@ -882,17 +1017,16 @@ paths:
       summary: Patch webhook
       description: |
         Updates only provided fields on a webhook. Costs 1 token.
-        `mailboxId` in request body is not allowed.
       security:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
-        - name: mailboxId
+        - name: webhookId
           in: path
           required: true
           schema:
             type: string
-          description: Opaque mailbox identifier to update
+          description: Public webhook identifier to update
       requestBody:
         required: true
         content:
@@ -932,12 +1066,12 @@ paths:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
-        - name: mailboxId
+        - name: webhookId
           in: path
           required: true
           schema:
             type: string
-          description: Opaque mailbox identifier to delete
+          description: Public webhook identifier to delete
       responses:
         "200":
           description: Webhook deleted
@@ -961,7 +1095,7 @@ paths:
           description: No webhook configured
 
   # ─────────────────────────────── Webhook Test API ───────────────────────────────
-  /webhook/test:
+  /webhook/{webhookId}/test:
     servers:
       - url: https://api.echovalue.dev
         description: Production - Consolidated API
@@ -974,12 +1108,12 @@ paths:
         - TokenAuth: []
       parameters:
         - $ref: "#/components/parameters/TokenHeader"
-        - name: mailboxId
-          in: query
+        - name: webhookId
+          in: path
           required: true
           schema:
             type: string
-          description: Opaque mailbox identifier to test
+          description: Public webhook identifier to test
       responses:
         "200":
           description: Test call processed (check `success` field for delivery status)

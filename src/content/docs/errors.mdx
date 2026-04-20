@@ -42,7 +42,7 @@ Requests that result in errors are still counted as API calls and consume credit
 | No credits left | `402` |
 | GET on a key that was never set | `404` |
 | GET webhook list when none is configured | `200` with an empty `webhooks` array |
-| DELETE webhook with missing or unknown `mailboxId` | `400` or `404` |
+| DELETE webhook with missing or unknown `webhookId` | `400` or `404` |
 | Calling an endpoint with the wrong HTTP method | `405` |
 
 ## Notes

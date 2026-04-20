@@ -59,17 +59,17 @@ curl -s 'https://api.echovalue.dev/webhook' \
   -H "x-token: $ECHOVALUE_TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{
-    "id": "slack",
+    "webhookId": "slack",
     "url": "https://hooks.slack.com/services/T00/B00/XXX",
     "format": "slack"
   }'
 
 # Step 3: Test webhook
-curl -s 'https://api.echovalue.dev/webhook/test?id=slack' \
+curl -s 'https://api.echovalue.dev/webhook/slack/test' \
   -H "x-token: $ECHOVALUE_TOKEN"
 
 # Step 4: Show result
-"You can now send emails to: yourtoken+slack@hook.echovalue.dev"
+"You can now send emails to the opaque mailbox returned in the API response."
 ```
 
 **Platform-Specific Instructions:**

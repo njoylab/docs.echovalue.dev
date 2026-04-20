@@ -7,7 +7,7 @@ sidebar:
 
 The Mail2Webhook service assigns each webhook an opaque email address in the form `<mailboxId>@hook.echovalue.dev`. Emails sent to those addresses are forwarded as JSON POST requests to your configured webhook URLs.
 
-Each webhook has an opaque `mailboxId` used for management operations (`update`, `delete`, `test`). The `name` field is an optional label for human-friendly identification.
+Each webhook is managed through a public `webhookId`. If you omit it when creating a webhook, echoValue uses `default`.
 
 ## Native Format Support
 
@@ -23,6 +23,14 @@ Set `format` when configuring your webhook to have echoValue transform incoming 
 | `custom` | [Custom JSON template](/mail2webhook-custom) |
 
 Without a `format`, the raw email payload is forwarded as-is (see [Webhook Payload](/mail2webhook/payload)).
+
+## Webhook IDs
+
+- Use `POST /webhook` to create a new webhook.
+- Use `GET /webhook` to list all configured webhooks.
+- Use `GET /webhook/{webhookId}` to fetch one webhook.
+- Use `PUT`, `PATCH`, `DELETE`, and `POST /webhook/{webhookId}/test` to manage a specific webhook.
+- `webhookId` is public and stable for management operations. The email address remains opaque and is returned by the API response.
 
 ## Pricing
 

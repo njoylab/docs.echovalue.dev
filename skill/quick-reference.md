@@ -67,7 +67,7 @@ curl -X DELETE "https://api.echovalue.dev/kv/$BUCKET/$KEY" \
 ```bash
 curl -s 'https://api.echovalue.dev/webhook' \
   -H "x-token: $ECHOVALUE_TOKEN"
-# Response: {"webhooks":[{"id":"0","url":"https://...","format":"slack",...}]}
+# Response: {"webhooks":[{"webhookId":"slack","webhook":"https://...","format":"slack",...}]}
 ```
 
 ### Configure Webhook
@@ -76,24 +76,23 @@ curl -s 'https://api.echovalue.dev/webhook' \
   -H "x-token: $ECHOVALUE_TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{
-    "id": "slack",
+    "webhookId": "slack",
     "url": "https://hooks.slack.com/services/T00/B00/XXX",
     "format": "slack"
   }'
-# Response: OK
-# Email: yourtoken+slack@hook.echovalue.dev
+# Response: {"webhookId":"slack","email":"r_abcd1234@hook.echovalue.dev",...}
 ```
 
 ### Test Webhook
 ```bash
-curl -s 'https://api.echovalue.dev/webhook/test?id=slack' \
+curl -s 'https://api.echovalue.dev/webhook/slack/test' \
   -H "x-token: $ECHOVALUE_TOKEN"
 # Response: {"success":true,"message":"test webhook delivered"}
 ```
 
 ### Delete Webhook
 ```bash
-curl -X DELETE 'https://api.echovalue.dev/webhook?id=slack' \
+curl -X DELETE 'https://api.echovalue.dev/webhook/slack' \
   -H "x-token: $ECHOVALUE_TOKEN"
 # Response: OK
 ```
@@ -193,7 +192,7 @@ await fetch(`${BASE_URL}/webhook`, {
   method: 'POST',
   headers: { ...headers, 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    id: 'slack',
+    webhookId: 'slack',
     url: 'https://hooks.slack.com/services/...',
     format: 'slack'
   })
@@ -246,7 +245,7 @@ requests.post(
     f'{BASE_URL}/webhook',
     headers=headers,
     json={
-        'id': 'slack',
+        'webhookId': 'slack',
         'url': 'https://hooks.slack.com/services/...',
         'format': 'slack'
     }

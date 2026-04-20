@@ -7,6 +7,10 @@ sidebar:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
+Use `GET /webhook` to list all configured webhooks for your wallet and `GET /webhook/<webhookId>` to retrieve a specific one.
+
+## List Webhooks
+
 `GET https://api.echovalue.dev/webhook`
 
 Returns all configured webhooks for your wallet.
@@ -95,7 +99,7 @@ func main() {
 </TabItem>
 </Tabs>
 
-## Response
+## List Response
 
 `200 OK` — JSON object.
 
@@ -103,7 +107,7 @@ func main() {
 {
   "webhooks": [
     {
-      "mailboxId": "r_abcd1234",
+      "webhookId": "slack",
       "name": "slack",
       "webhook": "https://hooks.slack.com/services/T00/B00/XXX",
       "headers": {},
@@ -114,8 +118,8 @@ func main() {
       "hash": "a1b2c3d4e5f6..."
     },
     {
-      "mailboxId": "r_wxyz6789",
-      "name": "0",
+      "webhookId": "default",
+      "name": "primary",
       "webhook": "https://yourdomain.com/webhook",
       "headers": { "Authorization": "<redacted>" },
       "options": {},
@@ -135,15 +139,15 @@ func main() {
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `mailboxId` | string | Opaque mailbox identifier used for update/delete/test operations |
+| `webhookId` | string | Public webhook identifier used for get/update/delete/test operations |
 | `name` | string | Webhook name (optional label) |
 | `webhook` | string | Your configured callback URL |
-| `headers` | object | Custom headers (values are redacted) |
+| `headers` | object | Custom headers |
 | `format` | string | Configured native format, if any (e.g. `slack`, `telegram`, `custom`) |
 | `template` | object | Custom template object (only present when format is `custom`) |
 | `options` | object | Format-specific options (sensitive values like `routing_key` are redacted as `***`) |
 | `includeAttachments` | boolean | Whether attachments are included in webhook payload |
-| `email` | string | Opaque mailbox address that triggers this webhook (`<mailboxId>@hook.echovalue.dev`) |
+| `email` | string | Opaque mailbox address that triggers this webhook |
 | `hash` | string | SHA256 hash of your token — use this to identify incoming payloads |
 
 **Response headers:**
@@ -160,3 +164,132 @@ See [Response Headers](/response-headers) for details.
 | `200` | Configuration returned |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
+
+## Get Webhook By ID
+
+`GET https://api.echovalue.dev/webhook/<webhookId>`
+
+Returns a single webhook configuration.
+
+:::note
+**Cost:** 1 credit
+:::
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/webhook/slack' \
+  -H 'x-token: mytoken'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/webhook/slack', {
+  headers: { 'x-token': 'mytoken' }
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.get('https://api.echovalue.dev/webhook/slack',
+  headers={'x-token': 'mytoken'}
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/webhook/slack');
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/webhook/slack", nil)
+    req.Header.Set("x-token", "mytoken")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+    body, _ := io.ReadAll(resp.Body)
+    fmt.Println(string(body))
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Single Webhook Response
+
+`200 OK` — JSON object.
+
+```json
+{
+  "webhookId": "slack",
+  "name": "slack",
+  "webhook": "https://hooks.slack.com/services/T00/B00/XXX",
+  "headers": {},
+  "format": "slack",
+  "options": {},
+  "includeAttachments": true,
+  "email": "r_abcd1234@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `webhookId` | string | Public webhook identifier used for update/delete/test operations |
+| `name` | string | Webhook name (optional label) |
+| `webhook` | string | Your configured callback URL |
+| `headers` | object | Custom headers (values are redacted) |
+| `format` | string | Configured native format, if any (e.g. `slack`, `telegram`, `custom`) |
+| `template` | object | Custom template object (only present when format is `custom`) |
+| `options` | object | Format-specific options (sensitive values like `routing_key` are redacted as `***`) |
+| `includeAttachments` | boolean | Whether attachments are included in webhook payload |
+| `email` | string | Opaque mailbox address that triggers this webhook |
+| `hash` | string | SHA256 hash of your token — use this to identify incoming payloads |
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Tokens consumed (1) |
+
+See [Response Headers](/response-headers) for details.
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook returned |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Webhook not found |

@@ -44,8 +44,8 @@ curl 'https://api.echovalue.dev/kv/default/mykey' \
 curl 'https://api.echovalue.dev/webhook' \
   -H 'x-token: YOUR_TOKEN' \
   -H 'Content-Type: application/json' \
-  -d '{"url":"https://yourdomain.com/webhook"}'
-# → {"mailboxId":"r_abcd1234","webhook":"https://yourdomain.com/webhook","email":"r_abcd1234@hook.echovalue.dev",...}
+  -d '{"webhookId":"default","url":"https://yourdomain.com/webhook"}'
+# → {"webhookId":"default","webhook":"https://yourdomain.com/webhook","email":"r_abcd1234@hook.echovalue.dev",...}
 # Emails sent to the returned mailbox address now POST to your URL
 ```
 
@@ -54,7 +54,7 @@ curl 'https://api.echovalue.dev/webhook' \
 | Service | Description |
 | ------- | ----------- |
 | **Key-Value Store** | Store, retrieve, and delete key-value pairs organized in buckets |
-| **Mail2Webhook** | Receive emails at an opaque mailbox address (`<mailboxId>@hook.echovalue.dev`) and forward them to your webhook |
+| **Mail2Webhook** | Receive emails at an opaque mailbox address and forward them to your webhook, while managing each integration through a public `webhookId` |
 | **My IP** | Inspect the caller IP address together with geo metadata derived from the request |
 | **Logs** | Inspect your recent API call history |
 | **Token Management** | Check your credit balance and recharge |
