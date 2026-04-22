@@ -55,6 +55,7 @@ curl 'https://api.echovalue.dev/webhook' \
 | ------- | ----------- |
 | **Key-Value Store** | Store, retrieve, and delete key-value pairs organized in buckets |
 | **Mail2Webhook** | Receive emails at an opaque mailbox address and forward them to your webhook, while managing each integration through a public `webhookId` |
+| **DNS Lookup** | Run DNS record queries, propagation checks, reverse lookups, SSL inspection, and optional security enrichment |
 | **My IP** | Inspect the caller IP address together with geo metadata derived from the request |
 | **URL To Metadata** | Fetch metadata and optional summaries for a public URL through the upstream scraper service |
 | **Logs** | Inspect your recent API call history |
@@ -68,6 +69,7 @@ All operations consume credits from your wallet. New tokens include **100 free c
 | --------- | ---- |
 | Generate token | Free (100 credits included) |
 | Check wallet balance | 1 credit |
+| Run DNS lookup | 5 credits on success and upstream non-`5xx` failures |
 | Get caller IP | 1 credit |
 | Analyze URL metadata | 55 credits base, 800 credits with AI summary enrichment |
 | Set key/value | 1 credit |

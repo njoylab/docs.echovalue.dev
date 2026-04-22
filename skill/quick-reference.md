@@ -8,6 +8,7 @@ Token:      https://api.echovalue.dev/token
 Logs:       https://api.echovalue.dev/token/logs
 Recharge:   https://api.echovalue.dev/recharge
 My IP:      https://api.echovalue.dev/myip
+DNS Lookup: https://api.echovalue.dev/dns-lookup
 Metadata:   https://api.echovalue.dev/url-to-metadata
 ```
 
@@ -116,6 +117,23 @@ curl -s 'https://api.echovalue.dev/myip' \
 # Response: {"ip":"203.0.113.42","country":"IT","city":"Rome",...}
 ```
 
+## DNS Lookup
+
+### Run DNS Lookup And Enrichment
+```bash
+curl -s 'https://api.echovalue.dev/dns-lookup' \
+  -H "x-token: $ECHOVALUE_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "domains": ["example.com"],
+    "recordTypes": ["A", "MX", "TXT"],
+    "checkPropagation": true,
+    "enableEnrichment": true,
+    "enableSslInspection": true
+  }'
+# Response: {"summary":{...},"results":[...]}
+```
+
 ## URL To Metadata
 
 ### Analyze A Public URL
@@ -138,6 +156,7 @@ curl -s 'https://api.echovalue.dev/url-to-metadata' \
 | Generate token | Free (100 credits included) |
 | Check balance | 1 credit |
 | Get caller IP | 1 credit |
+| DNS lookup and enrichment | 5 credits on success and upstream non-`5xx` failures |
 | URL metadata analysis | 55 credits base, 800 credits with AI summary enrichment |
 | Key-Value ops (get/set/delete) | 1 credit each |
 | Webhook config (set/get/delete/test) | 1 credit each |

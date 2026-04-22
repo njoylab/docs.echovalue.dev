@@ -69,6 +69,7 @@ export default defineConfig({
         {
           label: 'Utilities',
           items: [
+            { label: 'DNS Lookup', link: '/dns-lookup/' },
             { label: 'My IP', link: '/myip/' },
             { label: 'URL To Metadata', link: '/url-to-metadata/' },
           ],

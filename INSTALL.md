@@ -7,6 +7,7 @@ This repository includes shared skill assets plus agent-specific files for Claud
 ✅ Configure email-to-webhook integrations (Slack, Discord, Teams, Telegram, PagerDuty)  
 ✅ Execute key-value store operations (get/set/delete)  
 ✅ Manage tokens (generate, check balance, retrieve logs)  
+✅ Run DNS lookups, propagation checks, reverse DNS, and SSL inspection  
 ✅ Inspect caller IP and geo metadata  
 ✅ Analyze public URLs and extract metadata or summaries  
 ✅ Share state between AI agents  
@@ -88,6 +89,7 @@ Once installed, ask the agent:
 
 - "Configure a Slack webhook for echoValue"
 - "Check my echoValue balance"
+- "Run a DNS lookup for example.com"
 - "Store a value in echoValue"
 - "How do I share state between AI agents?"
 

@@ -24,6 +24,8 @@ tags:
   description: Test your configured webhook with a dummy payload (costs 1 token)
 - name: URL To Metadata API
   description: Analyze a URL and return extracted metadata
+- name: DNS Lookup API
+  description: Run DNS lookup and enrichment against the upstream Lambda
 - name: My IP API
   description: Return the caller IP and geo headers (costs 1 token)
 components:
@@ -464,6 +466,38 @@ components:
         message:
           type: string
           description: The target address
+    ScheduledWebhookRunRequest:
+      type: object
+      required:
+      - mailboxId
+      - generation
+      - scheduledFor
+      properties:
+        mailboxId:
+          type: string
+          description: Opaque mailbox identifier to execute
+          example: r_sched123
+        generation:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Schedule generation used to invalidate stale queued tasks
+        scheduledFor:
+          type: string
+          format: date-time
+          description: Scheduled occurrence time encoded in the task payload for idempotency
+          example: '2026-04-22T12:05:00Z'
+      additionalProperties: false
+    ScheduledWebhookRunResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+      - success
+      additionalProperties: false
     TestResponse:
       type: object
       properties:
@@ -540,6 +574,8 @@ components:
           description: Whether to include email attachments in the webhook payload.
             If false, attachments are stripped from the payload. When email contains
             attachments, costs 5 tokens; without attachments costs 2 tokens.
+        schedule:
+          $ref: '#/components/schemas/WebhookScheduleRequest'
       additionalProperties: false
     WebhookPatchRequest:
       type: object
@@ -583,6 +619,66 @@ components:
           description: Set `{}` to clear all options.
         includeAttachments:
           type: boolean
+        schedule:
+          allOf:
+          - $ref: '#/components/schemas/WebhookSchedulePatchRequest'
+          nullable: true
+      additionalProperties: false
+    WebhookScheduleRequest:
+      type: object
+      required:
+      - cron
+      - timezone
+      properties:
+        cron:
+          type: string
+          description: 5-field cron expression (`minute hour day month weekday`)
+          example: '*/15 * * * *'
+        timezone:
+          type: string
+          description: IANA timezone name used to evaluate cron
+          example: Europe/Rome
+        active:
+          type: boolean
+          default: true
+          description: Whether scheduled delivery is active
+      additionalProperties: false
+    WebhookSchedulePatchRequest:
+      type: object
+      properties:
+        cron:
+          type: string
+        timezone:
+          type: string
+        active:
+          type: boolean
+      additionalProperties: false
+    WebhookScheduleResponse:
+      type: object
+      properties:
+        cron:
+          type: string
+        timezone:
+          type: string
+        active:
+          type: boolean
+        nextRunAt:
+          type: string
+          format: date-time
+        lastRunAt:
+          type: string
+          format: date-time
+        lastStatus:
+          type: string
+          enum:
+          - success
+          - failure
+        lastError:
+          type: string
+      required:
+      - cron
+      - timezone
+      - active
       additionalProperties: false
     WebhookResponse:
       type: object
@@ -613,6 +709,8 @@ components:
           type: boolean
           description: Whether attachments are included in webhook payload (true =
             include, false = stripped)
+        schedule:
+          $ref: '#/components/schemas/WebhookScheduleResponse'
         email:
           type: string
           description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev)
@@ -1003,6 +1101,11 @@ paths:
 
         URL must be HTTPS pointing to a public host.
 
+        Optional `schedule` enables recurring delivery using a 5-field cron expression
+        plus IANA timezone.
+
+        Each scheduled run costs 1 token.
+
         '
       security:
       - TokenAuth: []
@@ -1081,6 +1184,9 @@ paths:
 
         `url` is required.
 
+        Include `schedule` to replace the scheduling configuration as part of the
+        same request.
+
         '
       security:
       - TokenAuth: []
@@ -1121,6 +1227,9 @@ paths:
       operationId: patchWebhook
       summary: Patch webhook
       description: 'Updates only provided fields on a webhook. Costs 1 token.
+
+        Set `schedule: null` to remove scheduling. Patch values replace the full schedule
+        fields that are provided.
 
         '
       security:
@@ -1370,6 +1479,87 @@ paths:
                           - Mobile apps
                         processingTime: 2340
                     timestamp: '2025-06-19T15:54:01.821Z'
+    DNSLookupRequest:
+      type: object
+      description: 'Request body for DNS lookup and enrichment.
+
+        The payload is forwarded as-is to the upstream Lambda endpoint.
+
+        '
+      required:
+      - domains
+      additionalProperties: false
+      properties:
+        domains:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: Domain names or IP addresses.
+        recordTypes:
+          type: array
+          items:
+            type: string
+            enum:
+            - A
+            - AAAA
+            - MX
+            - CNAME
+            - TXT
+            - NS
+            - PTR
+            - SOA
+            - CAA
+            - SRV
+        checkPropagation:
+          type: boolean
+          default: false
+        propagationServers:
+          type: array
+          items:
+            type: string
+        performReverseLookup:
+          type: boolean
+          default: true
+        enableEnrichment:
+          type: boolean
+          default: true
+        enableSslInspection:
+          type: boolean
+          default: true
+        timeout:
+          type: integer
+          minimum: 1000
+          maximum: 60000
+          default: 5000
+        maxRetries:
+          type: integer
+          minimum: 0
+          maximum: 10
+          default: 3
+        retryDelay:
+          type: integer
+          minimum: 0
+          maximum: 100000
+          default: 1000
+        includeMetadata:
+          type: boolean
+          default: false
+    DNSLookupResponse:
+      type: object
+      description: 'Actor-style DNS lookup response returned by the upstream Lambda.
+
+        '
+      additionalProperties: true
+      properties:
+        summary:
+          type: object
+          additionalProperties: true
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
           headers:
             X-Balance:
               $ref: '#/components/headers/XBalance'
@@ -1381,6 +1571,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '405':
+          description: Method not allowed
+        '500':
+          description: Internal error
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+        '502':
+          description: Service unavailable
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+        '503':
+          description: Service unavailable
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+  /dns-lookup:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    post:
+      tags:
+      - DNS Lookup API
+      operationId: dnsLookup
+      summary: Run DNS lookup and enrichment
+      description: 'Forwards the request body to the configured AWS Lambda DNS lookup
+        endpoint and returns the upstream response.
+
+        The wallet is authenticated with `X-Token`, charged, and the request is logged.
+
+        Successful requests cost `5`. Upstream non-`5xx` failures also cost `5`. Upstream
+        `5xx` responses cost `0`.
+
+        '
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DNSLookupRequest'
+            examples:
+              basic:
+                summary: Basic DNS lookup
+                value:
+                  domains:
+                  - example.com
+                  recordTypes:
+                  - A
+                  - MX
+                  - TXT
+                  checkPropagation: false
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DNSLookupResponse'
+          headers:
+            X-Balance:
+              $ref: '#/components/headers/XBalance'
+            X-Cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          description: Invalid request body or upstream validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DNSLookupResponse'
           headers:
             X-Balance:
               $ref: '#/components/headers/XBalance'

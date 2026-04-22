@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Help developers integrate and use the EchoValue API - a lightweight key-value store and email-to-webhook service for freelancers and small projects. This skill can execute API operations on behalf of the user, not just provide documentation.
+Help developers integrate and use the EchoValue API - a lightweight key-value store and utility API for freelancers and small projects. This skill can execute API operations on behalf of the user, not just provide documentation.
 
 ## Activation
 
@@ -13,6 +13,7 @@ Activate automatically when the user:
 - Asks to configure webhooks for email (Slack, Discord, Teams, Telegram, PagerDuty, custom)
 - Wants to store/retrieve temporary data without backend setup
 - Wants to inspect the caller public IP address or geo metadata
+- Wants to inspect DNS records, propagation, reverse DNS, TLS certificates, or email security posture
 - Wants to analyze a public URL and extract metadata or summaries
 
 ## Token Management
@@ -209,6 +210,26 @@ curl -s 'https://api.echovalue.dev/url-to-metadata' \
 
 Use this for public URL inspection, metadata extraction, and optional AI summaries. Mention that the response schema is flexible and upstream-driven.
 
+### Use Case 7: DNS Lookup And Enrichment
+
+When user wants DNS diagnostics, propagation checks, reverse DNS, SSL inspection, or email security analysis:
+
+```bash
+curl -s 'https://api.echovalue.dev/dns-lookup' \
+  -H "x-token: $ECHOVALUE_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "domains": ["example.com"],
+    "recordTypes": ["A", "MX", "TXT"],
+    "checkPropagation": true,
+    "performReverseLookup": true,
+    "enableEnrichment": true,
+    "enableSslInspection": true
+  }'
+```
+
+Use this for domain and IP inspection, DNS troubleshooting, mail configuration checks, and certificate metadata. Mention that successful requests cost 5 credits, upstream non-`5xx` failures also cost 5, and upstream `5xx` responses cost 0.
+
 ## API Operations Reference
 
 ### List Webhooks
@@ -242,6 +263,14 @@ curl -s 'https://api.echovalue.dev/myip' \
   -H "x-token: $ECHOVALUE_TOKEN"
 ```
 
+### Run DNS Lookup
+```bash
+curl -s 'https://api.echovalue.dev/dns-lookup' \
+  -H "x-token: $ECHOVALUE_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"domains":["example.com"],"recordTypes":["A","MX","TXT"]}'
+```
+
 ## Important Constraints
 
 **Limits:**
@@ -256,6 +285,7 @@ curl -s 'https://api.echovalue.dev/myip' \
 - Generate token: Free (100 credits included)
 - Check balance: 1 credit
 - Get caller IP: 1 credit
+- DNS lookup and enrichment: 5 credits on success and upstream non-`5xx` failures
 - KV operations (get/set/delete): 1 credit each
 - Webhook config (set/get/delete/test): 1 credit each
 - Email processed (no attachments): 2 credits

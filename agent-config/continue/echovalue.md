@@ -1,6 +1,6 @@
 # EchoValue API for Continue
 
-Use EchoValue when the user asks to store temporary state, configure email-to-webhook delivery, inspect token balance, inspect caller IP details, analyze a public URL, or manage key-value entries.
+Use EchoValue when the user asks to store temporary state, configure email-to-webhook delivery, inspect token balance, inspect caller IP details, inspect DNS or TLS details, analyze a public URL, or manage key-value entries.
 
 ## Rules
 
@@ -9,6 +9,7 @@ Use EchoValue when the user asks to store temporary state, configure email-to-we
 - Key-value store: `/kv/<bucket>/<key>`.
 - Webhooks: `/webhook`.
 - Token and logs: `/token` and `/token/logs`.
+- DNS lookup: `/dns-lookup`.
 - Caller IP lookup: `/myip`.
 - URL metadata: `/url-to-metadata`.
 - Keep answers short and operational.

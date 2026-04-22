@@ -1,0 +1,245 @@
+---
+title: DNS Lookup
+description: Run DNS lookup, propagation checks, SSL inspection, and enrichment through the echoValue DNS Lookup API
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`POST https://api.echovalue.dev/dns-lookup`
+
+Runs DNS lookup and enrichment through the upstream DNS intelligence service behind echoValue.
+
+:::note
+**Cost:** `5` credits for successful requests and upstream non-`5xx` failures. Upstream `5xx` responses consume `0` credits.
+:::
+
+The request is authenticated with `x-token`, charged by echoValue, and logged.
+
+This endpoint is useful when you need to:
+
+- resolve common DNS record types such as `A`, `AAAA`, `MX`, `TXT`, `NS`, `CNAME`, `PTR`, `SOA`, `CAA`, and `SRV`
+- check DNS propagation across multiple resolvers
+- inspect reverse DNS, SSL/TLS certificate details, and DNS metadata
+- enrich results with email security analysis such as SPF, DMARC, DKIM, and provider detection
+
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `content-type` | Must be `application/json` |
+
+**Body:**
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `domains` | string[] | Yes | Domain names or IP addresses to inspect |
+| `recordTypes` | string[] | No | DNS record types to query: `A`, `AAAA`, `MX`, `CNAME`, `TXT`, `NS`, `PTR`, `SOA`, `CAA`, `SRV` |
+| `checkPropagation` | boolean | No | Query multiple public resolvers to compare propagation |
+| `propagationServers` | string[] | No | Override the resolver list used for propagation checks |
+| `performReverseLookup` | boolean | No | Run PTR lookups for returned IPs or direct IP input |
+| `enableEnrichment` | boolean | No | Enable SPF, DMARC, DKIM, provider, and security analysis |
+| `enableSslInspection` | boolean | No | Inspect live TLS certificate metadata for HTTPS targets |
+| `timeout` | integer | No | Per-query timeout in milliseconds. Min: `1000`. Max: `60000`. Default: `5000` |
+| `maxRetries` | integer | No | Retry attempts for failed upstream lookups. Min: `0`. Max: `10`. Default: `3` |
+| `retryDelay` | integer | No | Delay between retries in milliseconds. Min: `0`. Max: `100000`. Default: `1000` |
+| `includeMetadata` | boolean | No | Include additional metadata from the upstream service |
+
+**Examples:**
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/dns-lookup' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "domains": ["example.com"],
+    "recordTypes": ["A", "MX", "TXT"],
+    "checkPropagation": true,
+    "performReverseLookup": true,
+    "enableEnrichment": true,
+    "enableSslInspection": true
+  }'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/dns-lookup', {
+  method: 'POST',
+  headers: {
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    domains: ['example.com'],
+    recordTypes: ['A', 'MX', 'TXT'],
+    checkPropagation: true,
+    performReverseLookup: true,
+    enableEnrichment: true,
+    enableSslInspection: true
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+</TabItem>
+<TabItem label="Python">
+
+```python
+import requests
+
+response = requests.post(
+    'https://api.echovalue.dev/dns-lookup',
+    headers={
+        'x-token': 'mytoken',
+        'Content-Type': 'application/json'
+    },
+    json={
+        'domains': ['example.com'],
+        'recordTypes': ['A', 'MX', 'TXT'],
+        'checkPropagation': True,
+        'performReverseLookup': True,
+        'enableEnrichment': True,
+        'enableSslInspection': True
+    }
+)
+print(response.json())
+```
+
+</TabItem>
+<TabItem label="PHP">
+
+```php
+<?php
+$ch = curl_init('https://api.echovalue.dev/dns-lookup');
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+  'x-token: mytoken',
+  'Content-Type: application/json'
+]);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+  'domains' => ['example.com'],
+  'recordTypes' => ['A', 'MX', 'TXT'],
+  'checkPropagation' => true,
+  'performReverseLookup' => true,
+  'enableEnrichment' => true,
+  'enableSslInspection' => true
+]));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+print_r(json_decode($response, true));
+?>
+```
+
+</TabItem>
+<TabItem label="Go">
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    payload := map[string]interface{}{
+        "domains":              []string{"example.com"},
+        "recordTypes":          []string{"A", "MX", "TXT"},
+        "checkPropagation":     true,
+        "performReverseLookup": true,
+        "enableEnrichment":     true,
+        "enableSslInspection":  true,
+    }
+
+    body, _ := json.Marshal(payload)
+    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/dns-lookup", bytes.NewReader(body))
+    req.Header.Set("x-token", "mytoken")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, _ := client.Do(req)
+    defer resp.Body.Close()
+
+    responseBody, _ := io.ReadAll(resp.Body)
+    fmt.Println(string(responseBody))
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Response
+
+`200 OK` returns the JSON payload produced by the upstream DNS lookup service.
+
+```json
+{
+  "summary": {
+    "domains": 1,
+    "successful": 1,
+    "failed": 0
+  },
+  "results": [
+    {
+      "domain": "example.com",
+      "records": {
+        "A": ["93.184.216.34"],
+        "MX": [],
+        "TXT": ["v=spf1 -all"]
+      },
+      "ssl": {
+        "issuer": "Let's Encrypt",
+        "daysUntilExpiry": 42
+      },
+      "enrichment": {
+        "emailSecurityScore": 78,
+        "provider": "Example Provider"
+      }
+    }
+  ]
+}
+```
+
+The upstream response is intentionally flexible. Expect `summary` and `results`, but nested fields may vary depending on the requested record types, enrichment settings, propagation checks, and the target domain.
+
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+| `x-cost` | Credits consumed for this request |
+
+See [Response Headers](/response-headers/) for details.
+
+## Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Lookup completed successfully |
+| `400` | Invalid request body or upstream validation error |
+| `401` | Invalid token |
+| `402` | Wallet has insufficient credits |
+| `405` | Method not allowed |
+| `500` | Internal service error |
+| `502` | DNS lookup service unavailable |
+| `503` | DNS lookup service unavailable or not configured |
+
+## Notes
+
+- The endpoint accepts both domain names and IP addresses.
+- Propagation checks and enrichment can take noticeably longer than a basic DNS query.
+- The interactive service at [lookup.echovalue.dev](https://lookup.echovalue.dev) exposes the same analysis features in a browser UI.

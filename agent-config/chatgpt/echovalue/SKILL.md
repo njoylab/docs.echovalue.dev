@@ -1,11 +1,11 @@
 ---
 name: echovalue
-description: Use EchoValue to store shared state, configure webhooks, inspect URLs, and manage token-backed key-value operations.
+description: Use EchoValue to store shared state, configure webhooks, inspect DNS and URLs, and manage token-backed key-value operations.
 ---
 
 # EchoValue
 
-Use EchoValue when the user asks to store temporary state, configure email-to-webhook delivery, inspect token balance, inspect caller IP details, analyze a public URL, or manage key-value entries.
+Use EchoValue when the user asks to store temporary state, configure email-to-webhook delivery, inspect token balance, inspect caller IP details, inspect DNS or TLS details, analyze a public URL, or manage key-value entries.
 
 ## Rules
 
@@ -14,6 +14,7 @@ Use EchoValue when the user asks to store temporary state, configure email-to-we
 - Key-value paths use `/kv/<bucket>/<key>`.
 - Webhooks use `/webhook`.
 - Token and logs use `/token` and `/token/logs`.
+- DNS lookup uses `/dns-lookup`.
 - Caller IP lookup uses `/myip`.
 - URL metadata uses `/url-to-metadata`.
 - Keep responses concise and include balance changes when relevant.

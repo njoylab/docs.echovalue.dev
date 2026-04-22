@@ -27,6 +27,7 @@ You can filter logs by endpoint type using the `type` parameter.
 | `token` | Wallet info requests (`GET /token`) |
 | `settings` | Low-balance settings reads and updates |
 | `webhook` | Webhook management and test calls |
+| `dns-lookup` | DNS lookup and enrichment requests |
 | `url-to-metadata` | URL metadata and scraping requests |
 | `myip` | Caller IP lookup requests |
 | `service` | Recharge operations |
@@ -42,7 +43,7 @@ You can filter logs by endpoint type using the `type` parameter.
 | Parameter | Type | Description | Default |
 | --------- | ---- | ----------- | ------- |
 | `n` | integer | Number of log entries to retrieve. Min: `1`. Default: `5`. | `5` |
-| `type` | string | Optional endpoint filter forwarded to log storage. Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`, `myip`, and `service`. | — |
+| `type` | string | Optional endpoint filter forwarded to log storage. Common values include `kv`, `token`, `settings`, `webhook`, `dns-lookup`, `url-to-metadata`, `myip`, and `service`. | — |
 
 ## Response
 
@@ -81,7 +82,7 @@ You can filter logs by endpoint type using the `type` parameter.
 | `id` | string | Unique log entry ID |
 | `method` | string | HTTP method used (`GET`, `POST`, `DELETE`) |
 | `path` | string | Full request path including query parameters |
-| `endpoint` | string | API category such as `kv`, `token`, `settings`, `webhook`, `url-to-metadata`, `myip`, or `service` |
+| `endpoint` | string | API category such as `kv`, `token`, `settings`, `webhook`, `dns-lookup`, `url-to-metadata`, `myip`, or `service` |
 | `status_code` | integer | HTTP status code returned by the request |
 | `response_time_ms` | integer | Response time in milliseconds for the request |
 | `error` | string | Error message, if any (omitted on success) |
