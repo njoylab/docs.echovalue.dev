@@ -457,6 +457,50 @@ components:
         raw:
           type: object
           additionalProperties: true
+    ScheduledWebhookPayload:
+      type: object
+      required:
+      - type
+      - webhookId
+      - scheduledFor
+      - executedAt
+      - to
+      description: 'Outbound payload delivered to the configured webhook URL for scheduled
+        webhook runs.
+
+        This is distinct from the email-style payload used by `POST /webhook/call`.
+
+        '
+      properties:
+        type:
+          type: string
+          enum:
+          - scheduled_webhook_run
+        webhookId:
+          type: string
+          description: Public webhook identifier. Defaults to `default` when omitted
+            during webhook creation.
+          example: default
+        scheduledFor:
+          type: string
+          format: date-time
+          description: Scheduled occurrence time encoded in the Cloud Tasks payload.
+          example: '2026-04-22T12:05:00Z'
+        executedAt:
+          type: string
+          format: date-time
+          description: Actual execution time of this scheduled run.
+          example: '2026-04-22T12:05:01Z'
+        to:
+          type: object
+          required:
+          - hash
+          properties:
+            hash:
+              type: string
+              description: SHA-256 hash of the wallet token.
+              example: asdsadsa
+      additionalProperties: false
     CallResponse:
       type: object
       properties:
@@ -708,12 +752,14 @@ components:
         includeAttachments:
           type: boolean
           description: Whether attachments are included in webhook payload (true =
-            include, false = stripped)
+            include, false = stripped). Returned only for mailbox-style webhooks;
+            omitted for scheduled webhooks.
         schedule:
           $ref: '#/components/schemas/WebhookScheduleResponse'
         email:
           type: string
-          description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev)
+          description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev).
+            Returned only for mailbox-style webhooks; omitted for scheduled webhooks.
         hash:
           type: string
           description: SHA256 hash of the wallet token
@@ -1547,62 +1593,507 @@ paths:
           default: false
     DNSLookupResponse:
       type: object
+      required:
+      - summary
+      - results
       description: 'Actor-style DNS lookup response returned by the upstream Lambda.
 
+        It contains an aggregate `summary` plus one result entry per requested domain
+        or IP.
+
         '
-      additionalProperties: true
+      additionalProperties: false
       properties:
         summary:
-          type: object
-          additionalProperties: true
+          $ref: '#/components/schemas/DNSLookupSummary'
         results:
           type: array
+          description: One item per requested domain or IP address.
           items:
+            $ref: '#/components/schemas/DNSLookupDomainResult'
+      example:
+        summary:
+          totalDomains: 1
+          successfulLookups: 1
+          failedLookups: 0
+          recordTypes:
+          - A
+          - MX
+          - TXT
+          propagationCheckEnabled: false
+        results:
+        - domain: example.com
+          lookupResult:
+            domain: example.com
+            timestamp: '2026-04-22T09:15:00.000Z'
+            records:
+              A:
+              - type: A
+                address: 93.184.216.34
+                ttl: 3600
+              MX:
+              - type: MX
+                exchange: .
+                priority: 0
+              TXT:
+              - type: TXT
+                entries:
+                - v=spf1 -all
+                ttl: 1800
+            mx_provider: null
+            spf_valid: true
+            spf_strict: true
+            dmarc_policy: reject
+            has_dkim: false
+            email_security_score: 85
+            ssl_certificate_expires_at: '2026-07-20T12:00:00.000Z'
+            ssl_days_until_expiry: 89
+            warnings:
+            - No DKIM records detected
+            recommendations:
+            - Configure DKIM signing for email authentication
+            metadata:
+              queryTime: 124
+              totalRecords: 3
+    DNSLookupSummary:
+      type: object
+      required:
+      - totalDomains
+      - successfulLookups
+      - failedLookups
+      - recordTypes
+      - propagationCheckEnabled
+      additionalProperties: false
+      properties:
+        totalDomains:
+          type: integer
+        successfulLookups:
+          type: integer
+        failedLookups:
+          type: integer
+        recordTypes:
+          type: array
+          items:
+            type: string
+            enum:
+            - A
+            - AAAA
+            - MX
+            - CNAME
+            - TXT
+            - NS
+            - PTR
+            - SOA
+            - CAA
+            - SRV
+        propagationCheckEnabled:
+          type: boolean
+    DNSLookupDomainResult:
+      type: object
+      required:
+      - domain
+      - lookupResult
+      additionalProperties: false
+      properties:
+        domain:
+          type: string
+          description: Requested domain or IP address.
+        lookupResult:
+          $ref: '#/components/schemas/DNSLookupResult'
+        propagationResults:
+          type: array
+          description: Present only when `checkPropagation=true`.
+          items:
+            $ref: '#/components/schemas/DNSPropagationResult'
+    DNSLookupResult:
+      type: object
+      required:
+      - domain
+      - timestamp
+      - records
+      additionalProperties: true
+      properties:
+        domain:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        records:
+          $ref: '#/components/schemas/DNSRecordsByType'
+        reverseLookup:
+          type: object
+          required:
+          - hostnames
+          - responseTime
+          additionalProperties: false
+          properties:
+            hostnames:
+              type: array
+              items:
+                type: string
+            responseTime:
+              type: integer
+              description: Milliseconds spent in PTR lookup.
+        mx_provider:
+          type: string
+          nullable: true
+          description: Best-effort provider name inferred from MX records.
+        spf_valid:
+          type: boolean
+        spf_strict:
+          type: boolean
+        dmarc_policy:
+          type: string
+          enum:
+          - none
+          - quarantine
+          - reject
+        has_dkim:
+          type: boolean
+        email_security_score:
+          type: number
+          description: Enrichment score from 0 to 100.
+        ssl_certificate_expires_at:
+          type: string
+          format: date-time
+        ssl_days_until_expiry:
+          type: integer
+          nullable: true
+        warnings:
+          type: array
+          description: Aggregated warnings from SSL and email-security analysis.
+          items:
+            type: string
+        recommendations:
+          type: array
+          description: Actionable follow-up items derived from enrichment.
+          items:
+            type: string
+        enrichment:
+          type: object
+          additionalProperties: true
+          description: Detailed enrichment payload from the upstream service.
+        metadata:
+          type: object
+          additionalProperties: false
+          required:
+          - queryTime
+          - totalRecords
+          properties:
+            queryTime:
+              type: integer
+              description: End-to-end lookup time in milliseconds.
+            totalRecords:
+              type: integer
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+          description: Per-record-type lookup errors when some queries fail.
+    DNSRecordsByType:
+      type: object
+      additionalProperties: false
+      properties:
+        A:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSARecord'
+        AAAA:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSAAAARecord'
+        MX:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSMXRecord'
+        CNAME:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSCNAMERecord'
+        TXT:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSTXTRecord'
+        NS:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSNSRecord'
+        PTR:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSPTRRecord'
+        SOA:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSSOARecord'
+        CAA:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSCAARecord'
+        SRV:
+          type: array
+          items:
+            $ref: '#/components/schemas/DNSSRVRecord'
+    DNSRecordBase:
+      type: object
+      required:
+      - type
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+          - A
+          - AAAA
+          - MX
+          - CNAME
+          - TXT
+          - NS
+          - PTR
+          - SOA
+          - CAA
+          - SRV
+        ttl:
+          type: integer
+    DNSARecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - address
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - A
+          address:
+            type: string
+    DNSAAAARecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - address
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - AAAA
+          address:
+            type: string
+    DNSMXRecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - exchange
+        - priority
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - MX
+          exchange:
+            type: string
+          priority:
+            type: integer
+    DNSCNAMERecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - value
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - CNAME
+          value:
+            type: string
+    DNSTXTRecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - entries
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - TXT
+          entries:
+            type: array
+            items:
+              type: string
+    DNSNSRecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - value
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - NS
+          value:
+            type: string
+    DNSPTRRecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - value
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - PTR
+          value:
+            type: string
+    DNSSOARecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - nsname
+        - hostmaster
+        - serial
+        - refresh
+        - retry
+        - expire
+        - minttl
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - SOA
+          nsname:
+            type: string
+          hostmaster:
+            type: string
+          serial:
+            type: integer
+          refresh:
+            type: integer
+          retry:
+            type: integer
+          expire:
+            type: integer
+          minttl:
+            type: integer
+    DNSCAARecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - flags
+        - tag
+        - value
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - CAA
+          flags:
+            type: integer
+          tag:
+            type: string
+          value:
+            type: string
+    DNSSRVRecord:
+      allOf:
+      - $ref: '#/components/schemas/DNSRecordBase'
+      - type: object
+        required:
+        - type
+        - priority
+        - weight
+        - port
+        - target
+        additionalProperties: false
+        properties:
+          type:
+            type: string
+            enum:
+            - SRV
+          priority:
+            type: integer
+          weight:
+            type: integer
+          port:
+            type: integer
+          target:
+            type: string
+    DNSPropagationResult:
+      type: object
+      required:
+      - domain
+      - recordType
+      - timestamp
+      - servers
+      - isPropagated
+      - consistencyPercentage
+      additionalProperties: false
+      properties:
+        domain:
+          type: string
+        recordType:
+          type: string
+          enum:
+          - A
+          - AAAA
+          - MX
+          - CNAME
+          - TXT
+          - NS
+          - PTR
+          - SOA
+          - CAA
+          - SRV
+        timestamp:
+          type: string
+          format: date-time
+        servers:
+          type: object
+          additionalProperties:
             type: object
-            additionalProperties: true
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SummaryResponse'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '405':
-          description: Method not allowed
-        '500':
-          description: Internal error
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '502':
-          description: Service unavailable
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '503':
-          description: Service unavailable
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
+            required:
+            - records
+            - responseTime
+            additionalProperties: false
+            properties:
+              records:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+              responseTime:
+                type: integer
+              error:
+                type: string
+        isPropagated:
+          type: boolean
+        consistencyPercentage:
+          type: number
   /dns-lookup:
     servers:
     - url: https://api.echovalue.dev
@@ -1649,6 +2140,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DNSLookupResponse'
+              examples:
+                exampleLookup:
+                  summary: DNS lookup with enrichment
+                  value:
+                    summary:
+                      totalDomains: 1
+                      successfulLookups: 1
+                      failedLookups: 0
+                      recordTypes:
+                      - A
+                      - MX
+                      - TXT
+                      propagationCheckEnabled: false
+                    results:
+                    - domain: example.com
+                      lookupResult:
+                        domain: example.com
+                        timestamp: '2026-04-22T09:15:00.000Z'
+                        records:
+                          A:
+                          - type: A
+                            address: 93.184.216.34
+                            ttl: 3600
+                          MX:
+                          - type: MX
+                            exchange: .
+                            priority: 0
+                          TXT:
+                          - type: TXT
+                            entries:
+                            - v=spf1 -all
+                            ttl: 1800
+                        spf_valid: true
+                        spf_strict: true
+                        dmarc_policy: reject
+                        has_dkim: false
+                        email_security_score: 85
+                        ssl_certificate_expires_at: '2026-07-20T12:00:00.000Z'
+                        ssl_days_until_expiry: 89
+                        warnings:
+                        - No DKIM records detected
+                        recommendations:
+                        - Configure DKIM signing for email authentication
+                        metadata:
+                          queryTime: 124
+                          totalRecords: 3
           headers:
             X-Balance:
               $ref: '#/components/headers/XBalance'

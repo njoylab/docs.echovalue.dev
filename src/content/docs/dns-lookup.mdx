@@ -189,32 +189,116 @@ func main() {
 ```json
 {
   "summary": {
-    "domains": 1,
-    "successful": 1,
-    "failed": 0
+    "totalDomains": 1,
+    "successfulLookups": 1,
+    "failedLookups": 0,
+    "recordTypes": ["A", "MX", "TXT"],
+    "propagationCheckEnabled": false
   },
   "results": [
     {
       "domain": "example.com",
-      "records": {
-        "A": ["93.184.216.34"],
-        "MX": [],
-        "TXT": ["v=spf1 -all"]
-      },
-      "ssl": {
-        "issuer": "Let's Encrypt",
-        "daysUntilExpiry": 42
-      },
-      "enrichment": {
-        "emailSecurityScore": 78,
-        "provider": "Example Provider"
+      "lookupResult": {
+        "domain": "example.com",
+        "timestamp": "2026-04-22T09:15:00.000Z",
+        "records": {
+          "A": [
+            {
+              "type": "A",
+              "address": "93.184.216.34",
+              "ttl": 3600
+            }
+          ],
+          "MX": [
+            {
+              "type": "MX",
+              "exchange": ".",
+              "priority": 0
+            }
+          ],
+          "TXT": [
+            {
+              "type": "TXT",
+              "entries": ["v=spf1 -all"],
+              "ttl": 1800
+            }
+          ]
+        },
+        "spf_valid": true,
+        "spf_strict": true,
+        "dmarc_policy": "reject",
+        "has_dkim": false,
+        "email_security_score": 85,
+        "ssl_certificate_expires_at": "2026-07-20T12:00:00.000Z",
+        "ssl_days_until_expiry": 89,
+        "warnings": ["No DKIM records detected"],
+        "recommendations": ["Configure DKIM signing for email authentication"],
+        "metadata": {
+          "queryTime": 124,
+          "totalRecords": 3
+        }
       }
     }
   ]
 }
 ```
 
-The upstream response is intentionally flexible. Expect `summary` and `results`, but nested fields may vary depending on the requested record types, enrichment settings, propagation checks, and the target domain.
+**Top-level fields:**
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `summary` | object | Aggregate information about the whole request |
+| `results` | array | One item per requested domain or IP address |
+
+**`summary` fields:**
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `totalDomains` | integer | Number of requested domains or IPs |
+| `successfulLookups` | integer | Number of successful lookups |
+| `failedLookups` | integer | Number of failed lookups |
+| `recordTypes` | string[] | Record types requested for this run |
+| `propagationCheckEnabled` | boolean | Whether propagation checks were enabled |
+
+**`results[]` fields:**
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `domain` | string | Requested domain or IP address |
+| `lookupResult` | object | Main DNS lookup result for that target |
+| `propagationResults` | array | Present only when `checkPropagation: true` |
+
+**Common `lookupResult` fields:**
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `domain` | string | Resolved target |
+| `timestamp` | string (ISO 8601) | When the lookup completed |
+| `records` | object | DNS records grouped by type |
+| `reverseLookup` | object | PTR lookup result when reverse lookup is enabled and relevant |
+| `mx_provider` | string or null | Best-effort provider inferred from MX records |
+| `spf_valid` | boolean | Whether SPF parsing found a valid record |
+| `spf_strict` | boolean | Whether SPF enforcement is strict |
+| `dmarc_policy` | string | DMARC policy: `none`, `quarantine`, or `reject` |
+| `has_dkim` | boolean | Whether DKIM was detected |
+| `email_security_score` | number | Enrichment score from `0` to `100` |
+| `ssl_certificate_expires_at` | string (ISO 8601) | TLS certificate expiration time when SSL inspection runs |
+| `ssl_days_until_expiry` | integer or null | Days left before certificate expiry |
+| `warnings` | string[] | Warnings produced by enrichment or SSL analysis |
+| `recommendations` | string[] | Actionable follow-up items |
+| `enrichment` | object | Additional upstream enrichment payload when available |
+| `metadata` | object | Lookup metadata such as query time and record count |
+| `errors` | object | Per-record-type lookup errors when some queries fail |
+
+**Typed DNS records:**
+
+- `A` and `AAAA` records include `address` and optional `ttl`
+- `MX` records include `exchange`, `priority`, and optional `ttl`
+- `TXT` records include `entries[]` and optional `ttl`
+- `CNAME`, `NS`, and `PTR` records include `value` and optional `ttl`
+- `SOA`, `CAA`, and `SRV` records expose their standard protocol-specific fields
+
+The response is now partially typed in the OpenAPI spec, but some nested enrichment data remains upstream-defined and can still vary by target and enabled options.
 
 **Response headers:**
 
