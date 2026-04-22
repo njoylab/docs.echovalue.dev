@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `POST https://api.echovalue.dev/webhook`
 
-Creates a new webhook.
+Creates a new webhook. A webhook can be triggered by inbound email (`webmail`) or by a recurring cron schedule.
 
 :::note
 **Cost:** 1 credit.
@@ -29,15 +29,31 @@ Creates a new webhook.
 | Field | Type | Description | Required |
 | ----- | ---- | ----------- | -------- |
 | `webhookId` | string | Public webhook identifier used for management endpoints. Defaults to `default` when omitted. | No |
-| `name` | string | Human-friendly webhook name | No |
 | `url` | string | Callback URL; must be HTTPS and publicly reachable | Yes |
 | `headers` | object | Custom headers to include in the callback request | No |
 | `format` | string | Native message format: `slack`, `discord`, `teams`, `telegram`, `pagerduty`, `custom` | No |
 | `template` | object | JSON template for `custom` format. Max 2048 bytes, 5 nesting levels. | No |
 | `options` | object | Format-specific options such as `chat_id` or `routing_key` | No |
 | `includeAttachments` | boolean | Include email attachments in payloads. Default: `true`. | No |
+| `schedule` | object | Recurring schedule for cron-triggered webhooks. See fields below. | No |
 
-The returned `email` address is opaque and may not match the chosen `webhookId`.
+**`schedule` fields:**
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `cron` | string | 5-field cron expression: `minute hour day month weekday` | Yes |
+| `timezone` | string | IANA timezone used to evaluate the cron expression, for example `Europe/Rome` | Yes |
+| `active` | boolean | Whether scheduled delivery is enabled. Default: `true`. | No |
+
+Mailbox-style webhooks return an opaque `email` address that may not match the chosen `webhookId`. Scheduled webhooks do not return an `email` field.
+
+:::caution
+For scheduled webhooks, the cron expression must not create gaps longer than 30 days between runs. The first run must also be within 30 days from creation.
+:::
+
+:::note
+Each scheduled execution costs 1 credit. Email-triggered deliveries still cost 2 or 5 credits depending on attachments.
+:::
 
 For format-specific setup see [Slack](/mail2webhook/formats/slack/), [Discord](/mail2webhook/formats/discord/), [Teams](/mail2webhook/formats/teams/), [Telegram](/mail2webhook/formats/telegram/), [PagerDuty](/mail2webhook/formats/pagerduty/), and [Custom](/mail2webhook/formats/custom/).
 
@@ -47,14 +63,17 @@ For format-specific setup see [Slack](/mail2webhook/formats/slack/), [Discord](/
 
 ```json
 {
-  "webhookId": "slack",
-  "name": "slack",
-  "webhook": "https://hooks.slack.com/services/T00/B00/XXX",
+  "webhookId": "daily-sync",
+  "webhook": "https://example.com/hooks/daily-sync",
   "headers": {},
-  "format": "slack",
+  "format": "",
   "options": {},
-  "includeAttachments": true,
-  "email": "r_abcd1234@hook.echovalue.dev",
+  "schedule": {
+    "cron": "0 9 * * *",
+    "timezone": "Europe/Rome",
+    "active": true,
+    "nextRunAt": "2026-04-24T07:00:00.000Z"
+  },
   "hash": "a1b2c3d4e5f6..."
 }
 ```
@@ -62,14 +81,14 @@ For format-specific setup see [Slack](/mail2webhook/formats/slack/), [Discord](/
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `webhookId` | string | Public webhook identifier for management operations |
-| `name` | string | Webhook name |
 | `webhook` | string | Configured callback URL |
 | `headers` | object | Custom headers |
 | `format` | string | Native format, if configured |
 | `template` | object | Custom template object when `format` is `custom` |
 | `options` | object | Format options; sensitive values are redacted |
-| `includeAttachments` | boolean | Whether attachments are included in webhook payloads |
-| `email` | string | Opaque mailbox address that receives email for this webhook |
+| `includeAttachments` | boolean | Whether attachments are included in webhook payloads. Returned only for webmail-triggered webhooks. |
+| `schedule` | object | Schedule metadata for cron-triggered webhooks, including `cron`, `timezone`, `active`, and runtime fields such as `nextRunAt` |
+| `email` | string | Opaque mailbox address that receives email for this webhook. Returned only for webmail-triggered webhooks. |
 | `hash` | string | SHA256 hash of your token |
 
 **Response headers:**
@@ -89,6 +108,7 @@ See [Response Headers](/response-headers/) for details.
 | `400` | Invalid URL or malformed request |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
+| `409` | `webhookId` already exists |
 | `500` | Internal server error |
 
 ## Examples
@@ -100,7 +120,14 @@ See [Response Headers](/response-headers/) for details.
 curl 'https://api.echovalue.dev/webhook' \
   -H 'x-token: mytoken' \
   -H 'Content-Type: application/json' \
-  -d '{"webhookId":"slack","name":"slack","url":"https://hooks.slack.com/services/T00/B00/XXX","format":"slack"}'
+  -d '{
+    "webhookId":"daily-sync",
+    "url":"https://example.com/hooks/daily-sync",
+    "schedule":{
+      "cron":"0 9 * * *",
+      "timezone":"Europe/Rome"
+    }
+  }'
 ```
 
 </TabItem>
@@ -114,10 +141,12 @@ fetch('https://api.echovalue.dev/webhook', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    webhookId: 'slack',
-    name: 'slack',
-    url: 'https://hooks.slack.com/services/T00/B00/XXX',
-    format: 'slack'
+    webhookId: 'daily-sync',
+    url: 'https://example.com/hooks/daily-sync',
+    schedule: {
+      cron: '0 9 * * *',
+      timezone: 'Europe/Rome'
+    }
   })
 });
 ```
@@ -134,10 +163,12 @@ requests.post('https://api.echovalue.dev/webhook',
     'Content-Type': 'application/json'
   },
   json={
-    'webhookId': 'slack',
-    'name': 'slack',
-    'url': 'https://hooks.slack.com/services/T00/B00/XXX',
-    'format': 'slack'
+    'webhookId': 'daily-sync',
+    'url': 'https://example.com/hooks/daily-sync',
+    'schedule': {
+      'cron': '0 9 * * *',
+      'timezone': 'Europe/Rome'
+    }
   }
 )
 ```
@@ -148,10 +179,12 @@ requests.post('https://api.echovalue.dev/webhook',
 ```php
 <?php
 $data = json_encode([
-  'webhookId' => 'slack',
-  'name' => 'slack',
-  'url' => 'https://hooks.slack.com/services/T00/B00/XXX',
-  'format' => 'slack'
+  'webhookId' => 'daily-sync',
+  'url' => 'https://example.com/hooks/daily-sync',
+  'schedule' => [
+    'cron' => '0 9 * * *',
+    'timezone' => 'Europe/Rome'
+  ]
 ]);
 $ch = curl_init('https://api.echovalue.dev/webhook');
 curl_setopt($ch, CURLOPT_POST, true);
@@ -179,10 +212,12 @@ import (
 
 func main() {
     payload := map[string]interface{}{
-        "webhookId": "slack",
-        "name":   "slack",
-        "url":    "https://hooks.slack.com/services/T00/B00/XXX",
-        "format": "slack",
+        "webhookId": "daily-sync",
+        "url": "https://example.com/hooks/daily-sync",
+        "schedule": map[string]interface{}{
+            "cron": "0 9 * * *",
+            "timezone": "Europe/Rome",
+        },
     }
     jsonData, _ := json.Marshal(payload)
 

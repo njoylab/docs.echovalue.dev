@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `POST https://api.echovalue.dev/webhook/<webhookId>/test`
 
-Sends a dummy email payload to the specified webhook URL to verify it is working correctly.
+Sends a dummy payload to the specified webhook URL to verify it is working correctly.
 
 :::note
 **Cost:** 1 credit
@@ -150,5 +150,5 @@ See [Response Headers](/response-headers/) for details.
 | `405` | Method not POST |
 
 :::note
-The test sends a dummy payload with sample email data. Check your webhook endpoint logs to verify the full payload was received correctly.
+For webmail-triggered webhooks, the test sends a dummy email-style payload. For cron-triggered webhooks, the test verifies the configured target URL and returns delivery status, but it does not relax the 30-day scheduling limit.
 :::

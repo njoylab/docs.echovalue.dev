@@ -1,13 +1,35 @@
 ---
 title: Mail2Webhook
-description: Forward emails to your webhook URL using echoValue's Mail2Webhook service
+description: Configure webhook deliveries triggered by inbound email or by a cron schedule
 sidebar:
   order: 5
 ---
 
-The Mail2Webhook service assigns each webhook an opaque email address in the form `<mailboxId>@hook.echovalue.dev`. Emails sent to those addresses are forwarded as JSON POST requests to your configured webhook URLs.
+Mail2Webhook supports two trigger modes:
+
+- `webmail`: echoValue assigns an opaque mailbox address in the form `<mailboxId>@hook.echovalue.dev`. Emails sent to that address are forwarded as JSON `POST` requests to your configured webhook URL.
+- `cron`: echoValue calls your webhook on a recurring schedule defined by a 5-field cron expression plus an IANA timezone.
 
 Each webhook is managed through a public `webhookId`. If you omit it when creating a webhook, echoValue uses `default`.
+
+## Trigger Modes
+
+### Webmail-triggered webhooks
+
+- Return an opaque `email` address in API responses.
+- Support `includeAttachments`.
+- Deliver the email-style payload documented in [Webhook Payload](/mail2webhook/payload/).
+
+### Cron-triggered webhooks
+
+- Are enabled by sending a `schedule` object when creating or updating a webhook.
+- Do not return an `email` mailbox address.
+- Deliver a scheduled-run payload instead of the inbound email payload.
+- Cost 1 credit for each scheduled execution.
+
+:::caution
+Cron schedules must not produce gaps longer than 30 days between runs. The same 30-day limit also applies from creation time to the first scheduled run.
+:::
 
 ## Endpoints
 
@@ -50,5 +72,6 @@ Without a `format`, the raw email payload is forwarded as-is (see [Webhook Paylo
 | Get webhook config | 1 credit |
 | Delete webhook | 1 credit |
 | Test webhook | 1 credit |
+| Scheduled cron run | 1 credit |
 | Email processed (no attachments) | 2 credits |
 | Email processed (with attachments) | 5 credits |

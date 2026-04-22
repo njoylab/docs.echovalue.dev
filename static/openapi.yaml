@@ -464,7 +464,7 @@ components:
       - webhookId
       - scheduledFor
       - executedAt
-      - to
+      - walletHash
       description: 'Outbound payload delivered to the configured webhook URL for scheduled
         webhook runs.
 
@@ -491,15 +491,11 @@ components:
           format: date-time
           description: Actual execution time of this scheduled run.
           example: '2026-04-22T12:05:01Z'
-        to:
-          type: object
-          required:
-          - hash
-          properties:
-            hash:
-              type: string
-              description: SHA-256 hash of the wallet token.
-              example: asdsadsa
+        walletHash:
+          type: string
+          description: SHA-256 hash of the wallet token that owns the webhook and
+            generated the delivery.
+          example: asdsadsa
       additionalProperties: false
     CallResponse:
       type: object

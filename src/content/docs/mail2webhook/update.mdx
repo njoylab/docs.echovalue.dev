@@ -30,13 +30,25 @@ Replaces the full webhook document for the specified `webhookId`. `url` is requi
 
 | Field | Type | Description | Required |
 | ----- | ---- | ----------- | -------- |
-| `name` | string | Human-friendly webhook name | No |
 | `url` | string | Callback URL; must be HTTPS and publicly reachable | Yes |
 | `headers` | object | Custom headers to include in the callback request | No |
 | `format` | string | Native message format | No |
 | `template` | object | Custom template when `format` is `custom` | No |
 | `options` | object | Format-specific options | No |
-| `includeAttachments` | boolean | Whether attachments are included in payloads | No |
+| `includeAttachments` | boolean | Whether attachments are included in payloads. Relevant for webmail-triggered webhooks. | No |
+| `schedule` | object | Full scheduling configuration for cron-triggered webhooks | No |
+
+**`schedule` fields:**
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `cron` | string | 5-field cron expression: `minute hour day month weekday` | Yes |
+| `timezone` | string | IANA timezone name | Yes |
+| `active` | boolean | Whether scheduled delivery is enabled. Default: `true`. | No |
+
+:::caution
+Cron schedules must not create gaps longer than 30 days between runs. The same 30-day limit applies from update time to the next run.
+:::
 
 ## Replace Response
 
@@ -64,10 +76,12 @@ curl 'https://api.echovalue.dev/webhook/slack' \
   -H 'x-token: mytoken' \
   -H 'Content-Type: application/json' \
   -d '{
-    "name": "slack-prod",
-    "url": "https://hooks.slack.com/services/T00/B00/XXX",
-    "format": "slack",
-    "includeAttachments": false
+    "url": "https://example.com/hooks/daily-sync",
+    "schedule": {
+      "cron": "0 9 * * *",
+      "timezone": "Europe/Rome",
+      "active": true
+    }
   }'
 ```
 
@@ -82,10 +96,12 @@ fetch('https://api.echovalue.dev/webhook/slack', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    name: 'slack-prod',
-    url: 'https://hooks.slack.com/services/T00/B00/XXX',
-    format: 'slack',
-    includeAttachments: false
+    url: 'https://example.com/hooks/daily-sync',
+    schedule: {
+      cron: '0 9 * * *',
+      timezone: 'Europe/Rome',
+      active: true
+    }
   })
 });
 ```
@@ -102,10 +118,12 @@ requests.put('https://api.echovalue.dev/webhook/slack',
     'Content-Type': 'application/json'
   },
   json={
-    'name': 'slack-prod',
-    'url': 'https://hooks.slack.com/services/T00/B00/XXX',
-    'format': 'slack',
-    'includeAttachments': False
+    'url': 'https://example.com/hooks/daily-sync',
+    'schedule': {
+      'cron': '0 9 * * *',
+      'timezone': 'Europe/Rome',
+      'active': True
+    }
   }
 )
 ```
@@ -116,10 +134,12 @@ requests.put('https://api.echovalue.dev/webhook/slack',
 ```php
 <?php
 $data = json_encode([
-  'name' => 'slack-prod',
-  'url' => 'https://hooks.slack.com/services/T00/B00/XXX',
-  'format' => 'slack',
-  'includeAttachments' => false
+  'url' => 'https://example.com/hooks/daily-sync',
+  'schedule' => [
+    'cron' => '0 9 * * *',
+    'timezone' => 'Europe/Rome',
+    'active' => true
+  ]
 ]);
 $ch = curl_init('https://api.echovalue.dev/webhook/slack');
 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
@@ -147,10 +167,12 @@ import (
 
 func main() {
     payload := map[string]interface{}{
-        "name": "slack-prod",
-        "url": "https://hooks.slack.com/services/T00/B00/XXX",
-        "format": "slack",
-        "includeAttachments": false,
+        "url": "https://example.com/hooks/daily-sync",
+        "schedule": map[string]interface{}{
+            "cron": "0 9 * * *",
+            "timezone": "Europe/Rome",
+            "active": true,
+        },
     }
     jsonData, _ := json.Marshal(payload)
 
@@ -178,10 +200,11 @@ Updates only the fields you provide.
 
 | Field | Behavior |
 | ----- | -------- |
-| `name`, `url`, `format`, `includeAttachments` | Replaced when provided |
+| `url`, `format`, `includeAttachments` | Replaced when provided |
 | `headers` | Replaces the full headers object. Use `{}` to clear it. |
 | `options` | Replaces the full options object. Use `{}` to clear it. |
 | `template` | Replaces the template. Use `null` to remove it. |
+| `schedule` | Updates only the provided schedule fields. Use `null` to remove scheduling entirely. |
 
 ## Patch Request
 
@@ -218,8 +241,9 @@ curl 'https://api.echovalue.dev/webhook/slack' \
   -H 'x-token: mytoken' \
   -H 'Content-Type: application/json' \
   -d '{
-    "headers": {},
-    "includeAttachments": false
+    "schedule": {
+      "active": false
+    }
   }'
 ```
 
@@ -234,8 +258,9 @@ fetch('https://api.echovalue.dev/webhook/slack', {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    headers: {},
-    includeAttachments: false
+    schedule: {
+      active: false
+    }
   })
 });
 ```
@@ -252,8 +277,9 @@ requests.patch('https://api.echovalue.dev/webhook/slack',
     'Content-Type': 'application/json'
   },
   json={
-    'headers': {},
-    'includeAttachments': False
+    'schedule': {
+      'active': False
+    }
   }
 )
 ```

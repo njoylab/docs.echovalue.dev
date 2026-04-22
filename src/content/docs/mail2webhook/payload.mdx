@@ -1,9 +1,13 @@
 ---
 title: Webhook Payload
-description: JSON payload structure sent to your webhook when an email is received
+description: JSON payload structures sent to your webhook for webmail-triggered and cron-triggered deliveries
 sidebar:
   order: 4
 ---
+
+Webhook payloads depend on the trigger mode.
+
+## Webmail Payload
 
 When an email arrives at the opaque `email` address returned by the webhook API, echoValue sends a `POST` request to your webhook URL with this JSON body:
 
@@ -64,3 +68,25 @@ When an email arrives at the opaque `email` address returned by the webhook API,
 :::note
 Use `to.hash` to map deliveries to your wallet identity without exposing the raw token.
 :::
+
+## Scheduled Payload
+
+When a webhook is triggered by `schedule`, echoValue sends a scheduled-run payload instead of the inbound email payload:
+
+```json
+{
+  "type": "scheduled_webhook_run",
+  "webhookId": "daily-sync",
+  "scheduledFor": "2026-04-22T12:05:00Z",
+  "executedAt": "2026-04-22T12:05:01Z",
+  "walletHash": "a1b2c3d4e5f6..."
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `type` | string | Always `scheduled_webhook_run` |
+| `webhookId` | string | Public webhook identifier |
+| `scheduledFor` | string (ISO 8601) | Time this run was scheduled for |
+| `executedAt` | string (ISO 8601) | Time the webhook call actually ran |
+| `walletHash` | string | SHA256 hash of your token |

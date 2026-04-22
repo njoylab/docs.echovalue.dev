@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `GET https://api.echovalue.dev/webhook/<webhookId>`
 
-Returns a single webhook configuration.
+Returns a single webhook configuration. Responses differ slightly for webmail-triggered and cron-triggered webhooks.
 
 :::note
 **Cost:** 1 credit
@@ -93,14 +93,17 @@ func main() {
 
 ```json
 {
-  "webhookId": "slack",
-  "name": "slack",
-  "webhook": "https://hooks.slack.com/services/T00/B00/XXX",
+  "webhookId": "daily-sync",
+  "webhook": "https://example.com/hooks/daily-sync",
   "headers": {},
-  "format": "slack",
+  "format": "",
   "options": {},
-  "includeAttachments": true,
-  "email": "r_abcd1234@hook.echovalue.dev",
+  "schedule": {
+    "cron": "0 9 * * *",
+    "timezone": "Europe/Rome",
+    "active": true,
+    "nextRunAt": "2026-04-24T07:00:00.000Z"
+  },
   "hash": "a1b2c3d4e5f6..."
 }
 ```
@@ -108,14 +111,14 @@ func main() {
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `webhookId` | string | Public webhook identifier used for update/delete/test operations |
-| `name` | string | Webhook name (optional label) |
 | `webhook` | string | Your configured callback URL |
 | `headers` | object | Custom headers (values are redacted) |
 | `format` | string | Configured native format, if any (e.g. `slack`, `telegram`, `custom`) |
 | `template` | object | Custom template object (only present when format is `custom`) |
 | `options` | object | Format-specific options (sensitive values like `routing_key` are redacted as `***`) |
-| `includeAttachments` | boolean | Whether attachments are included in webhook payload |
-| `email` | string | Opaque mailbox address that triggers this webhook |
+| `includeAttachments` | boolean | Whether attachments are included in webhook payload. Returned only for webmail-triggered webhooks. |
+| `schedule` | object | Cron schedule configuration and runtime status for scheduled webhooks |
+| `email` | string | Opaque mailbox address that triggers this webhook. Returned only for webmail-triggered webhooks. |
 | `hash` | string | SHA256 hash of your token — use this to identify incoming payloads |
 
 **Response headers:**
@@ -130,6 +133,7 @@ See [Response Headers](/response-headers/) for details.
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Webhook returned |
+| `400` | Invalid request |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
 | `404` | Webhook not found |
