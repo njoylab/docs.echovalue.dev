@@ -47,7 +47,7 @@ docs/
 │       │   └── delete.mdx
 │       ├── guides/
 │       │   └── agent-shared-state.mdx
-│       └── mail2webhook/
+│       └── webhook/
 │           ├── index.mdx
 │           ├── create.mdx
 │           ├── list.mdx

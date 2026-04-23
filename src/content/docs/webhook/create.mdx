@@ -1,0 +1,158 @@
+---
+title: Create Webhook
+description: Create either an inbound email webhook or a scheduled webhook
+sidebar:
+  order: 1
+---
+
+`POST https://api.echovalue.dev/webhook`
+
+Creates a new webhook.
+
+:::note
+**Cost:** 1 credit.
+:::
+
+## Headers
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `Content-Type` | Must be `application/json` |
+
+## Common Fields
+
+These fields are valid in both modes.
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `webhookId` | string | Public webhook identifier used for management endpoints. Defaults to `default` when omitted. | No |
+| `url` | string | Callback URL; must be HTTPS and publicly reachable. | Yes |
+| `headers` | object | Custom headers to include in the callback request. | No |
+
+## Inbound Email Webhook
+
+Use this mode when you want echoValue to assign an opaque mailbox address and forward each inbound email to your webhook URL.
+
+### Mailbox-only fields
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `format` | string | Native message format: `slack`, `discord`, `teams`, `telegram`, `pagerduty`, `custom` | No |
+| `template` | object | JSON template for `custom` format. Max 2048 bytes, 5 nesting levels. | No |
+| `options` | object | Format-specific options such as `chat_id` or `routing_key` | No |
+| `includeAttachments` | boolean | Include email attachments in payloads. Default: `true`. | No |
+
+### Minimal request
+
+```json
+{
+  "webhookId": "support-alerts",
+  "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+  "format": "slack",
+  "includeAttachments": false
+}
+```
+
+### Typical response
+
+```json
+{
+  "webhookId": "support-alerts",
+  "webhook": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+  "headers": {},
+  "format": "slack",
+  "options": {},
+  "includeAttachments": false,
+  "email": "r_abcd1234@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
+}
+```
+
+### Notes
+
+- The response includes an opaque `email` mailbox address.
+- `format`, `template`, `options`, and `includeAttachments` are only valid in this mode.
+- See [Webhook Inbound Email](/guides/webhook-inbound-email/) for end-to-end examples.
+
+## Scheduled Webhook
+
+Use this mode when you want echoValue to call your webhook URL on a recurring schedule.
+
+### Schedule field
+
+| Field | Type | Description | Required |
+| ----- | ---- | ----------- | -------- |
+| `schedule.cron` | string | 5-field cron expression: `minute hour day month weekday` | Yes |
+| `schedule.timezone` | string | IANA timezone used to evaluate the cron expression, for example `Europe/Rome` | Yes |
+| `schedule.active` | boolean | Whether scheduled delivery is enabled. Default: `true`. | No |
+
+### Minimal request
+
+```json
+{
+  "webhookId": "daily-sync",
+  "url": "https://example.com/hooks/daily-sync",
+  "schedule": {
+    "cron": "0 9 * * *",
+    "timezone": "Europe/Rome"
+  }
+}
+```
+
+### Typical response
+
+```json
+{
+  "webhookId": "daily-sync",
+  "webhook": "https://example.com/hooks/daily-sync",
+  "headers": {},
+  "schedule": {
+    "cron": "0 9 * * *",
+    "timezone": "Europe/Rome",
+    "active": true,
+    "nextRunAt": "2026-04-24T07:00:00.000Z"
+  },
+  "hash": "a1b2c3d4e5f6..."
+}
+```
+
+### Notes
+
+- The response does not include an `email` field.
+- Do not send `format`, `template`, `options`, or `includeAttachments` together with `schedule`.
+- See [Webhook Scheduled Jobs](/guides/webhook-scheduled-jobs/) for end-to-end examples.
+
+:::caution
+For scheduled webhooks, the first run must be within 30 days from creation and the interval between runs must never exceed 30 days.
+:::
+
+## Response Fields
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `webhookId` | string | Public webhook identifier for management operations |
+| `webhook` | string | Configured callback URL |
+| `headers` | object | Custom headers |
+| `format` | string | Native format, only returned for inbound email webhooks |
+| `template` | object | Custom template, only returned when `format` is `custom` |
+| `options` | object | Format options; sensitive values are redacted |
+| `includeAttachments` | boolean | Returned only for inbound email webhooks |
+| `schedule` | object | Returned only for scheduled webhooks |
+| `email` | string | Opaque mailbox address, returned only for inbound email webhooks |
+| `hash` | string | SHA256 hash of your token |
+
+## Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook created |
+| `400` | Invalid URL, invalid field combination, or malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `409` | `webhookId` already exists |
+| `500` | Internal server error |
+
+:::caution
+The webhook URL must be HTTPS and publicly reachable. Localhost and private IP addresses are not accepted.
+:::

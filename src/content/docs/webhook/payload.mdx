@@ -1,13 +1,21 @@
 ---
-title: Webhook Payload
-description: JSON payload structures sent to your webhook for webmail-triggered and cron-triggered deliveries
+title: Webhook Payloads
+description: JSON payload structures sent to your webhook for inbound email and scheduled deliveries
 sidebar:
   order: 4
 ---
 
-Webhook payloads depend on the trigger mode.
+Webhook payloads depend on the configured use case.
 
-## Webmail Payload
+## Which Payload Do I Receive?
+
+| Configuration | Payload sent to your endpoint |
+| ------------- | ----------------------------- |
+| Inbound email webhook without `format` | Raw inbound email JSON payload |
+| Inbound email webhook with `format` | Provider-specific transformed payload |
+| Scheduled webhook with `schedule` | Scheduled-run JSON payload |
+
+## Inbound Email Payload
 
 When an email arrives at the opaque `email` address returned by the webhook API, echoValue sends a `POST` request to your webhook URL with this JSON body:
 
@@ -69,7 +77,11 @@ When an email arrives at the opaque `email` address returned by the webhook API,
 Use `to.hash` to map deliveries to your wallet identity without exposing the raw token.
 :::
 
-## Scheduled Payload
+:::note
+If `format` is set, echoValue transforms this inbound email payload before sending it to the target platform. See the pages under [Formats](/webhook/formats/slack/).
+:::
+
+## Scheduled Webhook Payload
 
 When a webhook is triggered by `schedule`, echoValue sends a scheduled-run payload instead of the inbound email payload:
 

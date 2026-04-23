@@ -29,6 +29,11 @@ Sends a dummy payload to the specified webhook URL to verify it is working corre
 | --------- | ---- | ----------- | -------- |
 | `webhookId` | string | Public webhook identifier to test | Yes |
 
+## What Gets Sent
+
+- Inbound email webhook: a dummy inbound email payload is sent.
+- Scheduled webhook: a dummy scheduled-run payload is sent.
+
 <Tabs syncKey="lang">
 <TabItem label="cURL">
 
@@ -150,5 +155,5 @@ See [Response Headers](/response-headers/) for details.
 | `405` | Method not POST |
 
 :::note
-For webmail-triggered webhooks, the test sends a dummy email-style payload. For cron-triggered webhooks, the test verifies the configured target URL and returns delivery status, but it does not relax the 30-day scheduling limit.
+For inbound email webhooks, the test sends a dummy email-style payload. For scheduled webhooks, the test verifies the configured target URL and returns delivery status, but it does not relax the 30-day scheduling limit.
 :::

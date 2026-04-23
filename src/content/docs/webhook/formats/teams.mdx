@@ -1,6 +1,6 @@
 ---
-title: "Mail2Webhook: Microsoft Teams"
-description: Forward emails to Microsoft Teams using echoValue's Mail2Webhook with native Teams formatting
+title: "Webhook Format: Microsoft Teams"
+description: Forward inbound email to Microsoft Teams using echoValue's native Teams formatting
 sidebar:
   order: 3
 ---
@@ -8,6 +8,10 @@ sidebar:
 import { Steps } from '@astrojs/starlight/components';
 
 When `format` is set to `teams`, incoming emails are converted into Microsoft Teams messages using the incoming webhook format.
+
+:::note
+This format is available only for inbound email webhooks. Scheduled webhooks always send the scheduled-run JSON payload and do not use format adapters.
+:::
 
 ## Get the Webhook URL
 

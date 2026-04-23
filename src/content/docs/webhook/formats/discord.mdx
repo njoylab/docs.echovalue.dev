@@ -1,6 +1,6 @@
 ---
-title: "Mail2Webhook: Discord"
-description: Forward emails to Discord using echoValue's Mail2Webhook with native Discord formatting
+title: "Webhook Format: Discord"
+description: Forward inbound email to Discord using echoValue's native Discord formatting
 sidebar:
   order: 2
 ---
@@ -8,6 +8,10 @@ sidebar:
 import { Steps } from '@astrojs/starlight/components';
 
 When `format` is set to `discord`, incoming emails are converted into Discord messages using the [Webhook API](https://discord.com/developers/docs/resources/webhook).
+
+:::note
+This format is available only for inbound email webhooks. Scheduled webhooks always send the scheduled-run JSON payload and do not use format adapters.
+:::
 
 ## Get the Webhook URL
 

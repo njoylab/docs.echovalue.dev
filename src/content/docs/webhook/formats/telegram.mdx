@@ -1,6 +1,6 @@
 ---
-title: "Mail2Webhook: Telegram"
-description: Forward emails to Telegram using echoValue's Mail2Webhook with native Telegram formatting
+title: "Webhook Format: Telegram"
+description: Forward inbound email to Telegram using echoValue's native Telegram formatting
 sidebar:
   order: 4
 ---
@@ -8,6 +8,10 @@ sidebar:
 import { Steps } from '@astrojs/starlight/components';
 
 When `format` is set to `telegram`, incoming emails are sent to a Telegram chat via the [Bot API](https://core.telegram.org/bots/api#sendmessage). This format requires a bot token in the URL and a `chat_id` option.
+
+:::note
+This format is available only for inbound email webhooks. Scheduled webhooks always send the scheduled-run JSON payload and do not use format adapters.
+:::
 
 ## Get the Bot Token and Chat ID
 

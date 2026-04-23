@@ -1,6 +1,6 @@
 ---
-title: "Mail2Webhook: PagerDuty"
-description: Forward emails to PagerDuty using echoValue's Mail2Webhook to trigger incidents automatically
+title: "Webhook Format: PagerDuty"
+description: Forward inbound email to PagerDuty using echoValue to trigger incidents automatically
 sidebar:
   order: 5
 ---
@@ -8,6 +8,10 @@ sidebar:
 import { Steps } from '@astrojs/starlight/components';
 
 When `format` is set to `pagerduty`, incoming emails trigger PagerDuty incidents via the [Events API v2](https://developer.pagerduty.com/docs/ZG9jOjExMDI5NTgw-events-api-v2-overview). This format requires a `routing_key` option.
+
+:::note
+This format is available only for inbound email webhooks. Scheduled webhooks always send the scheduled-run JSON payload and do not use format adapters.
+:::
 
 ## Get the Routing Key
 

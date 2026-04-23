@@ -1,0 +1,89 @@
+---
+title: Webhook Inbound Email
+description: Receive email at an opaque address and forward it to Slack, Discord, PagerDuty, or your own endpoint.
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Use an inbound email webhook when you want echoValue to give you a mailbox address and forward each received email to your webhook URL.
+
+## What you get
+
+- An opaque `email` address such as `r_xxxxx@hook.echovalue.dev`
+- Optional email attachment forwarding via `includeAttachments`
+- Optional format adapters such as `slack`, `discord`, `teams`, `telegram`, `pagerduty`, or `custom`
+- The inbound email payload documented in [Webhook Payloads](/webhook/payload/)
+
+## Minimal setup
+
+<Tabs syncKey="lang">
+<TabItem label="cURL">
+
+```sh
+curl 'https://api.echovalue.dev/webhook' \
+  -H 'x-token: mytoken' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "webhookId": "support-alerts",
+    "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+    "format": "slack",
+    "includeAttachments": false
+  }'
+```
+
+</TabItem>
+<TabItem label="JavaScript">
+
+```js
+fetch('https://api.echovalue.dev/webhook', {
+  method: 'POST',
+  headers: {
+    'x-token': 'mytoken',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    webhookId: 'support-alerts',
+    url: 'https://hooks.slack.com/services/XXX/YYY/ZZZ',
+    format: 'slack',
+    includeAttachments: false
+  })
+});
+```
+
+</TabItem>
+</Tabs>
+
+## Example response
+
+```json
+{
+  "webhookId": "support-alerts",
+  "webhook": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+  "headers": {},
+  "format": "slack",
+  "options": {},
+  "includeAttachments": false,
+  "email": "r_abcd1234@hook.echovalue.dev",
+  "hash": "a1b2c3d4e5f6..."
+}
+```
+
+## Field rules
+
+- Use `format`, `template`, `options`, and `includeAttachments` only in inbound email mode.
+- Do not send `schedule` in this mode.
+- If `format` is omitted, the raw inbound email payload is forwarded as JSON.
+
+## Good fits
+
+- Turn support mailbox traffic into Slack or Discord messages
+- Trigger PagerDuty incidents from inbound alert emails
+- Forward normalized email data into your own application
+
+See also:
+
+- [Create Webhook](/webhook/create/)
+- [Webhook Format: Slack](/webhook/formats/slack/)
+- [Webhook Payloads](/webhook/payload/)

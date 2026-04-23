@@ -1,11 +1,15 @@
 ---
-title: "Mail2Webhook: Custom Format"
-description: Create custom webhook payload transformations using echoValue's template engine
+title: "Webhook Format: Custom"
+description: Create custom inbound email payload transformations using echoValue's template engine
 sidebar:
   order: 6
 ---
 
 When `format` is set to `custom`, you define your own JSON template with placeholders. echoValue fills the values from the incoming email and sends the result to your webhook URL.
+
+:::note
+This format is available only for inbound email webhooks. Scheduled webhooks always send the scheduled-run JSON payload and do not use format adapters.
+:::
 
 ## Configure in echoValue
 
@@ -27,7 +31,7 @@ curl 'https://api.echovalue.dev/webhook' \
 
 ## Template Placeholders
 
-Placeholders use `{{dot.notation}}` syntax and are resolved against the [webhook payload](/mail2webhook/payload/).
+Placeholders use `{{dot.notation}}` syntax and are resolved against the [webhook payload](/webhook/payload/).
 
 ### Dot Notation
 

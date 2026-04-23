@@ -1,6 +1,6 @@
 ---
 title: List Webhooks
-description: List all Mail2Webhook configurations for your wallet
+description: List all webhook configurations for your wallet
 sidebar:
   order: 2
 ---
@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `GET https://api.echovalue.dev/webhook`
 
-Returns all configured webhooks for your wallet, including both webmail-triggered and cron-triggered webhooks.
+Returns all configured webhooks for your wallet, including inbound email webhooks and scheduled webhooks.
 
 :::note
 **Cost:** 1 credit.
@@ -72,10 +72,16 @@ Returns all configured webhooks for your wallet, including both webmail-triggere
 | `format` | string | Configured native format, if any |
 | `template` | object | Custom template object when `format` is `custom` |
 | `options` | object | Format-specific options; sensitive values are redacted |
-| `includeAttachments` | boolean | Whether attachments are included in webhook payloads. Returned only for webmail-triggered webhooks. |
-| `schedule` | object | Scheduling metadata for cron-triggered webhooks |
-| `email` | string | Opaque mailbox address that triggers this webhook. Returned only for webmail-triggered webhooks. |
+| `includeAttachments` | boolean | Whether attachments are included in webhook payloads. Returned only for inbound email webhooks. |
+| `schedule` | object | Scheduling metadata for scheduled webhooks |
+| `email` | string | Opaque mailbox address that triggers this webhook. Returned only for inbound email webhooks. |
 | `hash` | string | SHA256 hash of your token |
+
+## Reading The Result
+
+- If an entry has `email`, it is an inbound email webhook.
+- If an entry has `schedule`, it is a scheduled webhook.
+- If an entry has `format`, the inbound email payload is transformed before delivery.
 
 **Response headers:**
 

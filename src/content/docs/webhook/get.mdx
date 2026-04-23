@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `GET https://api.echovalue.dev/webhook/<webhookId>`
 
-Returns a single webhook configuration. Responses differ slightly for webmail-triggered and cron-triggered webhooks.
+Returns a single webhook configuration. Responses differ slightly for inbound email and scheduled webhooks.
 
 :::note
 **Cost:** 1 credit
@@ -116,10 +116,16 @@ func main() {
 | `format` | string | Configured native format, if any (e.g. `slack`, `telegram`, `custom`) |
 | `template` | object | Custom template object (only present when format is `custom`) |
 | `options` | object | Format-specific options (sensitive values like `routing_key` are redacted as `***`) |
-| `includeAttachments` | boolean | Whether attachments are included in webhook payload. Returned only for webmail-triggered webhooks. |
+| `includeAttachments` | boolean | Whether attachments are included in webhook payload. Returned only for inbound email webhooks. |
 | `schedule` | object | Cron schedule configuration and runtime status for scheduled webhooks |
-| `email` | string | Opaque mailbox address that triggers this webhook. Returned only for webmail-triggered webhooks. |
+| `email` | string | Opaque mailbox address that triggers this webhook. Returned only for inbound email webhooks. |
 | `hash` | string | SHA256 hash of your token — use this to identify incoming payloads |
+
+## Interpreting The Response
+
+- `email` present: this webhook is waiting for inbound email.
+- `schedule` present: this webhook runs on a schedule.
+- `format` present: inbound email is transformed into a provider-specific payload before delivery.
 
 **Response headers:**
 

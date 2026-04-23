@@ -1,0 +1,125 @@
+---
+title: Update Webhook
+description: Replace or patch an inbound email webhook or a scheduled webhook
+sidebar:
+  order: 4
+---
+
+`PUT https://api.echovalue.dev/webhook/<webhookId>`
+
+Replaces the full webhook document for the specified `webhookId`. `url` is required.
+
+`PATCH https://api.echovalue.dev/webhook/<webhookId>`
+
+Updates only the fields you provide.
+
+`webhookId` is a path parameter and is not allowed in the request body.
+
+:::note
+**Cost:** 1 credit for each `PUT` or `PATCH` call.
+:::
+
+## Headers
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+| `Content-Type` | Must be `application/json` |
+
+## Replace With `PUT`
+
+Use `PUT` when you want to send the full new configuration.
+
+### Inbound Email Webhook
+
+Replace the webhook with mailbox mode by sending mailbox-only fields and omitting `schedule`.
+
+```json
+{
+  "url": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+  "format": "slack",
+  "includeAttachments": false
+}
+```
+
+### Scheduled Webhook
+
+Replace the webhook with scheduled mode by sending `schedule` and omitting mailbox-only fields.
+
+```json
+{
+  "url": "https://example.com/hooks/daily-sync",
+  "schedule": {
+    "cron": "0 9 * * *",
+    "timezone": "Europe/Rome",
+    "active": true
+  }
+}
+```
+
+## Patch With `PATCH`
+
+Use `PATCH` when you want to update only part of the configuration.
+
+### Patch semantics
+
+| Field | Behavior |
+| ----- | -------- |
+| `url` | Replaced when provided |
+| `headers` | Replaces the full headers object. Use `{}` to clear it. |
+| `format` | Mailbox-only field. Replaced when provided. |
+| `template` | Mailbox-only field. Replaces the template. Use `null` to remove it. |
+| `options` | Mailbox-only field. Replaces the full options object. Use `{}` to clear it. |
+| `includeAttachments` | Mailbox-only field. Replaced when provided. |
+| `schedule` | Scheduled field. Updates only the provided schedule fields. Use `null` to remove scheduling entirely. |
+
+### Patch an inbound email webhook
+
+```json
+{
+  "headers": {
+    "X-Source": "support-inbox"
+  },
+  "includeAttachments": false
+}
+```
+
+### Patch a scheduled webhook
+
+```json
+{
+  "schedule": {
+    "active": false
+  }
+}
+```
+
+## Mode Rules
+
+- Inbound email mode uses `format`, `template`, `options`, and `includeAttachments`.
+- Scheduled mode uses `schedule`.
+- Do not send mailbox-only fields together with a non-null `schedule` object in the same request.
+- Set `schedule: null` in `PATCH` to switch a scheduled webhook back to mailbox mode.
+
+:::caution
+For scheduled webhooks, the next run must be within 30 days from the update and the interval between runs must never exceed 30 days.
+:::
+
+## Response
+
+Response body and response headers are the same as [Create Webhook](/webhook/create/).
+
+## Status Codes
+
+| Status | Meaning |
+| ------ | ------- |
+| `200` | Webhook updated |
+| `400` | Invalid URL, invalid field combination, or malformed request |
+| `401` | Invalid token |
+| `402` | Insufficient credits |
+| `404` | Webhook not found |
+| `500` | Internal server error |
+
+:::caution
+The webhook URL must be HTTPS and publicly reachable. Localhost and private IP addresses are not accepted.
+:::

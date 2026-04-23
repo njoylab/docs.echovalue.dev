@@ -1,6 +1,6 @@
 ---
-title: "Mail2Webhook: Slack"
-description: Forward emails to Slack using echoValue's Mail2Webhook with native Slack formatting
+title: "Webhook Format: Slack"
+description: Forward inbound email to Slack using echoValue's native Slack formatting
 sidebar:
   order: 1
 ---
@@ -8,6 +8,10 @@ sidebar:
 import { Steps } from '@astrojs/starlight/components';
 
 When `format` is set to `slack`, incoming emails are converted into Slack messages using the [Incoming Webhooks](https://api.slack.com/messaging/webhooks) API.
+
+:::note
+This format is available only for inbound email webhooks. Scheduled webhooks always send the scheduled-run JSON payload and do not use format adapters.
+:::
 
 ## Get the Webhook URL
 

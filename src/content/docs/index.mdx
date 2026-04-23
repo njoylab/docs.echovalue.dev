@@ -10,7 +10,7 @@ sidebar:
 It provides two main services:
 
 - **Key-Value Store** — persist and retrieve string data organized in named buckets
-- **Mail2Webhook** — receive emails at a dedicated address and forward them as JSON to your webhook
+- **Webhook** — receive emails at a dedicated address or schedule recurring deliveries to your webhook
 
 :::caution
 echoValue is not intended for storing sensitive data
@@ -54,7 +54,7 @@ curl 'https://api.echovalue.dev/webhook' \
 | Service | Description |
 | ------- | ----------- |
 | **Key-Value Store** | Store, retrieve, and delete key-value pairs organized in buckets |
-| **Mail2Webhook** | Receive emails at an opaque mailbox address and forward them to your webhook, while managing each integration through a public `webhookId` |
+| **Webhook** | Receive emails at an opaque mailbox address or run scheduled deliveries, while managing each integration through a public `webhookId` |
 | **DNS Lookup** | Run DNS record queries, propagation checks, reverse lookups, SSL inspection, and optional security enrichment |
 | **My IP** | Inspect the caller IP address together with geo metadata derived from the request |
 | **URL To Metadata** | Fetch metadata and optional summaries for a public URL through the upstream scraper service |

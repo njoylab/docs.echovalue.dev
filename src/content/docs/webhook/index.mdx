@@ -1,0 +1,72 @@
+---
+title: Webhook
+description: Configure inbound email forwarding or scheduled webhook deliveries
+sidebar:
+  order: 5
+---
+
+The webhook API has two mutually exclusive modes:
+
+1. **Inbound Email Webhook**
+   echoValue assigns an opaque mailbox address in the form `<mailboxId>@hook.echovalue.dev`. Every received email is forwarded to your webhook URL.
+2. **Scheduled Webhook**
+   echoValue calls your webhook URL on a recurring schedule defined by a 5-field cron expression and an IANA timezone.
+
+Each webhook is managed through a public `webhookId`. If you omit it when creating a webhook, echoValue uses `default`.
+
+## Pick The Right Mode
+
+| Mode | What you send | What you get back | Payload |
+| ---- | ------------- | ----------------- | ------- |
+| Inbound Email Webhook | `url` plus optional `format`, `template`, `options`, `includeAttachments` | An opaque `email` address | Inbound email payload |
+| Scheduled Webhook | `url` plus `schedule` | Schedule metadata such as `nextRunAt` | Scheduled-run payload |
+
+:::caution
+A webhook is either mailbox-based or scheduled, never both. Do not send `schedule` together with mailbox-only fields such as `format`, `template`, `options`, or `includeAttachments`.
+:::
+
+## Endpoint Reference
+
+| Page | Endpoint |
+| ---- | -------- |
+| [Create Webhook](/webhook/create/) | `POST /webhook` |
+| [List Webhooks](/webhook/list/) | `GET /webhook` |
+| [Get Webhook](/webhook/get/) | `GET /webhook/<webhookId>` |
+| [Update Webhook](/webhook/update/) | `PUT /webhook/<webhookId>` and `PATCH /webhook/<webhookId>` |
+| [Delete Webhook](/webhook/delete/) | `DELETE /webhook/<webhookId>` |
+| [Test Webhook](/webhook/test/) | `POST /webhook/<webhookId>/test` |
+| [Webhook Payloads](/webhook/payload/) | Delivery payload schemas |
+
+## Guides
+
+| Guide | When to use it |
+| ----- | -------------- |
+| [Webhook Inbound Email](/guides/webhook-inbound-email/) | You want an email address that forwards inbound email to Slack, Discord, PagerDuty, or your own endpoint |
+| [Webhook Scheduled Jobs](/guides/webhook-scheduled-jobs/) | You want cron-style webhook execution without any mailbox address |
+
+## Format Adapters
+
+Format adapters apply only to the inbound email mode.
+
+| Format | Platform |
+| ------ | -------- |
+| `slack` | [Slack Incoming Webhooks](/webhook/formats/slack/) |
+| `discord` | [Discord Webhooks](/webhook/formats/discord/) |
+| `teams` | [Microsoft Teams](/webhook/formats/teams/) |
+| `telegram` | [Telegram Bot API](/webhook/formats/telegram/) |
+| `pagerduty` | [PagerDuty Events API v2](/webhook/formats/pagerduty/) |
+| `custom` | [Custom JSON template](/webhook/formats/custom/) |
+
+Without a `format`, the raw inbound email payload is forwarded as-is. Scheduled webhooks always deliver the scheduled-run JSON payload.
+
+## Pricing
+
+| Operation | Cost |
+| --------- | ---- |
+| Configure webhook | 1 credit |
+| Get webhook config | 1 credit |
+| Delete webhook | 1 credit |
+| Test webhook | 1 credit |
+| Scheduled cron run | 1 credit |
+| Email processed (no attachments) | 2 credits |
+| Email processed (with attachments) | 5 credits |

@@ -547,10 +547,12 @@ components:
         message:
           type: string
           description: Confirmation message
-    WebhookCreateReplaceRequest:
+    MailboxWebhookCreateReplaceRequest:
       type: object
       required:
       - url
+      description: Mailbox webhook configuration. Use this mode to receive inbound
+        email at an opaque `email` address and forward it to your webhook URL.
       properties:
         webhookId:
           type: string
@@ -574,14 +576,14 @@ components:
           - telegram
           - pagerduty
           - custom
-          description: "Native payload format. When set, the webhook body is transformed\
-            \ into the platform's native message format instead of forwarding the\
-            \ raw email payload.\n- `slack` \u2014 `{\"text\": \"...\"}` with bold\
-            \ subject and From\n- `discord` \u2014 `{\"content\": \"...\"}` with bold\
-            \ subject and From\n- `teams` \u2014 `{\"text\": \"...\"}` Adaptive Card\
-            \ text\n- `telegram` \u2014 `{\"chat_id\": \"...\", \"text\": \"...\"\
-            , \"parse_mode\": \"HTML\"}` (requires `options.chat_id`)\n- `pagerduty`\
-            \ \u2014 Events API v2 trigger payload (requires `options.routing_key`)\n\
+          description: "Native payload format for mailbox webhooks. When set, the\
+            \ webhook body is transformed into the platform's native message format\
+            \ instead of forwarding the raw inbound email payload.\n- `slack` \u2014\
+            \ `{\"text\": \"...\"}` with bold subject and From\n- `discord` \u2014\
+            \ `{\"content\": \"...\"}` with bold subject and From\n- `teams` \u2014\
+            \ `{\"text\": \"...\"}` Adaptive Card text\n- `telegram` \u2014 `{\"chat_id\"\
+            : \"...\", \"text\": \"...\", \"parse_mode\": \"HTML\"}` (requires `options.chat_id`)\n\
+            - `pagerduty` \u2014 Events API v2 trigger payload (requires `options.routing_key`)\n\
             - `custom` \u2014 user-defined JSON template with placeholders (requires\
             \ `template` field)\n"
         template:
@@ -611,12 +613,38 @@ components:
         includeAttachments:
           type: boolean
           default: true
-          description: Whether to include email attachments in the webhook payload.
-            If false, attachments are stripped from the payload. When email contains
-            attachments, costs 5 tokens; without attachments costs 2 tokens.
+          description: Whether to include email attachments in the mailbox webhook
+            payload. If false, attachments are stripped from the payload. When email
+            contains attachments, costs 5 tokens; without attachments costs 2 tokens.
+      additionalProperties: false
+    ScheduledWebhookCreateReplaceRequest:
+      type: object
+      required:
+      - url
+      - schedule
+      description: Scheduled webhook configuration. Use this mode to trigger your
+        webhook URL on a recurring cron schedule. Mailbox delivery fields are not
+        allowed in this mode.
+      properties:
+        webhookId:
+          type: string
+          description: Public webhook identifier used for management endpoints. Defaults
+            to `default` when omitted.
+        url:
+          type: string
+          description: Callback URL to receive scheduled webhook events
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Optional custom headers to include in the callback request
         schedule:
           $ref: '#/components/schemas/WebhookScheduleRequest'
       additionalProperties: false
+    WebhookCreateReplaceRequest:
+      oneOf:
+      - $ref: '#/components/schemas/MailboxWebhookCreateReplaceRequest'
+      - $ref: '#/components/schemas/ScheduledWebhookCreateReplaceRequest'
     WebhookPatchRequest:
       type: object
       description: 'Partial update payload for `PATCH /webhook/{webhookId}`.
@@ -625,6 +653,12 @@ components:
 
         `headers`, `options`, and `template` replace the full field value (no deep
         merge).
+
+        Mailbox-only fields are `format`, `template`, `options`, and `includeAttachments`.
+        Scheduled mode uses `schedule`.
+
+        Do not send mailbox-only fields together with a non-null `schedule` object
+        in the same patch request.
 
         '
       properties:
@@ -646,23 +680,29 @@ components:
           - telegram
           - pagerduty
           - custom
+          description: Mailbox-only field. Native payload format for inbound email
+            delivery.
         template:
           type: object
           nullable: true
           additionalProperties: true
-          description: Set `null` to remove template.
+          description: Mailbox-only field. Set `null` to remove template.
         options:
           type: object
           nullable: true
           additionalProperties:
             type: string
-          description: Set `{}` to clear all options.
+          description: Mailbox-only field. Set `{}` to clear all options.
         includeAttachments:
           type: boolean
+          description: Mailbox-only field. Not allowed while scheduling is enabled.
         schedule:
           allOf:
           - $ref: '#/components/schemas/WebhookSchedulePatchRequest'
           nullable: true
+          description: Scheduled delivery patch. Set `null` to convert the webhook
+            back to mailbox mode. Do not send this together with mailbox-only fields
+            unless the value is `null`.
       additionalProperties: false
     WebhookScheduleRequest:
       type: object
@@ -724,8 +764,9 @@ components:
       - timezone
       - active
       additionalProperties: false
-    WebhookResponse:
+    MailboxWebhookResponse:
       type: object
+      description: Mailbox webhook response.
       properties:
         webhookId:
           type: string
@@ -752,17 +793,43 @@ components:
         includeAttachments:
           type: boolean
           description: Whether attachments are included in webhook payload (true =
-            include, false = stripped). Returned only for mailbox-style webhooks;
+            include, false = stripped). Returned only for inbound email webhooks;
             omitted for scheduled webhooks.
         schedule:
           $ref: '#/components/schemas/WebhookScheduleResponse'
         email:
           type: string
           description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev).
-            Returned only for mailbox-style webhooks; omitted for scheduled webhooks.
+            Returned only for inbound email webhooks; omitted for scheduled webhooks.
         hash:
           type: string
           description: SHA256 hash of the wallet token
+      additionalProperties: false
+    ScheduledWebhookResponse:
+      type: object
+      description: Scheduled webhook response.
+      properties:
+        webhookId:
+          type: string
+          description: Public webhook identifier used for management endpoints
+        webhook:
+          type: string
+          description: Configured callback URL
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Custom headers
+        schedule:
+          $ref: '#/components/schemas/WebhookScheduleResponse'
+        hash:
+          type: string
+          description: SHA256 hash of the wallet token
+      additionalProperties: false
+    WebhookResponse:
+      oneOf:
+      - $ref: '#/components/schemas/MailboxWebhookResponse'
+      - $ref: '#/components/schemas/ScheduledWebhookResponse'
     WebhookListResponse:
       type: object
       properties:
@@ -1150,6 +1217,12 @@ paths:
         Optional `schedule` enables recurring delivery using a 5-field cron expression
         plus IANA timezone.
 
+        A webhook is either mailbox-triggered or scheduled, never both.
+
+        When `schedule` is present, mailbox delivery is disabled and mailbox-only
+        fields such as `format`, `template`, `options`, and `includeAttachments`
+        are not allowed.
+
         Scheduled webhooks must start within 30 days, and the interval between runs
         must not exceed 30 days.
 
@@ -1236,6 +1309,12 @@ paths:
         Include `schedule` to replace the scheduling configuration as part of the
         same request.
 
+        A webhook is either mailbox-triggered or scheduled, never both.
+
+        When `schedule` is present, mailbox delivery is disabled and mailbox-only
+        fields such as `format`, `template`, `options`, and `includeAttachments`
+        are not allowed.
+
         Scheduled webhooks must start within 30 days, and the interval between runs
         must not exceed 30 days.
 
@@ -1282,6 +1361,11 @@ paths:
 
         Set `schedule: null` to remove scheduling. Patch values replace the full schedule
         fields that are provided.
+
+        A webhook is either mailbox-triggered or scheduled, never both.
+
+        `format`, `template`, `options`, and `includeAttachments` are only valid
+        in mailbox mode.
 
         Scheduled webhooks must start within 30 days, and the interval between runs
         must not exceed 30 days.
