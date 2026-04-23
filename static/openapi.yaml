@@ -666,13 +666,17 @@ components:
       additionalProperties: false
     WebhookScheduleRequest:
       type: object
+      description: The first scheduled run must occur within 30 days, and the interval
+        between runs must not exceed 30 days.
       required:
       - cron
       - timezone
       properties:
         cron:
           type: string
-          description: 5-field cron expression (`minute hour day month weekday`)
+          description: 5-field cron expression (`minute hour day month weekday`).
+            The first run must occur within 30 days, and the interval between runs
+            must not exceed 30 days.
           example: '*/15 * * * *'
         timezone:
           type: string
@@ -1146,6 +1150,9 @@ paths:
         Optional `schedule` enables recurring delivery using a 5-field cron expression
         plus IANA timezone.
 
+        Scheduled webhooks must start within 30 days, and the interval between runs
+        must not exceed 30 days.
+
         Each scheduled run costs 1 token.
 
         '
@@ -1229,6 +1236,9 @@ paths:
         Include `schedule` to replace the scheduling configuration as part of the
         same request.
 
+        Scheduled webhooks must start within 30 days, and the interval between runs
+        must not exceed 30 days.
+
         '
       security:
       - TokenAuth: []
@@ -1272,6 +1282,9 @@ paths:
 
         Set `schedule: null` to remove scheduling. Patch values replace the full schedule
         fields that are provided.
+
+        Scheduled webhooks must start within 30 days, and the interval between runs
+        must not exceed 30 days.
 
         '
       security:
