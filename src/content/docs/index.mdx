@@ -7,7 +7,7 @@ sidebar:
 
 **echoValue** is a set of lightweight backend utilities designed for freelancers and small projects. No server setup, no infrastructure to manage — just a token and an HTTP call.
 
-It provides two main services:
+It provides a small set of focused HTTP utilities for storage, webhooks, DNS inspection, URL metadata, caller-IP lookup, logs, and wallet management.
 
 - **Key-Value Store** — persist and retrieve string data organized in named buckets
 - **Webhook** — receive emails at a dedicated address or schedule recurring deliveries to your webhook
@@ -57,7 +57,7 @@ curl 'https://api.echovalue.dev/webhook' \
 | **Webhook** | Receive emails at an opaque mailbox address or run scheduled deliveries, while managing each integration through a public `webhookId` |
 | **DNS Lookup** | Run DNS record queries, propagation checks, reverse lookups, SSL inspection, and optional security enrichment |
 | **My IP** | Inspect the caller IP address together with geo metadata derived from the request |
-| **URL To Metadata** | Fetch metadata and optional summaries for a public URL through the upstream scraper service |
+| **URL To Metadata** | Fetch metadata and optional summaries for a public URL |
 | **Logs** | Inspect your recent API call history |
 | **Token Management** | Check your credit balance and recharge |
 
@@ -69,7 +69,7 @@ All operations consume credits from your wallet. New tokens include **100 free c
 | --------- | ---- |
 | Generate token | Free (100 credits included) |
 | Check wallet balance | 1 credit |
-| Run DNS lookup | 5 credits on success and upstream non-`5xx` failures |
+| Run DNS lookup | 5 credits on success and non-`5xx` service failures |
 | Get caller IP | 1 credit |
 | Analyze URL metadata | 55 credits base, 800 credits with AI summary enrichment |
 | Set key/value | 1 credit |

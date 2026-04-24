@@ -12,25 +12,10 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Returns a list of recent API calls made with your token. Logs have a TTL of 7 days and are deleted within 24 hours after expiration.
 
 :::note
-**Cost:** free. By default the API returns 5 logs when `n` is not provided. The maximum number of logs you can request in a single call is 100. The current OpenAPI file declares an `x-cost` response header on `200`, but the operation is still documented as free.
+**Cost:** free. By default the API returns 5 logs when `n` is not provided. The maximum number of logs you can request in a single call is 100.
 :::
 
-You can filter logs by endpoint type using the `type` parameter.
-
 ## Request
-
-**Endpoint types:**
-
-| Type | Description |
-| ---- | ----------- |
-| `kv` | Key-value operations (`GET`, `POST`, `DELETE` on `/kv/*`) |
-| `token` | Wallet info requests (`GET /token`) |
-| `settings` | Low-balance settings reads and updates |
-| `webhook` | Webhook management and test calls |
-| `dns-lookup` | DNS lookup and enrichment requests |
-| `url-to-metadata` | URL metadata and scraping requests |
-| `myip` | Caller IP lookup requests |
-| `service` | Recharge operations |
 
 **Request headers:**
 
@@ -44,6 +29,19 @@ You can filter logs by endpoint type using the `type` parameter.
 | --------- | ---- | ----------- | ------- |
 | `n` | integer | Number of log entries to retrieve. Min: `1`. Default: `5`. | `5` |
 | `type` | string | Optional endpoint filter forwarded to log storage. Common values include `kv`, `token`, `settings`, `webhook`, `dns-lookup`, `url-to-metadata`, `myip`, and `service`. | — |
+
+Supported `type` filters are implementation-driven. Common values are:
+
+| Type | Description |
+| ---- | ----------- |
+| `kv` | Key-value operations |
+| `token` | Wallet info requests |
+| `settings` | Low-balance settings reads and updates |
+| `webhook` | Webhook management and test calls |
+| `dns-lookup` | DNS lookup and enrichment requests |
+| `url-to-metadata` | URL metadata and scraping requests |
+| `myip` | Caller IP lookup requests |
+| `service` | Recharge operations |
 
 ## Response
 
@@ -102,7 +100,7 @@ You can filter logs by endpoint type using the `type` parameter.
 
 | Header | Description |
 | ------ | ----------- |
-| `x-cost` | Present in the current OpenAPI file for `200` responses, despite the endpoint being free |
+| `x-cost` | Declared in the current OpenAPI file. For this free endpoint, treat it as informational only. |
 
 ## Examples
 
@@ -240,6 +238,7 @@ func main() {
 </TabItem>
 </Tabs>
 
-:::note
-Note that logs may have a delay of a few seconds from when they are written to when they become readable.
-:::
+## Notes
+
+- Logs can appear with a delay of a few seconds after the original request.
+- Entries expire after 7 days and are deleted within 24 hours after expiration.

@@ -44,13 +44,13 @@ Returns all configured webhooks for your wallet, including inbound email webhook
       "webhookId": "daily-sync",
       "webhook": "https://example.com/hooks/daily-sync",
       "headers": {},
-      "format": "",
-      "options": {},
       "schedule": {
         "cron": "0 9 * * *",
         "timezone": "Europe/Rome",
         "active": true,
-        "nextRunAt": "2026-04-24T07:00:00.000Z"
+        "nextRunAt": "2026-04-24T07:00:00.000Z",
+        "lastRunAt": "2026-04-23T07:00:00.000Z",
+        "lastStatus": "success"
       },
       "hash": "a1b2c3d4e5f6..."
     }
@@ -82,6 +82,7 @@ Returns all configured webhooks for your wallet, including inbound email webhook
 - If an entry has `email`, it is an inbound email webhook.
 - If an entry has `schedule`, it is a scheduled webhook.
 - If an entry has `format`, the inbound email payload is transformed before delivery.
+- Scheduled entries do not include mailbox-only fields such as `format`, `template`, `options`, or `includeAttachments`.
 
 **Response headers:**
 

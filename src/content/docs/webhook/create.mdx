@@ -20,6 +20,8 @@ Creates a new webhook.
 | `x-token` | Your API token |
 | `Content-Type` | Must be `application/json` |
 
+## Request
+
 ## Common Fields
 
 These fields are valid in both modes.
@@ -73,6 +75,8 @@ Use this mode when you want echoValue to assign an opaque mailbox address and fo
 
 - The response includes an opaque `email` mailbox address.
 - `format`, `template`, `options`, and `includeAttachments` are only valid in this mode.
+- Cloudflare Email Routing does not accept messages larger than 25 MiB.
+- echoValue inbound email payloads are limited to 1 MiB at `/webhook/call`.
 - See [Webhook Inbound Email](/guides/webhook-inbound-email/) for end-to-end examples.
 
 ## Scheduled Webhook
@@ -142,6 +146,11 @@ For scheduled webhooks, the first run must be within 30 days from creation and t
 | `email` | string | Opaque mailbox address, returned only for inbound email webhooks |
 | `hash` | string | SHA256 hash of your token |
 
+## Notes
+
+- A webhook is either mailbox-triggered or scheduled, never both.
+- The webhook URL must be HTTPS and publicly reachable.
+
 ## Status Codes
 
 | Status | Meaning |
@@ -154,5 +163,5 @@ For scheduled webhooks, the first run must be within 30 days from creation and t
 | `500` | Internal server error |
 
 :::caution
-The webhook URL must be HTTPS and publicly reachable. Localhost and private IP addresses are not accepted.
+Localhost and private IP addresses are not accepted.
 :::

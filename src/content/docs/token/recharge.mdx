@@ -12,7 +12,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Returns a Stripe payment link to add credits to your wallet.
 
 :::note
-**Cost:** 1 credit.
+**Cost:** free. This endpoint does not deduct wallet credits.
 :::
 
 ## Request
@@ -27,7 +27,7 @@ Returns a Stripe payment link to add credits to your wallet.
 
 | Parameter | Type | Description | Default |
 | --------- | ---- | ----------- | ------- |
-| `amount` | string | Number of million operations to add. Accepted values: `1` or `3`. | `1` |
+| `amount` | string | Recharge tier. Accepted values: `1` or `3`. | `1` |
 
 ## Response
 
@@ -37,13 +37,19 @@ Returns a Stripe payment link to add credits to your wallet.
 https://buy.stripe.com/<productID>?client_reference_id=<hash>
 ```
 
+**Response headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-balance` | Wallet balance after this call |
+
 ## Status Codes
 
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Recharge link returned |
 | `401` | Invalid token |
-| `402` | Insufficient credits |
+| `405` | Method not allowed |
 
 ## Examples
 
@@ -121,6 +127,8 @@ func main() {
 </Tabs>
 
 Follow the returned URL to complete the payment.
+
+The returned Stripe URL includes the wallet hash in `client_reference_id`.
 
 :::note
 The card transaction appears as **nJoyLab** on your statement.

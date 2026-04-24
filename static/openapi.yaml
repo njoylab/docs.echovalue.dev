@@ -3,7 +3,7 @@ info:
   title: EchoValue API
   description: 'Serverless key-value storage and wallet management.
 
-    Each `api` call costs 1 wallet token. `token` info requests also cost tokens.
+    Billable API calls cost wallet credits. Wallet info requests also cost credits.
     Log requests are free.
 
     Empty wallets return **402 Payment Required**.
@@ -15,25 +15,25 @@ info:
     url: https://docs.echovalue.dev
 tags:
 - name: KV API
-  description: Read/write/delete key-value entries (each call costs 1 token)
+  description: Read/write/delete key-value entries (each call costs 1 credit)
 - name: Token API
   description: Wallet creation, balance, logs, and recharge links
 - name: Webhook API
-  description: Manage multiple webhooks per wallet (each call costs 1 token)
+  description: Manage multiple webhooks per wallet (each call costs 1 credit)
 - name: Webhook Test API
-  description: Test your configured webhook with a dummy payload (costs 1 token)
+  description: Test your configured webhook with a dummy payload (costs 1 credit)
 - name: URL To Metadata API
   description: Analyze a URL and return extracted metadata
 - name: DNS Lookup API
-  description: Run DNS lookup and enrichment against the upstream Lambda
+  description: Run DNS lookup and enrichment
 - name: My IP API
-  description: Return the caller IP and geo headers (costs 1 token)
+  description: Return the caller IP and geo headers (costs 1 credit)
 components:
   securitySchemes:
     TokenAuth:
       type: apiKey
       in: header
-      name: X-Token
+      name: x-token
       description: Wallet ID (minimum 10 characters)
   headers:
     XBalance:
@@ -43,7 +43,8 @@ components:
         type: integer
         example: 42
     XCost:
-      description: 'Tokens charged for the request, when the endpoint emits cost headers.
+      description: 'Credits charged for the request, when the endpoint emits cost
+        headers.
 
         For free endpoints such as `GET /token/logs`, this value is `0`.
 
@@ -53,7 +54,7 @@ components:
         example: 1
   parameters:
     TokenHeader:
-      name: X-Token
+      name: x-token
       in: header
       required: true
       schema:
@@ -61,7 +62,7 @@ components:
         minLength: 10
       description: Wallet ID
     ServiceAuthHeader:
-      name: X-Service-Key
+      name: x-service-key
       in: header
       required: true
       schema:
@@ -69,7 +70,7 @@ components:
       description: Shared secret for internal service-to-service calls, matched against
         SERVICE_AUTH_KEY (single key or comma-separated list)
     MailboxSecretHeader:
-      name: X-Mailbox-Secret
+      name: x-mailbox-secret
       in: header
       required: true
       schema:
@@ -123,7 +124,7 @@ components:
       schema:
         type: integer
         minimum: 1
-      description: Number of tokens to add
+      description: Number of credits to add
     ServiceHash:
       name: hash
       in: query
@@ -171,10 +172,13 @@ components:
       type: object
       description: 'Request body for URL metadata analysis.
 
+        echoValue applies a 45s service timeout. Page fetch limits, redirect policy,
+        robots handling, and private/local URL policy are service-defined.
+
         '
       required:
       - url
-      additionalProperties: false
+      additionalProperties: true
       properties:
         url:
           type: string
@@ -294,7 +298,7 @@ components:
       properties:
         wallet:
           type: integer
-          description: Current token balance
+          description: Current credit balance
         created:
           type: string
           format: date-time
@@ -316,6 +320,7 @@ components:
         low_balance_email:
           type: string
           format: email
+          maxLength: 254
           description: Email address to receive low balance notifications.
     LowBalanceWebhookConfig:
       type: object
@@ -447,6 +452,15 @@ components:
           additionalProperties: true
         attachments:
           type: array
+          description: 'Attachment metadata from the inbound mail worker. When attachment
+            storage is enabled,
+
+            generated download URLs default to 300 seconds and `downloadUrlExpiresAt`
+            marks URL
+
+            expiry. After `downloadUrlExpiresAt`, attachment availability is not guaranteed.
+
+            '
           items:
             type: object
             additionalProperties: true
@@ -547,20 +561,23 @@ components:
         message:
           type: string
           description: Confirmation message
-    MailboxWebhookCreateReplaceRequest:
+    WebhookCreateReplaceRequest:
       type: object
       required:
       - url
-      description: Mailbox webhook configuration. Use this mode to receive inbound
-        email at an opaque `email` address and forward it to your webhook URL.
       properties:
         webhookId:
           type: string
+          maxLength: 30
+          pattern: ^[A-Za-z0-9_-]+$
           description: Public webhook identifier used for management endpoints. Defaults
-            to `default` when omitted.
+            to `default` when omitted. `call` is reserved and cannot be used.
         url:
           type: string
-          description: Callback URL to receive webhook events
+          format: uri
+          description: HTTPS callback URL on a public host. Delivery has a 10s timeout,
+            follows at most 10 redirects, and rejects redirect targets that are not
+            HTTPS public hosts.
         headers:
           type: object
           additionalProperties:
@@ -576,14 +593,14 @@ components:
           - telegram
           - pagerduty
           - custom
-          description: "Native payload format for mailbox webhooks. When set, the\
-            \ webhook body is transformed into the platform's native message format\
-            \ instead of forwarding the raw inbound email payload.\n- `slack` \u2014\
-            \ `{\"text\": \"...\"}` with bold subject and From\n- `discord` \u2014\
-            \ `{\"content\": \"...\"}` with bold subject and From\n- `teams` \u2014\
-            \ `{\"text\": \"...\"}` Adaptive Card text\n- `telegram` \u2014 `{\"chat_id\"\
-            : \"...\", \"text\": \"...\", \"parse_mode\": \"HTML\"}` (requires `options.chat_id`)\n\
-            - `pagerduty` \u2014 Events API v2 trigger payload (requires `options.routing_key`)\n\
+          description: "Native payload format. When set, the webhook body is transformed\
+            \ into the platform's native message format instead of forwarding the\
+            \ raw email payload.\n- `slack` \u2014 `{\"text\": \"...\"}` with bold\
+            \ subject and From\n- `discord` \u2014 `{\"content\": \"...\"}` with bold\
+            \ subject and From\n- `teams` \u2014 `{\"text\": \"...\"}` Adaptive Card\
+            \ text\n- `telegram` \u2014 `{\"chat_id\": \"...\", \"text\": \"...\"\
+            , \"parse_mode\": \"HTML\"}` (requires `options.chat_id`)\n- `pagerduty`\
+            \ \u2014 Events API v2 trigger payload (requires `options.routing_key`)\n\
             - `custom` \u2014 user-defined JSON template with placeholders (requires\
             \ `template` field)\n"
         template:
@@ -613,38 +630,15 @@ components:
         includeAttachments:
           type: boolean
           default: true
-          description: Whether to include email attachments in the mailbox webhook
-            payload. If false, attachments are stripped from the payload. When email
-            contains attachments, costs 5 tokens; without attachments costs 2 tokens.
-      additionalProperties: false
-    ScheduledWebhookCreateReplaceRequest:
-      type: object
-      required:
-      - url
-      - schedule
-      description: Scheduled webhook configuration. Use this mode to trigger your
-        webhook URL on a recurring cron schedule. Mailbox delivery fields are not
-        allowed in this mode.
-      properties:
-        webhookId:
-          type: string
-          description: Public webhook identifier used for management endpoints. Defaults
-            to `default` when omitted.
-        url:
-          type: string
-          description: Callback URL to receive scheduled webhook events
-        headers:
-          type: object
-          additionalProperties:
-            type: string
-          description: Optional custom headers to include in the callback request
+          description: Whether to include email attachments in the webhook payload.
+            If false, attachments are stripped from the payload. When email contains
+            attachments and inclusion is enabled, the call costs 5 credits; otherwise
+            it costs 2 credits. Not allowed when `schedule` is configured.
         schedule:
+          description: Scheduled delivery config. Mutually exclusive with mailbox
+            delivery fields such as `includeAttachments`.
           $ref: '#/components/schemas/WebhookScheduleRequest'
       additionalProperties: false
-    WebhookCreateReplaceRequest:
-      oneOf:
-      - $ref: '#/components/schemas/MailboxWebhookCreateReplaceRequest'
-      - $ref: '#/components/schemas/ScheduledWebhookCreateReplaceRequest'
     WebhookPatchRequest:
       type: object
       description: 'Partial update payload for `PATCH /webhook/{webhookId}`.
@@ -654,16 +648,14 @@ components:
         `headers`, `options`, and `template` replace the full field value (no deep
         merge).
 
-        Mailbox-only fields are `format`, `template`, `options`, and `includeAttachments`.
-        Scheduled mode uses `schedule`.
-
-        Do not send mailbox-only fields together with a non-null `schedule` object
-        in the same patch request.
-
         '
       properties:
         url:
           type: string
+          format: uri
+          description: HTTPS callback URL on a public host. Delivery has a 10s timeout,
+            follows at most 10 redirects, and rejects redirect targets that are not
+            HTTPS public hosts.
         headers:
           type: object
           nullable: true
@@ -680,40 +672,40 @@ components:
           - telegram
           - pagerduty
           - custom
-          description: Mailbox-only field. Native payload format for inbound email
-            delivery.
         template:
           type: object
           nullable: true
           additionalProperties: true
-          description: Mailbox-only field. Set `null` to remove template.
+          description: Set `null` to remove template.
         options:
           type: object
           nullable: true
           additionalProperties:
             type: string
-          description: Mailbox-only field. Set `{}` to clear all options.
+          description: Set `{}` to clear all options.
         includeAttachments:
           type: boolean
-          description: Mailbox-only field. Not allowed while scheduling is enabled.
+          description: Mailbox-delivery setting. Not allowed while scheduling is enabled.
         schedule:
           allOf:
           - $ref: '#/components/schemas/WebhookSchedulePatchRequest'
           nullable: true
           description: Scheduled delivery patch. Set `null` to convert the webhook
-            back to mailbox mode. Do not send this together with mailbox-only fields
-            unless the value is `null`.
+            back to mailbox mode.
       additionalProperties: false
     WebhookScheduleRequest:
       type: object
       description: The first scheduled run must occur within 30 days, and the interval
-        between runs must not exceed 30 days.
+        between runs must not exceed 30 days. Active scheduled runs cost 1 credit
+        each; if the wallet has insufficient credits, delivery is skipped, the run
+        is recorded as failure, and the next run is still enqueued.
       required:
       - cron
       - timezone
       properties:
         cron:
           type: string
+          pattern: ^\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+$
           description: 5-field cron expression (`minute hour day month weekday`).
             The first run must occur within 30 days, and the interval between runs
             must not exceed 30 days.
@@ -732,6 +724,7 @@ components:
       properties:
         cron:
           type: string
+          pattern: ^\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+$
         timezone:
           type: string
         active:
@@ -764,16 +757,18 @@ components:
       - timezone
       - active
       additionalProperties: false
-    MailboxWebhookResponse:
+    WebhookResponse:
       type: object
-      description: Mailbox webhook response.
       properties:
         webhookId:
           type: string
+          maxLength: 30
+          pattern: ^[A-Za-z0-9_-]+$
           description: Public webhook identifier used for management endpoints
         webhook:
           type: string
-          description: Configured callback URL
+          format: uri
+          description: Configured HTTPS callback URL
         headers:
           type: object
           additionalProperties:
@@ -793,43 +788,17 @@ components:
         includeAttachments:
           type: boolean
           description: Whether attachments are included in webhook payload (true =
-            include, false = stripped). Returned only for inbound email webhooks;
+            include, false = stripped). Returned only for mailbox-style webhooks;
             omitted for scheduled webhooks.
         schedule:
           $ref: '#/components/schemas/WebhookScheduleResponse'
         email:
           type: string
           description: Opaque mailbox address for this webhook (<mailboxId>@hook.echovalue.dev).
-            Returned only for inbound email webhooks; omitted for scheduled webhooks.
+            Returned only for mailbox-style webhooks; omitted for scheduled webhooks.
         hash:
           type: string
           description: SHA256 hash of the wallet token
-      additionalProperties: false
-    ScheduledWebhookResponse:
-      type: object
-      description: Scheduled webhook response.
-      properties:
-        webhookId:
-          type: string
-          description: Public webhook identifier used for management endpoints
-        webhook:
-          type: string
-          description: Configured callback URL
-        headers:
-          type: object
-          additionalProperties:
-            type: string
-          description: Custom headers
-        schedule:
-          $ref: '#/components/schemas/WebhookScheduleResponse'
-        hash:
-          type: string
-          description: SHA256 hash of the wallet token
-      additionalProperties: false
-    WebhookResponse:
-      oneOf:
-      - $ref: '#/components/schemas/MailboxWebhookResponse'
-      - $ref: '#/components/schemas/ScheduledWebhookResponse'
     WebhookListResponse:
       type: object
       properties:
@@ -837,792 +806,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WebhookResponse'
-  responses:
-    Unauthorized:
-      description: Missing or invalid X-Token header (min 10 chars)
-    PaymentRequired:
-      description: Wallet has insufficient tokens for the requested operation.
-    NotFound:
-      description: Key not found or expired
-    BadRequest:
-      description: Invalid parameters
-paths:
-  /kv/{bucket}/{key}:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    get:
-      tags:
-      - KV API
-      operationId: getKVValue
-      summary: Get value
-      description: Returns the stored value for the given bucket/key. Costs 1 token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/Bucket'
-      - $ref: '#/components/parameters/Key'
-      responses:
-        '200':
-          description: The stored value
-          content:
-            text/plain:
-              schema:
-                type: string
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    post:
-      tags:
-      - KV API
-      operationId: storeKVValue
-      summary: Store value
-      description: Stores a raw body value with TTL. Costs 1 token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/Bucket'
-      - $ref: '#/components/parameters/Key'
-      - $ref: '#/components/parameters/TTL'
-      requestBody:
-        required: true
-        content:
-          text/plain:
-            schema:
-              type: string
-              maxLength: 1000
-      responses:
-        '200':
-          description: Value stored successfully
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: OK
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-    delete:
-      tags:
-      - KV API
-      operationId: deleteKVValue
-      summary: Delete key
-      description: Deletes the key from the bucket. Costs 1 token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/Bucket'
-      - $ref: '#/components/parameters/Key'
-      responses:
-        '200':
-          description: Key deleted
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: OK
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-  /token:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    get:
-      tags:
-      - Token API
-      operationId: getWalletInfo
-      summary: Get wallet info
-      description: Returns wallet JSON. Costs 1 token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      responses:
-        '200':
-          description: Wallet info
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WalletInfo'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-    post:
-      tags:
-      - Token API
-      operationId: createWallet
-      summary: Create wallet
-      description: "- `token=new` \u2014 creates a new wallet with DEFAULT_WALLET\
-        \ credits, returns wallet ID\n"
-      requestBody:
-        required: true
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              required:
-              - token
-              properties:
-                token:
-                  type: string
-                  enum:
-                  - new
-                  description: Action to perform
-      responses:
-        '200':
-          description: Wallet ID string
-          content:
-            text/plain:
-              schema:
-                type: string
-        '400':
-          description: Bad request
-  /recharge:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Token API
-    get:
-      tags:
-      - Token API
-      operationId: getRechargeLink
-      summary: Get recharge link
-      description: Returns a Stripe checkout link with the wallet hash in `client_reference_id`.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - name: amount
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-          - '1'
-          - '3'
-          default: '1'
-        description: Recharge tier
-      responses:
-        '200':
-          description: Stripe checkout URL
-          content:
-            text/plain:
-              schema:
-                type: string
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '405':
-          description: Method not allowed
-  /token/logs:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    get:
-      tags:
-      - Token API
-      operationId: getWalletLogs
-      summary: Get request logs
-      description: Returns the latest `n` log entries. This endpoint is free and does
-        not deduct wallet balance.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - name: n
-        in: query
-        required: false
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 5
-        description: Number of log entries to return
-      - name: type
-        in: query
-        required: false
-        schema:
-          type: string
-        description: 'Optional endpoint filter. The implementation forwards this value
-          to log storage as-is.
-
-          Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`,
-          `myip`, `service`, and `manage`.
-
-          '
-      responses:
-        '200':
-          description: Log entries
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/LogsResponse'
-          headers:
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /token/settings:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    get:
-      tags:
-      - Token API
-      operationId: getWalletSettings
-      summary: Get low balance settings
-      description: Returns the current low balance notification settings. Costs 1
-        token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      responses:
-        '200':
-          description: Low balance settings
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CustomerSettings'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-    put:
-      tags:
-      - Token API
-      operationId: updateWalletSettings
-      summary: Update low balance settings
-      description: 'Configures low balance notifications. When wallet balance falls
-        below the threshold,
-
-        a notification is sent to the configured webhook URL and/or email.
-
-        Notifications are sent at most once per low-balance incident (i.e. the cooldown
-        resets when the balance rises back above the threshold).
-
-        Costs 1 token.
-
-        '
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomerSettings'
-      responses:
-        '200':
-          description: Settings updated successfully
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: OK
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          description: Invalid webhook URL (must be HTTPS) or invalid threshold value
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-  /webhook:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    get:
-      tags:
-      - Webhook API
-      operationId: listWebhooks
-      summary: List webhooks
-      description: Returns all configured webhooks for this wallet. Costs 1 token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      responses:
-        '200':
-          description: Webhook list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebhookListResponse'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-    post:
-      tags:
-      - Webhook API
-      operationId: createWebhook
-      summary: Create webhook
-      description: 'Creates a new webhook. Costs 1 token.
-
-        URL must be HTTPS pointing to a public host.
-
-        Optional `schedule` enables recurring delivery using a 5-field cron expression
-        plus IANA timezone.
-
-        A webhook is either mailbox-triggered or scheduled, never both.
-
-        When `schedule` is present, mailbox delivery is disabled and mailbox-only
-        fields such as `format`, `template`, `options`, and `includeAttachments`
-        are not allowed.
-
-        Scheduled webhooks must start within 30 days, and the interval between runs
-        must not exceed 30 days.
-
-        Each scheduled run costs 1 token.
-
-        '
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebhookCreateReplaceRequest'
-      responses:
-        '200':
-          description: Webhook created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebhookResponse'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '409':
-          description: Webhook ID already exists for this wallet
-        '500':
-          description: Internal server error
-  /webhook/{webhookId}:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    get:
-      tags:
-      - Webhook API
-      operationId: getWebhook
-      summary: Get webhook by ID
-      description: Returns a specific webhook by `webhookId`. Costs 1 token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/WebhookId'
-      responses:
-        '200':
-          description: Webhook found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebhookResponse'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          description: Webhook not found
-    put:
-      tags:
-      - Webhook API
-      operationId: replaceWebhook
-      summary: Replace webhook
-      description: 'Replaces the full webhook document for the specified `webhookId`.
-        Costs 1 token.
-
-        `url` is required.
-
-        Include `schedule` to replace the scheduling configuration as part of the
-        same request.
-
-        A webhook is either mailbox-triggered or scheduled, never both.
-
-        When `schedule` is present, mailbox delivery is disabled and mailbox-only
-        fields such as `format`, `template`, `options`, and `includeAttachments`
-        are not allowed.
-
-        Scheduled webhooks must start within 30 days, and the interval between runs
-        must not exceed 30 days.
-
-        '
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/WebhookId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebhookCreateReplaceRequest'
-      responses:
-        '200':
-          description: Webhook replaced
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebhookResponse'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          description: Webhook not found
-        '500':
-          description: Internal server error
-    patch:
-      tags:
-      - Webhook API
-      operationId: patchWebhook
-      summary: Patch webhook
-      description: 'Updates only provided fields on a webhook. Costs 1 token.
-
-        Set `schedule: null` to remove scheduling. Patch values replace the full schedule
-        fields that are provided.
-
-        A webhook is either mailbox-triggered or scheduled, never both.
-
-        `format`, `template`, `options`, and `includeAttachments` are only valid
-        in mailbox mode.
-
-        Scheduled webhooks must start within 30 days, and the interval between runs
-        must not exceed 30 days.
-
-        '
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/WebhookId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WebhookPatchRequest'
-      responses:
-        '200':
-          description: Webhook updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WebhookResponse'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          description: Webhook not found
-        '500':
-          description: Internal server error
-    delete:
-      tags:
-      - Webhook API
-      operationId: deleteWebhook
-      summary: Delete webhook
-      description: Removes a specific webhook. Costs 1 token.
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/WebhookId'
-      responses:
-        '200':
-          description: Webhook deleted
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: OK
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '404':
-          description: No webhook configured
-  /webhook/{webhookId}/test:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    post:
-      tags:
-      - Webhook Test API
-      operationId: testWebhook
-      summary: Test a specific webhook
-      description: 'Sends a dummy payload to the specified webhook URL. Costs 1 token.
-
-        '
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      - $ref: '#/components/parameters/WebhookId'
-      responses:
-        '200':
-          description: Test call processed (check `success` field for delivery status)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TestResponse'
-              examples:
-                success:
-                  summary: Delivery success
-                  value:
-                    success: true
-                    message: test webhook delivered
-                failure:
-                  summary: Delivery failure
-                  value:
-                    success: false
-                    message: 'webhook call failed: context deadline exceeded (Client.Timeout
-                      exceeded while awaiting headers)'
-          headers:
-            X-Balance:
-              $ref: '#/components/headers/XBalance'
-            X-Cost:
-              $ref: '#/components/headers/XCost'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '402':
-          $ref: '#/components/responses/PaymentRequired'
-        '405':
-          description: Method not POST
-  /url-to-metadata:
-    servers:
-    - url: https://api.echovalue.dev
-      description: Production - Consolidated API
-    post:
-      tags:
-      - URL To Metadata API
-      operationId: analyzeUrlMetadata
-      summary: Analyze URL metadata
-      description: 'Analyzes a URL and returns extracted metadata.
-
-        The wallet is authenticated with `X-Token`, charged, and the request is logged.
-
-        Successful requests cost `55` for base scraping. `aiSummary` defaults to `none`;
-        `short`, `medium`, and `long` enable AI enrichment and cost `800`.
-
-        Malformed requests and non-`5xx` failures cost `1`. `5xx` responses cost `0`.
-
-        '
-      security:
-      - TokenAuth: []
-      parameters:
-      - $ref: '#/components/parameters/TokenHeader'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SummaryRequest'
-            examples:
-              basic:
-                summary: Base scrape without AI enrichment
-                value:
-                  url: https://example.com/articles/launch
-              aiSummary:
-                summary: AI-enriched scrape with summary generation
-                value:
-                  url: https://example.com/articles/launch
-                  aiSummary: medium
-              noAiSummary:
-                summary: Base scrape without AI enrichment
-                value:
-                  url: https://example.com/articles/launch
-      responses:
-        '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SummaryResponse'
-              examples:
-                success:
-                  summary: Example response payload
-                  value:
-                    success: true
-                    data:
-                      seo:
-                        title: Example Company - Leading SaaS Platform
-                        description: Enterprise software for team collaboration
-                        keywords:
-                        - saas
-                        - collaboration
-                        - enterprise
-                        canonical: https://example.com
-                      social:
-                        x: https://x.com/exampleco
-                        linkedin: https://linkedin.com/company/exampleco
-                      contact:
-                        email: hello@example.com
-                        phone: +1-555-0123
-                      technical:
-                        statusCode: 200
-                        finalUrl: https://example.com
-                        originalUrl: https://example.com
-                        robotsAllowed: true
-                        isSecure: true
-                        contentType: text/html; charset=utf-8
-                      links:
-                        internal:
-                          total: 12
-                          urls:
-                          - /about
-                          - /pricing
-                          - /contact
-                        external:
-                          total: 5
-                          urls:
-                          - https://github.com/example
-                          domains:
-                          - github.com
-                      ai:
-                        summary:
-                          short: Example Company provides cloud-based collaboration
-                            software for enterprises, offering project management
-                            and team communication tools.
-                          medium: Example Company is a leading SaaS platform offering
-                            comprehensive team collaboration tools designed for enterprise
-                            organizations. The platform combines project management,
-                            document sharing, and real-time communication features
-                            to help teams work more efficiently. With over 10,000
-                            customers worldwide, Example Company has established itself
-                            as a trusted solution for businesses looking to improve
-                            productivity and streamline workflows.
-                          long: Example Company is an innovative SaaS provider that
-                            has been transforming enterprise collaboration since 2015.
-                            Based in San Francisco, the company offers a comprehensive
-                            suite of tools designed to help teams communicate, collaborate,
-                            and manage projects more effectively. The platform integrates
-                            seamlessly with popular business applications and provides
-                            enterprise-grade security features. Example Company serves
-                            organizations of all sizes, from startups to Fortune 500
-                            companies, with a particular focus on technology, finance,
-                            and healthcare sectors. The company's mission is to make
-                            workplace collaboration simple, efficient, and enjoyable
-                            for everyone.
-                          contentLength: 5240
-                          truncated: false
-                        keyFacts:
-                          companyName: Example Company Inc.
-                          companyType: B2B SaaS
-                          industry: Enterprise Software
-                          services:
-                          - Team Collaboration
-                          - Project Management
-                          - Document Sharing
-                          - Real-time Communication
-                          targetAudience: Enterprise teams and organizations
-                          businessModel: Subscription
-                          headquarters: San Francisco, CA
-                          foundedYear: 2015
-                          keyFeatures:
-                          - Real-time collaboration
-                          - Enterprise security
-                          - Third-party integrations
-                          - Mobile apps
-                        processingTime: 2340
-                    timestamp: '2025-06-19T15:54:01.821Z'
     DNSLookupRequest:
       type: object
       description: 'Request body for DNS lookup and enrichment.
 
-        The payload is forwarded as-is to the upstream Lambda endpoint.
+        echoValue applies a 45s service timeout. Limits such as max domains and the
+        default resolver list are service-defined.
 
         '
       required:
@@ -1671,6 +860,8 @@ paths:
           minimum: 1000
           maximum: 60000
           default: 5000
+          description: DNS lookup timeout option in milliseconds. echoValue also
+            applies a 45s service timeout.
         maxRetries:
           type: integer
           minimum: 0
@@ -1689,7 +880,7 @@ paths:
       required:
       - summary
       - results
-      description: 'Actor-style DNS lookup response returned by the upstream Lambda.
+      description: 'DNS lookup response.
 
         It contains an aggregate `summary` plus one result entry per requested domain
         or IP.
@@ -1865,7 +1056,7 @@ paths:
         enrichment:
           type: object
           additionalProperties: true
-          description: Detailed enrichment payload from the upstream service.
+          description: Detailed enrichment data.
         metadata:
           type: object
           additionalProperties: false
@@ -2187,6 +1378,826 @@ paths:
           type: boolean
         consistencyPercentage:
           type: number
+  responses:
+    Unauthorized:
+      description: Missing or invalid x-token header (min 10 chars)
+    PaymentRequired:
+      description: Wallet has insufficient credits for the requested operation.
+    NotFound:
+      description: Key not found or expired
+    BadRequest:
+      description: Invalid parameters
+paths:
+  /kv/{bucket}/{key}:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    get:
+      tags:
+      - KV API
+      operationId: getKVValue
+      summary: Get value
+      description: Returns the stored value for the given bucket/key. Costs 1 credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/Bucket'
+      - $ref: '#/components/parameters/Key'
+      responses:
+        '200':
+          description: The stored value
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+      - KV API
+      operationId: storeKVValue
+      summary: Store value
+      description: Stores a raw body value with TTL. Costs 1 credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/Bucket'
+      - $ref: '#/components/parameters/Key'
+      - $ref: '#/components/parameters/TTL'
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              maxLength: 1000
+      responses:
+        '200':
+          description: Value stored successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+    delete:
+      tags:
+      - KV API
+      operationId: deleteKVValue
+      summary: Delete key
+      description: Deletes the key from the bucket. Costs 1 credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/Bucket'
+      - $ref: '#/components/parameters/Key'
+      responses:
+        '200':
+          description: Key deleted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+  /token:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    get:
+      tags:
+      - Token API
+      operationId: getWalletInfo
+      summary: Get wallet info
+      description: Returns wallet JSON. Costs 1 credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      responses:
+        '200':
+          description: Wallet info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletInfo'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+    post:
+      tags:
+      - Token API
+      operationId: createWallet
+      summary: Create wallet
+      description: "- `token=new` \u2014 creates a new wallet with DEFAULT_WALLET\
+        \ credits, returns wallet ID\n"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+              - token
+              properties:
+                token:
+                  type: string
+                  enum:
+                  - new
+                  description: Action to perform
+      responses:
+        '200':
+          description: Wallet ID string
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Bad request
+  /recharge:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Token API
+    get:
+      tags:
+      - Token API
+      operationId: getRechargeLink
+      summary: Get recharge link
+      description: Returns a Stripe checkout link with the wallet hash in `client_reference_id`.
+        This endpoint is free and does not deduct wallet credits.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - name: amount
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - '1'
+          - '3'
+          default: '1'
+        description: Recharge tier
+      responses:
+        '200':
+          description: Stripe checkout URL
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '405':
+          description: Method not allowed
+  /token/logs:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    get:
+      tags:
+      - Token API
+      operationId: getWalletLogs
+      summary: Get request logs
+      description: Returns the latest `n` log entries. This endpoint is free and does
+        not deduct wallet balance.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - name: n
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 5
+        description: Number of log entries to return
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 'Optional endpoint filter. The implementation forwards this value
+          to log storage as-is.
+
+          Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`,
+          `myip`, `service`, and `manage`.
+
+          '
+      responses:
+        '200':
+          description: Log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
+          headers:
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /token/settings:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    get:
+      tags:
+      - Token API
+      operationId: getWalletSettings
+      summary: Get low balance settings
+      description: Returns the current low balance notification settings. Costs 1
+        credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      responses:
+        '200':
+          description: Low balance settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerSettings'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+    put:
+      tags:
+      - Token API
+      operationId: updateWalletSettings
+      summary: Update low balance settings
+      description: 'Configures low balance notifications. When wallet balance falls
+        below the threshold,
+
+        a notification is sent to the configured webhook URL and/or email.
+
+        Notifications are sent at most once per low-balance incident (i.e. the cooldown
+        resets when the balance rises back above the threshold).
+
+        Costs 1 credit.
+
+        '
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerSettings'
+      responses:
+        '200':
+          description: Settings updated successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          description: Invalid webhook URL (must be HTTPS) or invalid threshold value
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+  /webhook:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    get:
+      tags:
+      - Webhook API
+      operationId: listWebhooks
+      summary: List webhooks
+      description: Returns all configured webhooks for this wallet. Costs 1 credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      responses:
+        '200':
+          description: Webhook list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookListResponse'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+    post:
+      tags:
+      - Webhook API
+      operationId: createWebhook
+      summary: Create webhook
+      description: 'Creates a new webhook. Costs 1 credit.
+
+        URL must be HTTPS pointing to a public host.
+
+        Optional `schedule` enables recurring delivery using a 5-field cron expression
+        plus IANA timezone.
+
+        A webhook is either mailbox-triggered or scheduled, never both.
+
+        When `schedule` is present, mailbox delivery is disabled and `includeAttachments`
+        is not allowed.
+
+        Scheduled webhooks must start within 30 days, and the interval between runs
+        must not exceed 30 days.
+
+        Each scheduled run costs 1 credit.
+
+        '
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreateReplaceRequest'
+      responses:
+        '200':
+          description: Webhook created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '409':
+          description: Webhook ID already exists for this wallet
+        '500':
+          description: Internal server error
+  /webhook/{webhookId}:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    get:
+      tags:
+      - Webhook API
+      operationId: getWebhook
+      summary: Get webhook by ID
+      description: Returns a specific webhook by `webhookId`. Costs 1 credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
+      responses:
+        '200':
+          description: Webhook found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          description: Webhook not found
+    put:
+      tags:
+      - Webhook API
+      operationId: replaceWebhook
+      summary: Replace webhook
+      description: 'Replaces the full webhook document for the specified `webhookId`.
+        Costs 1 credit.
+
+        `url` is required.
+
+        Include `schedule` to replace the scheduling configuration as part of the
+        same request.
+
+        A webhook is either mailbox-triggered or scheduled, never both.
+
+        When `schedule` is present, mailbox delivery is disabled and `includeAttachments`
+        is not allowed.
+
+        Scheduled webhooks must start within 30 days, and the interval between runs
+        must not exceed 30 days.
+
+        '
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreateReplaceRequest'
+      responses:
+        '200':
+          description: Webhook replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          description: Webhook not found
+        '500':
+          description: Internal server error
+    patch:
+      tags:
+      - Webhook API
+      operationId: patchWebhook
+      summary: Patch webhook
+      description: 'Updates only provided fields on a webhook. Costs 1 credit.
+
+        Set `schedule: null` to remove scheduling. Patch values replace the full schedule
+        fields that are provided.
+
+        A webhook is either mailbox-triggered or scheduled, never both.
+
+        `includeAttachments` is only valid in mailbox mode.
+
+        Scheduled webhooks must start within 30 days, and the interval between runs
+        must not exceed 30 days.
+
+        '
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookPatchRequest'
+      responses:
+        '200':
+          description: Webhook updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookResponse'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          description: Webhook not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+      - Webhook API
+      operationId: deleteWebhook
+      summary: Delete webhook
+      description: Removes a specific webhook. Costs 1 credit.
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
+      responses:
+        '200':
+          description: Webhook deleted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          description: No webhook configured
+  /webhook/{webhookId}/test:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    post:
+      tags:
+      - Webhook Test API
+      operationId: testWebhook
+      summary: Test a specific webhook
+      description: 'Sends a dummy payload to the specified webhook URL. Costs 1 credit.
+
+        '
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      - $ref: '#/components/parameters/WebhookId'
+      responses:
+        '200':
+          description: Test call processed (check `success` field for delivery status)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResponse'
+              examples:
+                success:
+                  summary: Delivery success
+                  value:
+                    success: true
+                    message: test webhook delivered
+                failure:
+                  summary: Delivery failure
+                  value:
+                    success: false
+                    message: 'webhook call failed: context deadline exceeded (Client.Timeout
+                      exceeded while awaiting headers)'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '405':
+          description: Method not POST
+  /url-to-metadata:
+    servers:
+    - url: https://api.echovalue.dev
+      description: Production - Consolidated API
+    post:
+      tags:
+      - URL To Metadata API
+      operationId: analyzeUrlMetadata
+      summary: Analyze URL metadata
+      description: 'Analyzes a URL and returns extracted metadata.
+
+        The wallet is authenticated with `x-token`, charged in credits, and the request
+        is logged.
+
+        Successful requests cost `55` credits for base scraping. `aiSummary` defaults
+        to `none`; `short`, `medium`, and `long` enable AI enrichment and cost `800`
+        credits.
+
+        Malformed requests and non-`5xx` service failures cost `1` credit. `5xx`
+        service responses cost `0` credits.
+
+        '
+      security:
+      - TokenAuth: []
+      parameters:
+      - $ref: '#/components/parameters/TokenHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummaryRequest'
+            examples:
+              basic:
+                summary: Base scrape without AI enrichment
+                value:
+                  url: https://example.com/articles/launch
+              aiSummary:
+                summary: AI-enriched scrape with summary generation
+                value:
+                  url: https://example.com/articles/launch
+                  aiSummary: medium
+              noAiSummary:
+                summary: Base scrape without AI enrichment
+                value:
+                  url: https://example.com/articles/launch
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponse'
+              examples:
+                success:
+                  summary: Example response payload
+                  value:
+                    success: true
+                    data:
+                      seo:
+                        title: Example Company - Leading SaaS Platform
+                        description: Enterprise software for team collaboration
+                        keywords:
+                        - saas
+                        - collaboration
+                        - enterprise
+                        canonical: https://example.com
+                      social:
+                        x: https://x.com/exampleco
+                        linkedin: https://linkedin.com/company/exampleco
+                      contact:
+                        email: hello@example.com
+                        phone: +1-555-0123
+                      technical:
+                        statusCode: 200
+                        finalUrl: https://example.com
+                        originalUrl: https://example.com
+                        robotsAllowed: true
+                        isSecure: true
+                        contentType: text/html; charset=utf-8
+                      links:
+                        internal:
+                          total: 12
+                          urls:
+                          - /about
+                          - /pricing
+                          - /contact
+                        external:
+                          total: 5
+                          urls:
+                          - https://github.com/example
+                          domains:
+                          - github.com
+                      ai:
+                        summary:
+                          short: Example Company provides cloud-based collaboration
+                            software for enterprises, offering project management
+                            and team communication tools.
+                          medium: Example Company is a leading SaaS platform offering
+                            comprehensive team collaboration tools designed for enterprise
+                            organizations. The platform combines project management,
+                            document sharing, and real-time communication features
+                            to help teams work more efficiently. With over 10,000
+                            customers worldwide, Example Company has established itself
+                            as a trusted solution for businesses looking to improve
+                            productivity and streamline workflows.
+                          long: Example Company is an innovative SaaS provider that
+                            has been transforming enterprise collaboration since 2015.
+                            Based in San Francisco, the company offers a comprehensive
+                            suite of tools designed to help teams communicate, collaborate,
+                            and manage projects more effectively. The platform integrates
+                            seamlessly with popular business applications and provides
+                            enterprise-grade security features. Example Company serves
+                            organizations of all sizes, from startups to Fortune 500
+                            companies, with a particular focus on technology, finance,
+                            and healthcare sectors. The company's mission is to make
+                            workplace collaboration simple, efficient, and enjoyable
+                            for everyone.
+                          contentLength: 5240
+                          truncated: false
+                        keyFacts:
+                          companyName: Example Company Inc.
+                          companyType: B2B SaaS
+                          industry: Enterprise Software
+                          services:
+                          - Team Collaboration
+                          - Project Management
+                          - Document Sharing
+                          - Real-time Communication
+                          targetAudience: Enterprise teams and organizations
+                          businessModel: Subscription
+                          headquarters: San Francisco, CA
+                          foundedYear: 2015
+                          keyFeatures:
+                          - Real-time collaboration
+                          - Enterprise security
+                          - Third-party integrations
+                          - Mobile apps
+                        processingTime: 2340
+                    timestamp: '2025-06-19T15:54:01.821Z'
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '400':
+          description: Invalid request body or validation/client error. Costs 1 credit.
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '404':
+          description: Unsupported path under `/url-to-metadata`.
+        '405':
+          description: Method not allowed
+        '500':
+          description: Service or internal server error. 5xx service responses cost
+            0 credits.
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '502':
+          description: Metadata service request failed before a response was received.
+            Costs 1 credit.
+          headers:
+            x-balance:
+              $ref: '#/components/headers/XBalance'
+            x-cost:
+              $ref: '#/components/headers/XCost'
+        '503':
+          description: Service unavailable.
   /dns-lookup:
     servers:
     - url: https://api.echovalue.dev
@@ -2196,13 +2207,13 @@ paths:
       - DNS Lookup API
       operationId: dnsLookup
       summary: Run DNS lookup and enrichment
-      description: 'Forwards the request body to the configured AWS Lambda DNS lookup
-        endpoint and returns the upstream response.
+      description: 'Runs DNS lookup and enrichment and returns the result.
 
-        The wallet is authenticated with `X-Token`, charged, and the request is logged.
+        The wallet is authenticated with `x-token`, charged in credits, and the request
+        is logged.
 
-        Successful requests cost `5`. Upstream non-`5xx` failures also cost `5`. Upstream
-        `5xx` responses cost `0`.
+        Successful requests cost `5` credits. Non-`5xx` service failures also cost
+        `5` credits. `5xx` service responses cost `0` credits.
 
         '
       security:
@@ -2280,20 +2291,20 @@ paths:
                           queryTime: 124
                           totalRecords: 3
           headers:
-            X-Balance:
+            x-balance:
               $ref: '#/components/headers/XBalance'
-            X-Cost:
+            x-cost:
               $ref: '#/components/headers/XCost'
         '400':
-          description: Invalid request body or upstream validation error
+          description: Invalid request body or validation error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DNSLookupResponse'
           headers:
-            X-Balance:
+            x-balance:
               $ref: '#/components/headers/XBalance'
-            X-Cost:
+            x-cost:
               $ref: '#/components/headers/XCost'
         '401':
           $ref: '#/components/responses/Unauthorized'
@@ -2304,23 +2315,23 @@ paths:
         '500':
           description: Internal error
           headers:
-            X-Balance:
+            x-balance:
               $ref: '#/components/headers/XBalance'
-            X-Cost:
+            x-cost:
               $ref: '#/components/headers/XCost'
         '502':
           description: Service unavailable
           headers:
-            X-Balance:
+            x-balance:
               $ref: '#/components/headers/XBalance'
-            X-Cost:
+            x-cost:
               $ref: '#/components/headers/XCost'
         '503':
           description: Service unavailable
           headers:
-            X-Balance:
+            x-balance:
               $ref: '#/components/headers/XBalance'
-            X-Cost:
+            x-cost:
               $ref: '#/components/headers/XCost'
   /myip:
     servers:
@@ -2331,7 +2342,7 @@ paths:
       - My IP API
       operationId: getMyIpInfo
       summary: Get caller IP
-      description: Returns caller IP data and geo headers. Costs 1 token and writes
+      description: Returns caller IP data and geo headers. Costs 1 credit and writes
         a request log entry.
       security:
       - TokenAuth: []
@@ -2345,9 +2356,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/MyIPInfo'
           headers:
-            X-Balance:
+            x-balance:
               $ref: '#/components/headers/XBalance'
-            X-Cost:
+            x-cost:
               $ref: '#/components/headers/XCost'
         '401':
           $ref: '#/components/responses/Unauthorized'

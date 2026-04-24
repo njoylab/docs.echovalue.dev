@@ -45,6 +45,8 @@ Returns the current low-balance notification settings.
 | `low_balance_webhook` | object | Webhook configuration |
 | `low_balance_email` | string | Email address for notifications |
 
+If `low_balance_webhook` is present, it follows the same format family used by mailbox webhooks: `format`, `template`, and `options` are optional.
+
 **Response headers:**
 
 | Header | Description |
@@ -61,6 +63,11 @@ See [Response Headers](/response-headers/) for details.
 | `200` | Settings returned |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
+
+## Notes
+
+- Set `low_balance_threshold` to `0` to disable low-balance notifications.
+- Notification delivery can target an email address, a webhook, or both.
 
 ## Examples
 

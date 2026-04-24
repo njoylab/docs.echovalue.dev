@@ -29,10 +29,11 @@ Sends a dummy payload to the specified webhook URL to verify it is working corre
 | --------- | ---- | ----------- | -------- |
 | `webhookId` | string | Public webhook identifier to test | Yes |
 
-## What Gets Sent
+## Notes
 
 - Inbound email webhook: a dummy inbound email payload is sent.
 - Scheduled webhook: a dummy scheduled-run payload is sent.
+- The call reports delivery success or failure in the JSON body.
 
 <Tabs syncKey="lang">
 <TabItem label="cURL">
@@ -147,13 +148,11 @@ On failure:
 
 See [Response Headers](/response-headers/) for details.
 
+## Status Codes
+
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Test call processed |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
 | `405` | Method not POST |
-
-:::note
-For inbound email webhooks, the test sends a dummy email-style payload. For scheduled webhooks, the test verifies the configured target URL and returns delivery status, but it does not relax the 30-day scheduling limit.
-:::

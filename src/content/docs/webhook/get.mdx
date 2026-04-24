@@ -96,13 +96,13 @@ func main() {
   "webhookId": "daily-sync",
   "webhook": "https://example.com/hooks/daily-sync",
   "headers": {},
-  "format": "",
-  "options": {},
   "schedule": {
     "cron": "0 9 * * *",
     "timezone": "Europe/Rome",
     "active": true,
-    "nextRunAt": "2026-04-24T07:00:00.000Z"
+    "nextRunAt": "2026-04-24T07:00:00.000Z",
+    "lastRunAt": "2026-04-23T07:00:00.000Z",
+    "lastStatus": "success"
   },
   "hash": "a1b2c3d4e5f6..."
 }
@@ -126,6 +126,7 @@ func main() {
 - `email` present: this webhook is waiting for inbound email.
 - `schedule` present: this webhook runs on a schedule.
 - `format` present: inbound email is transformed into a provider-specific payload before delivery.
+- Scheduled webhook responses omit mailbox-only fields such as `format`, `template`, `options`, and `includeAttachments`.
 
 **Response headers:**
 

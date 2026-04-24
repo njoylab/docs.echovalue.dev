@@ -208,7 +208,7 @@ curl -s 'https://api.echovalue.dev/url-to-metadata' \
   }'
 ```
 
-Use this for public URL inspection, metadata extraction, and optional AI summaries. Mention that the response schema is flexible and upstream-driven.
+Use this for public URL inspection, metadata extraction, and optional AI summaries. Mention that the response schema is flexible.
 
 ### Use Case 7: DNS Lookup And Enrichment
 
@@ -228,7 +228,7 @@ curl -s 'https://api.echovalue.dev/dns-lookup' \
   }'
 ```
 
-Use this for domain and IP inspection, DNS troubleshooting, mail configuration checks, and certificate metadata. Mention that successful requests cost 5 credits, upstream non-`5xx` failures also cost 5, and upstream `5xx` responses cost 0.
+Use this for domain and IP inspection, DNS troubleshooting, mail configuration checks, and certificate metadata. Mention that successful requests cost 5 credits, non-`5xx` service failures also cost 5, and `5xx` service responses cost 0.
 
 ## API Operations Reference
 
@@ -285,7 +285,7 @@ curl -s 'https://api.echovalue.dev/dns-lookup' \
 - Generate token: Free (100 credits included)
 - Check balance: 1 credit
 - Get caller IP: 1 credit
-- DNS lookup and enrichment: 5 credits on success and upstream non-`5xx` failures
+- DNS lookup and enrichment: 5 credits on success and non-`5xx` service failures
 - KV operations (get/set/delete): 1 credit each
 - Webhook config (set/get/delete/test): 1 credit each
 - Email processed (no attachments): 2 credits

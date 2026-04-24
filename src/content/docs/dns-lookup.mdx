@@ -9,20 +9,13 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `POST https://api.echovalue.dev/dns-lookup`
 
-Runs DNS lookup and enrichment through the upstream DNS intelligence service behind echoValue.
+Runs DNS lookup and enrichment through echoValue.
 
 :::note
-**Cost:** `5` credits for successful requests and upstream non-`5xx` failures. Upstream `5xx` responses consume `0` credits.
+**Cost:** `5` credits for successful requests and non-`5xx` service failures. `5xx` service responses consume `0` credits.
 :::
 
 The request is authenticated with `x-token`, charged by echoValue, and logged.
-
-This endpoint is useful when you need to:
-
-- resolve common DNS record types such as `A`, `AAAA`, `MX`, `TXT`, `NS`, `CNAME`, `PTR`, `SOA`, `CAA`, and `SRV`
-- check DNS propagation across multiple resolvers
-- inspect reverse DNS, SSL/TLS certificate details, and DNS metadata
-- enrich results with email security analysis such as SPF, DMARC, DKIM, and provider detection
 
 ## Request
 
@@ -45,9 +38,11 @@ This endpoint is useful when you need to:
 | `enableEnrichment` | boolean | No | Enable SPF, DMARC, DKIM, provider, and security analysis |
 | `enableSslInspection` | boolean | No | Inspect live TLS certificate metadata for HTTPS targets |
 | `timeout` | integer | No | Per-query timeout in milliseconds. Min: `1000`. Max: `60000`. Default: `5000` |
-| `maxRetries` | integer | No | Retry attempts for failed upstream lookups. Min: `0`. Max: `10`. Default: `3` |
+| `maxRetries` | integer | No | Retry attempts for failed lookups. Min: `0`. Max: `10`. Default: `3` |
 | `retryDelay` | integer | No | Delay between retries in milliseconds. Min: `0`. Max: `100000`. Default: `1000` |
-| `includeMetadata` | boolean | No | Include additional metadata from the upstream service |
+| `includeMetadata` | boolean | No | Include additional lookup metadata |
+
+The service supports record types `A`, `AAAA`, `MX`, `CNAME`, `TXT`, `NS`, `PTR`, `SOA`, `CAA`, and `SRV`.
 
 **Examples:**
 
@@ -184,7 +179,7 @@ func main() {
 
 ## Response
 
-`200 OK` returns the JSON payload produced by the upstream DNS lookup service.
+`200 OK` returns the DNS lookup result as JSON.
 
 ```json
 {
@@ -278,17 +273,13 @@ func main() {
 | `reverseLookup` | object | PTR lookup result when reverse lookup is enabled and relevant |
 | `mx_provider` | string or null | Best-effort provider inferred from MX records |
 | `spf_valid` | boolean | Whether SPF parsing found a valid record |
-| `spf_strict` | boolean | Whether SPF enforcement is strict |
-| `dmarc_policy` | string | DMARC policy: `none`, `quarantine`, or `reject` |
-| `has_dkim` | boolean | Whether DKIM was detected |
-| `email_security_score` | number | Enrichment score from `0` to `100` |
-| `ssl_certificate_expires_at` | string (ISO 8601) | TLS certificate expiration time when SSL inspection runs |
-| `ssl_days_until_expiry` | integer or null | Days left before certificate expiry |
-| `warnings` | string[] | Warnings produced by enrichment or SSL analysis |
-| `recommendations` | string[] | Actionable follow-up items |
-| `enrichment` | object | Additional upstream enrichment payload when available |
-| `metadata` | object | Lookup metadata such as query time and record count |
-| `errors` | object | Per-record-type lookup errors when some queries fail |
+| `spf_strict` | boolean | Whether the SPF policy is strict |
+| `dmarc_policy` | string | DMARC policy when detected |
+| `has_dkim` | boolean | Whether DKIM records were detected |
+| `email_security_score` | number | Best-effort enrichment score from 0 to 100 |
+| `warnings` | string[] | Warnings from SSL or email-security analysis |
+| `recommendations` | string[] | Suggested follow-up actions |
+| `metadata` | object | Request metadata such as query time and record count |
 
 **Typed DNS records:**
 
@@ -298,7 +289,7 @@ func main() {
 - `CNAME`, `NS`, and `PTR` records include `value` and optional `ttl`
 - `SOA`, `CAA`, and `SRV` records expose their standard protocol-specific fields
 
-The response is now partially typed in the OpenAPI spec, but some nested enrichment data remains upstream-defined and can still vary by target and enabled options.
+The response is partially typed in the OpenAPI spec, but some nested enrichment data can vary by target and enabled options.
 
 **Response headers:**
 
@@ -314,16 +305,18 @@ See [Response Headers](/response-headers/) for details.
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Lookup completed successfully |
-| `400` | Invalid request body or upstream validation error |
+| `400` | Invalid request body or validation error |
 | `401` | Invalid token |
 | `402` | Wallet has insufficient credits |
 | `405` | Method not allowed |
 | `500` | Internal service error |
 | `502` | DNS lookup service unavailable |
-| `503` | DNS lookup service unavailable or not configured |
+| `503` | DNS lookup service unavailable |
 
 ## Notes
 
+- `400` responses can still return a structured JSON body.
+- `5xx` service responses consume `0` credits.
 - The endpoint accepts both domain names and IP addresses.
 - Propagation checks and enrichment can take noticeably longer than a basic DNS query.
 - The interactive service at [lookup.echovalue.dev](https://lookup.echovalue.dev) exposes the same analysis features in a browser UI.

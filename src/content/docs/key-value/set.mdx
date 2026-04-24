@@ -23,6 +23,13 @@ Stores a value for the given key. If the key already exists, its value is overwr
 | ------ | ----------- |
 | `x-token` | Your API token |
 
+**Path parameters:**
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `bucket` | string | Logical namespace. Max 30 characters. Cannot start with `reserved-` or end with `---`. |
+| `key` | string | Key identifier. Max 30 characters. |
+
 **Query parameters:**
 
 | Parameter | Type | Description | Default |
@@ -136,9 +143,16 @@ OK
 
 See [Response Headers](/response-headers/) for details.
 
+## Status Codes
+
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Value stored successfully |
 | `400` | Malformed request |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
+
+## Notes
+
+- `ttl=0` means the maximum TTL, which is 30 days.
+- Values are stored as plain text and overwrite any existing value for the same bucket/key.

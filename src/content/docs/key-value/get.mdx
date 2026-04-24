@@ -23,6 +23,13 @@ Retrieves the stored value for a key.
 | ------ | ----------- |
 | `x-token` | Your API token |
 
+**Path parameters:**
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `bucket` | string | Logical namespace. Max 30 characters. |
+| `key` | string | Key identifier. Max 30 characters. |
+
 <Tabs syncKey="lang">
 <TabItem label="cURL">
 
@@ -111,6 +118,8 @@ hello world
 
 See [Response Headers](/response-headers/) for details.
 
+## Status Codes
+
 | Status | Meaning |
 | ------ | ------- |
 | `200` | Value returned |
@@ -118,3 +127,7 @@ See [Response Headers](/response-headers/) for details.
 | `401` | Invalid token |
 | `402` | Insufficient credits |
 | `404` | Key does not exist or has expired |
+
+## Notes
+
+- The response body is plain text, not JSON.

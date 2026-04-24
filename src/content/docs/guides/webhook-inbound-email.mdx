@@ -76,6 +76,15 @@ fetch('https://api.echovalue.dev/webhook', {
 - Do not send `schedule` in this mode.
 - If `format` is omitted, the raw inbound email payload is forwarded as JSON.
 
+## Delivery Limits
+
+- Cloudflare Email Routing does not accept messages larger than 25 MiB.
+- echoValue accepts canonical inbound payloads up to 1 MiB at `/webhook/call`.
+- echoValue outbound webhook delivery has a 10s timeout, follows at most 10 redirects, and has no application-level retry.
+- Delivery succeeds only when your webhook returns a 2xx response. 4xx/5xx responses are recorded as failed delivery.
+- Cloudflare does not document an automatic retry guarantee for Email Worker failures; treat worker failures as non-retried unless Cloudflare explicitly confirms otherwise.
+- Cloudflare Email Routing activity metadata is available in Cloudflare analytics/activity logs for up to 30 days. Cloudflare Email Routing does not retain routed email content.
+
 ## Good fits
 
 - Turn support mailbox traffic into Slack or Discord messages

@@ -153,34 +153,61 @@ func main() {
 ```json
 {
   "success": true,
-  "url": "https://example.com/article",
-  "canonicalUrl": "https://example.com/article",
-  "title": "Example article",
-  "description": "A short description extracted from the page metadata.",
-  "language": "en",
-  "contentType": "text/html",
-  "summary": "Example summary generated for the page content.",
-  "keyFacts": [
-    "Launch planned for Q3",
-    "Public beta starts next month"
-  ],
-  "metadata": {
-    "author": "Example Team",
-    "publishedAt": "2026-04-20T09:00:00Z"
+  "data": {
+    "seo": {
+      "title": "Example Company - Leading SaaS Platform",
+      "description": "Enterprise software for team collaboration",
+      "keywords": ["saas", "collaboration", "enterprise"],
+      "canonical": "https://example.com"
+    },
+    "technical": {
+      "statusCode": 200,
+      "finalUrl": "https://example.com",
+      "originalUrl": "https://example.com/article",
+      "robotsAllowed": true,
+      "isSecure": true,
+      "contentType": "text/html; charset=utf-8"
+    },
+    "links": {
+      "internal": {
+        "total": 12,
+        "urls": ["/about", "/pricing", "/contact"]
+      },
+      "external": {
+        "total": 2,
+        "urls": ["https://github.com/example"],
+        "domains": ["github.com"]
+      }
+    },
+    "ai": {
+      "summary": {
+        "short": "Example Company provides cloud-based collaboration software for enterprises.",
+        "contentLength": 5240,
+        "truncated": false
+      },
+      "keyFacts": {
+        "companyName": "Example Company Inc.",
+        "industry": "Enterprise Software",
+        "businessModel": "Subscription"
+      },
+      "processingTime": 2340
+    }
   },
-  "links": {
-    "internal": [
-      "https://example.com/pricing",
-      "https://example.com/docs"
-    ],
-    "external": [
-      "https://status.example.com"
-    ]
-  }
+  "timestamp": "2025-06-19T15:54:01.821Z"
 }
 ```
 
-The response shape is intentionally flexible, so fields may vary depending on the target URL and the options you send. The example above is illustrative, not a fixed response contract.
+The response shape is partially flexible. Top-level fields such as `success`, `data`, and `timestamp` are stable, while nested keys inside `data` can vary depending on the target page and whether AI enrichment is enabled.
+
+## Response Shape
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `success` | boolean | Indicates whether the scrape completed successfully |
+| `data` | object | Extracted metadata grouped by area such as `seo`, `technical`, `links`, `social`, `contact`, and `ai` |
+| `timestamp` | string (ISO 8601) | When the response was produced |
+
+When `aiSummary` is `none`, the `ai` block may be omitted. When AI enrichment is enabled, `data.ai.summary`, `data.ai.keyFacts`, and `data.ai.processingTime` may be returned.
 
 **Response headers:**
 
@@ -202,9 +229,10 @@ See [Response Headers](/response-headers/) for details.
 | `405` | Method not allowed |
 | `500` | Internal service error |
 | `502` | Metadata service unavailable |
-| `503` | Metadata service unavailable or not configured |
+| `503` | Metadata service unavailable |
 
 ## Notes
 
 - The target URL must be publicly reachable by the metadata service.
+- Treat nested fields inside `data` as optional and schema-light. Parse defensively.
 - This endpoint is best suited for metadata extraction, link analysis, and optional summary generation over public pages.

@@ -42,6 +42,8 @@ Configures low-balance notifications.
 | `template` | object | JSON template when `format` is `custom`. Supports `{{wallet}}`, `{{threshold}}`, `{{token_hash}}` placeholders | No |
 | `options` | object | Format-specific options such as `chat_id` or `routing_key` | No |
 
+Notifications are sent at most once per low-balance incident. The cooldown resets after the balance rises back above the threshold.
+
 ## Response
 
 `200 OK`
@@ -67,6 +69,11 @@ See [Response Headers](/response-headers/) for details.
 | `400` | Invalid webhook URL or invalid threshold |
 | `401` | Invalid token |
 | `402` | Insufficient credits |
+
+## Notes
+
+- Set `low_balance_threshold` to `0` to disable notifications.
+- `low_balance_webhook.url` must be HTTPS.
 
 ## Examples
 

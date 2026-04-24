@@ -26,6 +26,8 @@ Updates only the fields you provide.
 | `x-token` | Your API token |
 | `Content-Type` | Must be `application/json` |
 
+## Request
+
 ## Replace With `PUT`
 
 Use `PUT` when you want to send the full new configuration.
@@ -109,6 +111,12 @@ For scheduled webhooks, the next run must be within 30 days from the update and 
 
 Response body and response headers are the same as [Create Webhook](/webhook/create/).
 
+## Notes
+
+- Use `PUT` when you want to replace the full document.
+- Use `PATCH` when you want to update only specific fields.
+- `headers`, `options`, and `template` replace the full value when provided.
+
 ## Status Codes
 
 | Status | Meaning |
@@ -121,5 +129,5 @@ Response body and response headers are the same as [Create Webhook](/webhook/cre
 | `500` | Internal server error |
 
 :::caution
-The webhook URL must be HTTPS and publicly reachable. Localhost and private IP addresses are not accepted.
+Localhost and private IP addresses are not accepted.
 :::
