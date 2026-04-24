@@ -1,6 +1,6 @@
 ---
 title: Recharge Wallet
-description: Get a Stripe payment link to add credits to your wallet
+description: Get a payment link to add credits to your wallet
 sidebar:
   order: 3
 ---
@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `GET https://api.echovalue.dev/recharge`
 
-Returns a Stripe payment link to add credits to your wallet.
+Returns a payment link to add credits to your wallet.
 
 :::note
 **Cost:** free. This endpoint does not deduct wallet credits.
@@ -31,7 +31,7 @@ Returns a Stripe payment link to add credits to your wallet.
 
 ## Response
 
-`200 OK` — Stripe payment URL as plain text.
+`200 OK` — payment URL as plain text.
 
 ```
 https://buy.stripe.com/<productID>?client_reference_id=<hash>
@@ -128,7 +128,7 @@ func main() {
 
 Follow the returned URL to complete the payment.
 
-The returned Stripe URL includes the wallet hash in `client_reference_id`.
+The returned payment URL includes the wallet hash in `client_reference_id`.
 
 :::note
 The card transaction appears as **nJoyLab** on your statement.

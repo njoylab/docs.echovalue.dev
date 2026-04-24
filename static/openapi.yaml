@@ -25,7 +25,7 @@ tags:
 - name: URL To Metadata API
   description: Analyze a URL and return extracted metadata
 - name: DNS Lookup API
-  description: Run DNS lookup and enrichment against the upstream Lambda
+  description: Run DNS lookup, propagation checks, SSL inspection, and enrichment
 - name: My IP API
   description: Return the caller IP and geo headers (costs 1 credit)
 components:
@@ -67,16 +67,14 @@ components:
       required: true
       schema:
         type: string
-      description: Shared secret for internal service-to-service calls, matched against
-        SERVICE_AUTH_KEY (single key or comma-separated list)
+      description: Reserved service authentication header. Not used by public endpoints.
     MailboxSecretHeader:
       name: x-mailbox-secret
       in: header
       required: true
       schema:
         type: string
-      description: Shared secret for call endpoint, matched against MAILBOX_SECRET
-        (single key or comma-separated list)
+      description: Reserved mailbox authentication header. Not used by public endpoints.
     Bucket:
       name: bucket
       in: path
@@ -172,12 +170,10 @@ components:
       type: object
       description: 'Request body for URL metadata analysis.
 
-        The Go proxy normalizes `aiSummary`, forces `proxy=false`, and forwards additional
-        fields to the upstream Lambda.
+        `aiSummary` controls whether AI enrichment is requested.
 
-        The Go proxy has a 45s upstream timeout. Page fetch limits, redirect policy,
-        robots handling, and private/local URL policy are owned by the upstream scraper
-        and are not defined in this repository.
+        Page fetch results can vary by target site, redirects, robots policy, and public
+        reachability.
 
         '
       required:
@@ -419,7 +415,7 @@ components:
       properties:
         externalMessageId:
           type: string
-          description: Message identifier from the inbound mail provider
+          description: Message identifier from the inbound email source
         receivedAt:
           type: string
           description: ISO-8601 timestamp when the message was received
@@ -429,7 +425,7 @@ components:
           additionalProperties: true
         to:
           type: array
-          description: Recipient list from the inbound mail provider
+          description: Recipient list from the inbound email source
           items:
             type: object
             required:
@@ -441,7 +437,7 @@ components:
                 type: string
         cc:
           type: array
-          description: CC recipients from the inbound mail provider
+          description: CC recipients from the inbound email source
           items:
             type: object
             additionalProperties: true
@@ -456,10 +452,10 @@ components:
           additionalProperties: true
         attachments:
           type: array
-          description: 'Attachment metadata from the inbound mail worker. When attachment
-            storage is enabled,
+          description: 'Attachment metadata when available. When generated download
+            URLs are present,
 
-            generated download URLs default to 300 seconds and `downloadUrlExpiresAt`
+            they default to 300 seconds and `downloadUrlExpiresAt`
             marks URL
 
             expiry. After `downloadUrlExpiresAt`, attachment availability is not guaranteed.
@@ -486,7 +482,7 @@ components:
       description: 'Outbound payload delivered to the configured webhook URL for scheduled
         webhook runs.
 
-        This is distinct from the email-style payload used by `POST /webhook/call`.
+        This is distinct from the inbound email payload.
 
         '
       properties:
@@ -502,7 +498,7 @@ components:
         scheduledFor:
           type: string
           format: date-time
-          description: Scheduled occurrence time encoded in the Cloud Tasks payload.
+          description: Scheduled occurrence time for this run.
           example: '2026-04-22T12:05:00Z'
         executedAt:
           type: string
@@ -814,12 +810,9 @@ components:
       type: object
       description: 'Request body for DNS lookup and enrichment.
 
-        The payload is forwarded as-is to the upstream Lambda endpoint after JSON
-        validation.
+        echoValue validates the JSON payload and runs the requested DNS inspection.
 
-        The Go proxy has a 45s upstream timeout. Limits such as max domains and default
-        resolver list are owned by the upstream Lambda and are not defined in this
-        repository.
+        Request-level limits are documented on this schema and in the endpoint documentation.
 
         '
       required:
@@ -831,8 +824,7 @@ components:
           minItems: 1
           items:
             type: string
-          description: Domain names or IP addresses. No max item count is enforced
-            by the Go proxy.
+          description: Domain names or IP addresses to inspect.
         recordTypes:
           type: array
           items:
@@ -869,8 +861,7 @@ components:
           minimum: 1000
           maximum: 60000
           default: 5000
-          description: Upstream DNS lookup timeout option in milliseconds. The Go
-            proxy also has a 45s total upstream request timeout.
+          description: DNS lookup timeout option in milliseconds.
         maxRetries:
           type: integer
           minimum: 0
@@ -889,7 +880,7 @@ components:
       required:
       - summary
       - results
-      description: 'Actor-style DNS lookup response returned by the upstream Lambda.
+      description: 'DNS lookup response.
 
         It contains an aggregate `summary` plus one result entry per requested domain
         or IP.
@@ -1065,7 +1056,7 @@ components:
         enrichment:
           type: object
           additionalProperties: true
-          description: Detailed enrichment payload from the upstream service.
+          description: Detailed enrichment payload.
         metadata:
           type: object
           additionalProperties: false
@@ -1572,7 +1563,7 @@ paths:
       - Token API
       operationId: getRechargeLink
       summary: Get recharge link
-      description: Returns a Stripe checkout link with the wallet hash in `client_reference_id`.
+      description: Returns a payment checkout link with the wallet hash in `client_reference_id`.
         This endpoint is free and does not deduct wallet credits.
       security:
       - TokenAuth: []
@@ -1590,7 +1581,7 @@ paths:
         description: Recharge tier
       responses:
         '200':
-          description: Stripe checkout URL
+          description: Payment checkout URL
           content:
             text/plain:
               schema:
@@ -1631,8 +1622,7 @@ paths:
         required: false
         schema:
           type: string
-        description: 'Optional endpoint filter. The implementation forwards this value
-          to log storage as-is.
+        description: 'Optional endpoint filter.
 
           Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`,
           `myip`, `service`, and `manage`.
@@ -2047,7 +2037,7 @@ paths:
         to `none`; `short`, `medium`, and `long` enable AI enrichment and cost `800`
         credits.
 
-        Malformed requests and non-`5xx` upstream failures cost `1` credit. Upstream
+        Malformed requests and non-`5xx` service failures cost `1` credit. Service
         `5xx` responses cost `0` credits.
 
         '
@@ -2175,7 +2165,7 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '400':
-          description: Invalid request body or upstream validation/client error. Costs
+          description: Invalid request body or validation/client error. Costs
             1 credit.
           headers:
             x-balance:
@@ -2191,7 +2181,7 @@ paths:
         '405':
           description: Method not allowed
         '500':
-          description: Upstream or internal server error. Upstream 5xx responses cost
+          description: Service error. Service 5xx responses cost
             0 credits.
           headers:
             x-balance:
@@ -2199,7 +2189,7 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '502':
-          description: Upstream request failed before a response was received. Costs
+          description: Request failed before a service response was received. Costs
             1 credit.
           headers:
             x-balance:
@@ -2207,8 +2197,7 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '503':
-          description: Service unavailable, including missing upstream configuration
-            or refund failures.
+          description: Service unavailable.
   /dns-lookup:
     servers:
     - url: https://api.echovalue.dev
@@ -2218,14 +2207,13 @@ paths:
       - DNS Lookup API
       operationId: dnsLookup
       summary: Run DNS lookup and enrichment
-      description: 'Forwards the request body to the configured AWS Lambda DNS lookup
-        endpoint and returns the upstream response.
+      description: 'Runs DNS lookup, propagation checks, SSL inspection, and enrichment.
 
         The wallet is authenticated with `x-token`, charged in credits, and the request
         is logged.
 
-        Successful requests cost `5` credits. Upstream non-`5xx` failures also cost
-        `5` credits. Upstream `5xx` responses cost `0` credits.
+        Successful requests cost `5` credits. Non-`5xx` service failures also cost
+        `5` credits. Service `5xx` responses cost `0` credits.
 
         '
       security:
@@ -2308,7 +2296,7 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '400':
-          description: Invalid request body or upstream validation error
+          description: Invalid request body or validation error
           content:
             application/json:
               schema:
