@@ -79,6 +79,8 @@ export default defineConfig({
         {
           label: 'Reference',
           items: [
+            { label: 'API Cheat Sheet', link: '/api-cheat-sheet/' },
+            { label: 'Limits & Retention', link: '/limits-retention/' },
             { label: 'Response Headers', link: '/response-headers/' },
             { label: 'Errors', link: '/errors/' },
             { label: 'OpenAPI Specification', link: '/openapi/' },

@@ -1,0 +1,62 @@
+---
+title: Limits & Retention
+description: Size, TTL, retention, and scheduling limits for echoValue APIs
+sidebar:
+  order: 7
+---
+
+This page collects cross-cutting limits. Endpoint pages remain the source of truth for request and response fields.
+
+## Storage
+
+| Constraint | Value |
+| ---------- | ----- |
+| Key name length | 30 characters |
+| Bucket name length | 30 characters |
+| Value length | 1000 characters, about 1 KB |
+| Default key TTL | 30 days |
+| Maximum key TTL | 2,592,000 seconds, 30 days |
+| Bucket naming | Cannot start with `reserved-` or end with `---` |
+
+## Tokens And Logs
+
+| Constraint | Value |
+| ---------- | ----- |
+| New token credits | 100 credits |
+| Token inactivity before deletion | 2 years |
+| Log retention | 7 days |
+| Log deletion after expiration | Within 24 hours |
+| Default log count | 5 |
+| Maximum log count | 100 |
+
+:::caution
+When an unused token expires, associated data is deleted.
+:::
+
+## Webhooks
+
+| Constraint | Value |
+| ---------- | ----- |
+| Webhook URL | Must be HTTPS and publicly reachable |
+| Localhost/private addresses | Not accepted |
+| Delivery timeout | 10 seconds |
+| Inbound email payload | 1 MiB after parsing |
+| Custom template size | 2048 bytes |
+| Custom template depth | 5 levels |
+| Format options | Up to 10 keys, values up to 500 characters |
+| Schedule expression | 5-field cron: `minute hour day month weekday` |
+| Schedule timezone | IANA timezone, for example `Europe/Rome` |
+| First scheduled run | Must occur within 30 days |
+| Maximum interval between runs | 30 days |
+
+## Utilities
+
+| API | Limits |
+| --- | ------ |
+| DNS Lookup | `timeout` from 1000 to 60000 ms, `maxRetries` from 0 to 10, `retryDelay` from 0 to 100000 ms |
+| URL To Metadata | Target URL must be publicly reachable; nested `data` fields are optional and should be parsed defensively |
+| My IP | Returns metadata derived from the request; unavailable fields may be empty or omitted |
+
+## Billing Notes
+
+Most authenticated API calls consume credits even when the request returns a client error. `GET /token/logs` is free. Some utility endpoints do not charge for `5xx` service responses; see the endpoint page for the exact cost rule.

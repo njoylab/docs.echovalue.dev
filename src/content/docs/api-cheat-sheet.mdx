@@ -1,0 +1,55 @@
+---
+title: API Cheat Sheet
+description: Compare echoValue endpoints by method, auth, cost, and common use case
+sidebar:
+  order: 6
+---
+
+Use this page when you know what you want to do and need the shortest path to the right endpoint.
+
+All paid endpoints use the `x-token` request header. New tokens include **100 free credits**.
+
+## Endpoints
+
+| Task | Method and path | Auth | Cost | Use case |
+| ---- | --------------- | ---- | ---- | -------- |
+| Create token | `POST /token` | No | Free | Start using the API |
+| Get wallet info | `GET /token` | Yes | 1 credit | Check balance and wallet metadata |
+| Create recharge link | `GET /recharge?amount=<tier>` | Yes | Free | Add credits to a wallet |
+| Get logs | `GET /token/logs` | Yes | Free | Inspect recent API activity |
+| Get low balance settings | `GET /token/settings` | Yes | 1 credit | Read notification settings |
+| Update low balance settings | `PUT /token/settings` | Yes | 1 credit | Configure balance alerts |
+| Set key/value | `POST /kv/<bucket>/<key>` | Yes | 1 credit | Store small string state |
+| Get key/value | `GET /kv/<bucket>/<key>` | Yes | 1 credit | Retrieve stored state |
+| Delete key/value | `DELETE /kv/<bucket>/<key>` | Yes | 1 credit | Remove stored state |
+| Create webhook | `POST /webhook` | Yes | 1 credit | Configure inbound email or scheduled delivery |
+| List webhooks | `GET /webhook` | Yes | 1 credit | See all webhook configs |
+| Get webhook | `GET /webhook/<webhookId>` | Yes | 1 credit | Inspect one webhook config |
+| Replace webhook | `PUT /webhook/<webhookId>` | Yes | 1 credit | Replace a full webhook config |
+| Patch webhook | `PATCH /webhook/<webhookId>` | Yes | 1 credit | Update selected webhook fields |
+| Delete webhook | `DELETE /webhook/<webhookId>` | Yes | 1 credit | Remove a webhook config |
+| Test webhook | `POST /webhook/<webhookId>/test` | Yes | 1 credit | Send a test delivery |
+| Process inbound email | Mail to returned address | Configured webhook | 2-5 credits | Convert email into webhook delivery |
+| Scheduled webhook run | Configured schedule | Configured webhook | 2 credits | Run recurring HTTP callbacks |
+| DNS lookup | `POST /dns-lookup` | Yes | 5 credits | Inspect DNS records and enrichment |
+| Caller IP lookup | `GET /myip` | Yes | 1 credit | Read caller IP and geo metadata |
+| URL metadata | `POST /url-to-metadata` | Yes | 55 or 800 credits | Extract page metadata, optionally with AI summary |
+
+## Pick The Right Tool
+
+| Need | Start with |
+| ---- | ---------- |
+| Shared state, counters, short notes, handoff between agents | [Key-Value Store](/key-value/) |
+| A generated email address that forwards messages to your system | [Webhook Inbound Email](/guides/webhook-inbound-email/) |
+| Cron-style callbacks without hosting a scheduler | [Webhook Scheduled Jobs](/guides/webhook-scheduled-jobs/) |
+| Slack, Discord, Teams, Telegram, or PagerDuty delivery | [Webhook Formats](/webhook/) |
+| Troubleshooting API calls and credit usage | [Logs](/logs/) |
+| Client generation or API import | [OpenAPI Specification](/openapi/) |
+
+## Base URL
+
+```txt
+https://api.echovalue.dev
+```
+
+See [Authentication](/authentication/) for the `x-token` header and [Response Headers](/response-headers/) for `x-cost` and `x-balance`.

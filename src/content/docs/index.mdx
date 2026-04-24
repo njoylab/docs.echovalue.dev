@@ -9,8 +9,10 @@ sidebar:
 
 It provides a small set of focused HTTP utilities for storage, webhooks, DNS inspection, URL metadata, caller-IP lookup, logs, and wallet management.
 
-- **Key-Value Store** — persist and retrieve string data organized in named buckets
-- **Webhook** — receive emails at a dedicated address or schedule recurring deliveries to your webhook
+- **Store small state** with the [Key-Value Store](/key-value/)
+- **Receive email or run cron-style callbacks** with [Webhooks](/webhook/)
+- **Inspect DNS, URLs, and caller IPs** with [Utilities](/api-cheat-sheet/)
+- **Track credits and calls** with [Token Management](/token/) and [Logs](/logs/)
 
 :::caution
 echoValue is not intended for storing sensitive data
@@ -61,48 +63,15 @@ curl 'https://api.echovalue.dev/webhook' \
 | **Logs** | Inspect your recent API call history |
 | **Token Management** | Check your credit balance and recharge |
 
-## Pricing
+## Reference
 
-All operations consume credits from your wallet. New tokens include **100 free credits**.
-
-| Operation | Cost |
-| --------- | ---- |
-| Generate token | Free (100 credits included) |
-| Check wallet balance | 1 credit |
-| Run DNS lookup | 5 credits on success and non-`5xx` service failures |
-| Get caller IP | 1 credit |
-| Analyze URL metadata | 55 credits base, 800 credits with AI summary enrichment |
-| Set key/value | 1 credit |
-| Get key/value | 1 credit |
-| Delete key/value | 1 credit |
-| Configure webhook | 1 credit |
-| Get webhook config | 1 credit |
-| Delete webhook | 1 credit |
-| Test webhook | 1 credit |
-| Check low balance settings | 1 credit |
-| Update low balance settings | 1 credit |
-| Email processed (no attachments) | 2 credits |
-| Email processed (with attachments) | 5 credits |
+| Page | Use it for |
+| ---- | ---------- |
+| [API Cheat Sheet](/api-cheat-sheet/) | Compare endpoints, auth, costs, and common use cases |
+| [Limits & Retention](/limits-retention/) | Check size, TTL, retention, and webhook scheduling limits |
+| [Errors](/errors/) | Understand status codes and common fixes |
+| [OpenAPI Specification](/openapi/) | Generate clients or import the API into tooling |
 
 ## AI Integration
 
-### Documentation for LLMs
-
-This documentation is available in machine-readable format for AI assistants:
-
-- [`/llms.txt`](https://docs.echovalue.dev/llms.txt) — index of all documentation pages
-- [`/llms-small.txt`](https://docs.echovalue.dev/llms-small.txt) — abridged documentation optimized for agent context windows
-- [`/llms-full.txt`](https://docs.echovalue.dev/llms-full.txt) — full documentation in a single file
-
-### AI Agent Skill
-
-See [installation details](https://github.com/njoylab/docs.echovalue.dev/blob/main/INSTALL.md) for Claude, Codex, ChatGPT, Cursor, and Continue setup.
-
-Claude loads the shared skill directory automatically. Codex, Cursor, and Continue use local files in the workspace. ChatGPT uses the Skills page upload/share flow.
-
-## Limits
-
-| Constraint | Value |
-| ---------- | ----- |
-| Log retention | 7 days |
-| Token inactivity before deletion | 2 years |
+Machine-readable documentation is available at [`/llms.txt`](https://docs.echovalue.dev/llms.txt), [`/llms-small.txt`](https://docs.echovalue.dev/llms-small.txt), and [`/llms-full.txt`](https://docs.echovalue.dev/llms-full.txt). Agent setup files are documented in the [installation guide](https://github.com/njoylab/docs.echovalue.dev/blob/main/INSTALL.md).

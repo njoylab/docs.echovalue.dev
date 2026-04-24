@@ -17,35 +17,57 @@ Key Not Found
 Requests that result in errors are still counted as API calls and consume credits on paid endpoints, to prevent misuse. `GET /token/logs` remains free.
 :::
 
+## Response Format
+
+Error bodies are plain text, not JSON. Handle them as text unless an endpoint page documents a different response body.
+
+```sh
+curl -i 'https://api.echovalue.dev/kv/default/missing' \
+  -H 'x-token: mytoken'
+```
+
+```http
+HTTP/1.1 404 Not Found
+x-cost: 1
+x-balance: 97
+
+Key Not Found
+```
+
 ## 4xx Client Errors
 
-| Code | Name | When it occurs |
-| ---- | ---- | -------------- |
-| `400` | Bad Request | The request is malformed or missing required parameters |
-| `401` | Unauthorized | The `x-token` header is missing or invalid |
-| `402` | Payment Required | Your wallet has no credits remaining |
-| `404` | Not Found | The key, webhook, or resource does not exist |
-| `405` | Method Not Allowed | The HTTP method is not supported for this endpoint |
+| Code | Name | When it occurs | What to check |
+| ---- | ---- | -------------- | ------------- |
+| `400` | Bad Request | The request is malformed, missing required parameters, or uses an invalid field combination | Body shape, content type, required fields, URL/query parameters |
+| `401` | Unauthorized | The `x-token` header is missing, too short, or invalid | Send the exact token in `x-token`; create a new token if needed |
+| `402` | Payment Required | The wallet has insufficient credits | Check balance with `GET /token` or create a recharge link |
+| `404` | Not Found | The key, webhook, or resource does not exist | Confirm the bucket/key, `webhookId`, and path |
+| `405` | Method Not Allowed | The HTTP method is not supported for this endpoint | Compare the method with the endpoint reference |
+| `409` | Conflict | A resource already exists | Use a different `webhookId` or update the existing webhook |
 
 ## 5xx Server Errors Documented In OpenAPI
 
-| Code | Name | When it occurs |
-| ---- | ---- | -------------- |
-| `500` | Internal Server Error | Unexpected server-side failure — try again later |
+| Code | Name | When it occurs | What to do |
+| ---- | ---- | -------------- | ---------- |
+| `500` | Internal Server Error | Unexpected server-side failure | Retry later and check [Logs](/logs/) |
+| `502` | Bad Gateway | A utility request could not complete successfully | Retry later or reduce request complexity |
+| `503` | Service Unavailable | The requested service is temporarily unavailable | Retry later |
 
 ## Common Scenarios
 
-| Situation | Status code |
-| --------- | ----------- |
-| Missing `x-token` header | `401` |
-| Token doesn't exist | `401` |
-| No credits left | `402` |
-| GET on a key that was never set | `404` |
-| GET webhook list when none is configured | `200` with an empty `webhooks` array |
-| DELETE webhook with missing or unknown `webhookId` | `400` or `404` |
-| Calling an endpoint with the wrong HTTP method | `405` |
+| Situation | Status code | Typical body |
+| --------- | ----------- | ------------ |
+| Missing `x-token` header | `401` | `Unauthorized` |
+| Token doesn't exist | `401` | `Unauthorized` |
+| No credits left | `402` | `Insufficient credits` |
+| GET on a key that was never set | `404` | `Key Not Found` |
+| Create a webhook with an existing `webhookId` | `409` | Short conflict message |
+| GET webhook list when none is configured | `200` | JSON with an empty `webhooks` array |
+| DELETE webhook with missing or unknown `webhookId` | `400` or `404` | Short validation or not-found message |
+| Calling an endpoint with the wrong HTTP method | `405` | Short method error |
 
 ## Notes
 
-- `GET /token/logs` is free. The current OpenAPI file now declares `x-cost` on its `200` response, but does not declare `x-balance`.
-- Infrastructure in front of the application may still emit `429 Too Many Requests` or `503 Service Unavailable`, but those responses are not currently modeled in `openapi.yaml`.
+- Use [Response Headers](/response-headers/) to read `x-cost` and `x-balance` when they are present.
+- Use [Logs](/logs/) to inspect recent failed calls for the same token.
+- `429 Too Many Requests` can occur when a caller exceeds protective rate limits.

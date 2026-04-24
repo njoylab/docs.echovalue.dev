@@ -21,10 +21,12 @@ Each webhook is managed through a public `webhookId`. If you omit it when creati
 
 ## Pick The Right Mode
 
-| Mode | What you send | What you get back | Payload |
-| ---- | ------------- | ----------------- | ------- |
-| Inbound Email Webhook | `url` plus optional `format`, `template`, `options`, `includeAttachments` | An opaque `email` address | Inbound email payload |
-| Scheduled Webhook | `url` plus `schedule` | Schedule metadata such as `nextRunAt` | Scheduled-run payload |
+| Need | Mode | What you send | What you get back | Payload |
+| ---- | ---- | ------------- | ----------------- | ------- |
+| Turn inbound email into HTTP calls | Inbound Email Webhook | `url` plus optional `format`, `template`, `options`, `includeAttachments` | An opaque `email` address | Inbound email payload or transformed format payload |
+| Run recurring HTTP callbacks | Scheduled Webhook | `url` plus `schedule` | Schedule metadata such as `nextRunAt` | Scheduled-run payload |
+| Verify delivery manually | Test Webhook | Existing `webhookId` | Delivery result with `success` | Test payload |
+| Send to Slack, Discord, Teams, Telegram, or PagerDuty | Inbound Email Webhook with `format` | Platform-specific `format` and `options` | An opaque `email` address | Platform-native payload |
 
 :::caution
 A webhook is either mailbox-based or scheduled, never both. Do not send `schedule` together with mailbox-only fields such as `format`, `template`, `options`, or `includeAttachments`.
