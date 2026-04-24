@@ -133,16 +133,18 @@ When editing documentation:
 
 Use these rules when adding or revising pages so the documentation stays coherent over time:
 
-1. **Document the public contract, not the implementation**: Describe the endpoint, request, response, limits, costs, status codes, and user-visible behavior. Do not expose internal architecture, routing, queues, workers, vendors, or service boundaries unless they are part of the public API contract.
+1. **Document the public contract, not the implementation**: Describe the endpoint, request, response, limits, costs, status codes, and user-visible behavior. Do not expose internal architecture, routing, queues, workers, vendors, cloud providers, or service boundaries unless they are part of the public API contract.
 2. **Never mention upstream hops for API-backed APIs**: If an echoValue endpoint calls another API or service internally, do not say that the request is proxied, forwarded upstream, delegated to another API, or handled by an upstream provider. Phrase it as echoValue behavior instead, for example "returns URL metadata", "runs DNS lookup", or "delivers the webhook payload".
-3. **Keep source-of-truth files synchronized**: For every API change, update `static/openapi.yaml`, the matching page in `src/content/docs/`, sidebar entries in `astro.config.mjs` if navigation changes, and agent-facing docs that summarize the same capability.
-4. **Prefer stable examples over exhaustive examples**: Show the smallest complete request and a representative successful response. Avoid documenting incidental fields unless they are stable enough for users to rely on.
-5. **Separate guarantees from best-effort behavior**: Use direct language for guaranteed fields, limits, and costs. Mark inferred, optional, provider-dependent, or best-effort results clearly so users do not build against unstable behavior.
-6. **Keep naming consistent across surfaces**: Endpoint names, field names, sidebar labels, OpenAPI operation summaries, page titles, and guide terminology should use the same wording unless there is a clear user-facing reason to differ.
-7. **Write from the user's perspective**: Favor action-oriented descriptions such as "Create a webhook" or "Get the current balance". Avoid implementation phrasing such as "the backend stores", "the worker processes", or "the service forwards to another internal endpoint".
-8. **Maintain page archetypes**: Endpoint pages should include request, response, status codes, examples, and a cost note. Overview pages should include purpose, endpoints, pricing, limits, and related pages. Guides should include prerequisites, setup, configuration, output, and notes.
-9. **Preserve cross-link hygiene**: Add related links when they reduce navigation friction, use trailing slashes, and avoid orphan pages by adding new docs to the sidebar when they are meant for users.
-10. **Verify docs as docs**: After meaningful documentation changes, run `npm run build` to catch MDX, Starlight, sidebar, and generated `llms.txt` issues.
+3. **Never document internal endpoints**: Do not mention, link, or describe endpoints that are not exposed to users, even when explaining limits or payload formats. State the public behavior instead, for example "inbound email payloads are limited to 1 MiB after parsing."
+4. **Never name infrastructure vendors**: Do not mention Cloudflare, cloud services, provider dashboards, provider logs, workers, routing products, queues, storage services, or any other infrastructure vendor used by echoValue. Use vendor-neutral wording such as "inbound email delivery" or "echoValue processing."
+5. **Keep source-of-truth files synchronized**: For every API change, update `static/openapi.yaml`, the matching page in `src/content/docs/`, sidebar entries in `astro.config.mjs` if navigation changes, and agent-facing docs that summarize the same capability.
+6. **Prefer stable examples over exhaustive examples**: Show the smallest complete request and a representative successful response. Avoid documenting incidental fields unless they are stable enough for users to rely on.
+7. **Separate guarantees from best-effort behavior**: Use direct language for guaranteed fields, limits, and costs. Mark inferred, optional, source-dependent, or best-effort results clearly so users do not build against unstable behavior.
+8. **Keep naming consistent across surfaces**: Endpoint names, field names, sidebar labels, OpenAPI operation summaries, page titles, and guide terminology should use the same wording unless there is a clear user-facing reason to differ.
+9. **Write from the user's perspective**: Favor action-oriented descriptions such as "Create a webhook" or "Get the current balance". Avoid implementation phrasing such as "the backend stores", "the worker processes", or "the service forwards to another internal endpoint".
+10. **Maintain page archetypes**: Endpoint pages should include request, response, status codes, examples, and a cost note. Overview pages should include purpose, endpoints, pricing, limits, and related pages. Guides should include prerequisites, setup, configuration, output, and notes.
+11. **Preserve cross-link hygiene**: Add related links when they reduce navigation friction, use trailing slashes, and avoid orphan pages by adding new docs to the sidebar when they are meant for users.
+12. **Verify docs as docs**: After meaningful documentation changes, run `npm run build` to catch MDX, Starlight, sidebar, and generated `llms.txt` issues.
 
 ## Important Notes
 

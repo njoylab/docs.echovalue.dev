@@ -1,13 +1,13 @@
 ---
 title: Webhook Scheduled Jobs
-description: Trigger your webhook URL on a recurring schedule without any mailbox address.
+description: Trigger your webhook URL on a recurring schedule.
 sidebar:
   order: 3
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Use a scheduled webhook when you want echoValue to call your webhook URL on a cron schedule. No mailbox address is created in this mode.
+Use a scheduled webhook when you want echoValue to call your webhook URL on a cron schedule.
 
 Use [crontab.echovalue.dev](https://crontab.echovalue.dev) to generate the `schedule.cron` value.
 
@@ -16,7 +16,7 @@ Use [crontab.echovalue.dev](https://crontab.echovalue.dev) to generate the `sche
 - A recurring webhook trigger based on a 5-field cron expression
 - An IANA timezone such as `Europe/Rome`
 - The scheduled-run payload documented in [Webhook Payloads](/webhook/payload/)
-- 1 credit charged for each scheduled execution
+- 2 credits charged for each scheduled execution
 
 ## Minimal setup
 

@@ -33,7 +33,7 @@ When an email arrives at the opaque `email` address returned by the webhook API,
   "html": "<div>Server #3 is not responding</div>",
   "headers": {},
   "attachments": [],
-  "provider": "postmark",
+  "provider": "mail",
   "url": "https://hook.echovalue.dev/r_abcd1234",
   "raw": {
     "messageId": "<CA+abc123@mail.gmail.com>"
@@ -54,12 +54,12 @@ When an email arrives at the opaque `email` address returned by the webhook API,
 | `text` | string | Plain text body |
 | `html` | string | HTML body (if present) |
 | `headers` | object | Raw email headers as key-value pairs |
-| `attachments` | array | Attachments as provided by the inbound mail provider |
-| `url` | string | Provider or mailbox URL when available |
-| `provider` | string | Inbound email provider identifier when available |
-| `raw` | object | Provider-specific raw payload passthrough |
+| `attachments` | array | Attachment metadata when available |
+| `url` | string | Mailbox URL when available |
+| `provider` | string | Inbound source identifier when available |
+| `raw` | object | Raw inbound payload details when available |
 
-The exact attachment object is provider-dependent and may include additional fields.
+The exact attachment object is source-dependent and may include additional fields.
 
 :::note
 **Cost:** 2-5 credits per email processed:
@@ -68,7 +68,7 @@ The exact attachment object is provider-dependent and may include additional fie
 :::
 
 :::caution
-Cloudflare Email Routing does not accept messages larger than 25 MiB. echoValue's `/webhook/call` request body is limited to 1 MiB, so large emails or attachment-heavy messages may be rejected or stripped before delivery depending on the inbound provider and `includeAttachments` setting.
+Inbound email payloads are limited to 1 MiB after parsing, so large emails or attachment-heavy messages may be rejected or stripped before delivery depending on message size and the `includeAttachments` setting.
 :::
 
 :::note

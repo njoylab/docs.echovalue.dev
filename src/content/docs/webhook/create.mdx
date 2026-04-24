@@ -77,8 +77,7 @@ Need a temporary callback URL while testing? Use [webhook.echovalue.dev](https:/
 
 - The response includes an opaque `email` mailbox address.
 - `format`, `template`, `options`, and `includeAttachments` are only valid in this mode.
-- Cloudflare Email Routing does not accept messages larger than 25 MiB.
-- echoValue inbound email payloads are limited to 1 MiB at `/webhook/call`.
+- Inbound email payloads are limited to 1 MiB after parsing.
 - See [Webhook Inbound Email](/guides/webhook-inbound-email/) for end-to-end examples.
 
 ## Scheduled Webhook

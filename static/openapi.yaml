@@ -25,7 +25,7 @@ tags:
 - name: URL To Metadata API
   description: Analyze a URL and return extracted metadata
 - name: DNS Lookup API
-  description: Run DNS lookup and enrichment
+  description: Run DNS lookup and enrichment against the upstream Lambda
 - name: My IP API
   description: Return the caller IP and geo headers (costs 1 credit)
 components:
@@ -172,8 +172,12 @@ components:
       type: object
       description: 'Request body for URL metadata analysis.
 
-        echoValue applies a 45s service timeout. Page fetch limits, redirect policy,
-        robots handling, and private/local URL policy are service-defined.
+        The Go proxy normalizes `aiSummary`, forces `proxy=false`, and forwards additional
+        fields to the upstream Lambda.
+
+        The Go proxy has a 45s upstream timeout. Page fetch limits, redirect policy,
+        robots handling, and private/local URL policy are owned by the upstream scraper
+        and are not defined in this repository.
 
         '
       required:
@@ -696,7 +700,7 @@ components:
     WebhookScheduleRequest:
       type: object
       description: The first scheduled run must occur within 30 days, and the interval
-        between runs must not exceed 30 days. Active scheduled runs cost 1 credit
+        between runs must not exceed 30 days. Active scheduled runs cost 2 credits
         each; if the wallet has insufficient credits, delivery is skipped, the run
         is recorded as failure, and the next run is still enqueued.
       required:
@@ -810,8 +814,12 @@ components:
       type: object
       description: 'Request body for DNS lookup and enrichment.
 
-        echoValue applies a 45s service timeout. Limits such as max domains and the
-        default resolver list are service-defined.
+        The payload is forwarded as-is to the upstream Lambda endpoint after JSON
+        validation.
+
+        The Go proxy has a 45s upstream timeout. Limits such as max domains and default
+        resolver list are owned by the upstream Lambda and are not defined in this
+        repository.
 
         '
       required:
@@ -823,7 +831,8 @@ components:
           minItems: 1
           items:
             type: string
-          description: Domain names or IP addresses.
+          description: Domain names or IP addresses. No max item count is enforced
+            by the Go proxy.
         recordTypes:
           type: array
           items:
@@ -860,8 +869,8 @@ components:
           minimum: 1000
           maximum: 60000
           default: 5000
-          description: DNS lookup timeout option in milliseconds. echoValue also
-            applies a 45s service timeout.
+          description: Upstream DNS lookup timeout option in milliseconds. The Go
+            proxy also has a 45s total upstream request timeout.
         maxRetries:
           type: integer
           minimum: 0
@@ -880,7 +889,7 @@ components:
       required:
       - summary
       - results
-      description: 'DNS lookup response.
+      description: 'Actor-style DNS lookup response returned by the upstream Lambda.
 
         It contains an aggregate `summary` plus one result entry per requested domain
         or IP.
@@ -1056,7 +1065,7 @@ components:
         enrichment:
           type: object
           additionalProperties: true
-          description: Detailed enrichment data.
+          description: Detailed enrichment payload from the upstream service.
         metadata:
           type: object
           additionalProperties: false
@@ -1767,7 +1776,7 @@ paths:
         Scheduled webhooks must start within 30 days, and the interval between runs
         must not exceed 30 days.
 
-        Each scheduled run costs 1 credit.
+        Each scheduled run costs 2 credits.
 
         '
       security:
@@ -2038,8 +2047,8 @@ paths:
         to `none`; `short`, `medium`, and `long` enable AI enrichment and cost `800`
         credits.
 
-        Malformed requests and non-`5xx` service failures cost `1` credit. `5xx`
-        service responses cost `0` credits.
+        Malformed requests and non-`5xx` upstream failures cost `1` credit. Upstream
+        `5xx` responses cost `0` credits.
 
         '
       security:
@@ -2166,7 +2175,8 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '400':
-          description: Invalid request body or validation/client error. Costs 1 credit.
+          description: Invalid request body or upstream validation/client error. Costs
+            1 credit.
           headers:
             x-balance:
               $ref: '#/components/headers/XBalance'
@@ -2181,7 +2191,7 @@ paths:
         '405':
           description: Method not allowed
         '500':
-          description: Service or internal server error. 5xx service responses cost
+          description: Upstream or internal server error. Upstream 5xx responses cost
             0 credits.
           headers:
             x-balance:
@@ -2189,15 +2199,16 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '502':
-          description: Metadata service request failed before a response was received.
-            Costs 1 credit.
+          description: Upstream request failed before a response was received. Costs
+            1 credit.
           headers:
             x-balance:
               $ref: '#/components/headers/XBalance'
             x-cost:
               $ref: '#/components/headers/XCost'
         '503':
-          description: Service unavailable.
+          description: Service unavailable, including missing upstream configuration
+            or refund failures.
   /dns-lookup:
     servers:
     - url: https://api.echovalue.dev
@@ -2207,13 +2218,14 @@ paths:
       - DNS Lookup API
       operationId: dnsLookup
       summary: Run DNS lookup and enrichment
-      description: 'Runs DNS lookup and enrichment and returns the result.
+      description: 'Forwards the request body to the configured AWS Lambda DNS lookup
+        endpoint and returns the upstream response.
 
         The wallet is authenticated with `x-token`, charged in credits, and the request
         is logged.
 
-        Successful requests cost `5` credits. Non-`5xx` service failures also cost
-        `5` credits. `5xx` service responses cost `0` credits.
+        Successful requests cost `5` credits. Upstream non-`5xx` failures also cost
+        `5` credits. Upstream `5xx` responses cost `0` credits.
 
         '
       security:
@@ -2296,7 +2308,7 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '400':
-          description: Invalid request body or validation error
+          description: Invalid request body or upstream validation error
           content:
             application/json:
               schema:
