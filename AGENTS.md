@@ -46,8 +46,12 @@ Sidebar order is controlled via `sidebar.order` in frontmatter.
 - `astro.config.mjs` — Main Astro + Starlight configuration (sidebar, logo, social links)
 - `src/content.config.ts` — Content collection schema (Astro 6 location)
 - `static/` — Static assets served as-is (configured via `publicDir: './static'`)
-  - Includes favicons, `openapi.yaml`, `robots.txt`, `logo.png`
+  - Includes favicons, generated `openapi.yaml`, `robots.txt`, `logo.png`
 - `src/assets/logo.png` — Logo for Starlight header (processed by Astro)
+
+### OpenAPI Source
+
+`static/openapi.yaml` is generated from `/Users/emln/dev/njoylab.com/echovalue.dev/functions/openapi.yaml`. Do not edit `static/openapi.yaml` directly unless explicitly regenerating or synchronizing the generated copy. Make public API contract changes in the source file first, then update the generated static copy.
 
 ### API Documentation Patterns
 
@@ -137,7 +141,7 @@ Use these rules when adding or revising pages so the documentation stays coheren
 2. **Never mention upstream hops for API-backed APIs**: If an echoValue endpoint calls another API or service internally, do not say that the request is proxied, forwarded upstream, delegated to another API, or handled by an upstream provider. Phrase it as echoValue behavior instead, for example "returns URL metadata", "runs DNS lookup", or "delivers the webhook payload".
 3. **Never document internal endpoints**: Do not mention, link, or describe endpoints that are not exposed to users, even when explaining limits or payload formats. State the public behavior instead, for example "inbound email payloads are limited to 1 MiB after parsing."
 4. **Never name infrastructure vendors**: Do not mention Cloudflare, cloud services, provider dashboards, provider logs, workers, routing products, queues, storage services, or any other infrastructure vendor used by echoValue. Use vendor-neutral wording such as "inbound email delivery" or "echoValue processing."
-5. **Keep source-of-truth files synchronized**: For every API change, update `static/openapi.yaml`, the matching page in `src/content/docs/`, sidebar entries in `astro.config.mjs` if navigation changes, and agent-facing docs that summarize the same capability.
+5. **Keep source-of-truth files synchronized**: For every API change, update the source OpenAPI file at `/Users/emln/dev/njoylab.com/echovalue.dev/functions/openapi.yaml`, regenerate or synchronize `static/openapi.yaml`, update the matching page in `src/content/docs/`, sidebar entries in `astro.config.mjs` if navigation changes, and agent-facing docs that summarize the same capability.
 6. **Prefer stable examples over exhaustive examples**: Show the smallest complete request and a representative successful response. Avoid documenting incidental fields unless they are stable enough for users to rely on.
 7. **Separate guarantees from best-effort behavior**: Use direct language for guaranteed fields, limits, and costs. Mark inferred, optional, source-dependent, or best-effort results clearly so users do not build against unstable behavior.
 8. **Keep naming consistent across surfaces**: Endpoint names, field names, sidebar labels, OpenAPI operation summaries, page titles, and guide terminology should use the same wording unless there is a clear user-facing reason to differ.

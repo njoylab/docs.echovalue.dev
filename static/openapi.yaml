@@ -172,8 +172,8 @@ components:
 
         `aiSummary` controls whether AI enrichment is requested.
 
-        Page fetch results can vary by target site, redirects, robots policy, and public
-        reachability.
+        Page fetch results can vary by target site, redirects, robots policy, and
+        public reachability.
 
         '
       required:
@@ -455,8 +455,7 @@ components:
           description: 'Attachment metadata when available. When generated download
             URLs are present,
 
-            they default to 300 seconds and `downloadUrlExpiresAt`
-            marks URL
+            they default to 300 seconds and `downloadUrlExpiresAt` marks URL
 
             expiry. After `downloadUrlExpiresAt`, attachment availability is not guaranteed.
 
@@ -2165,8 +2164,7 @@ paths:
             x-cost:
               $ref: '#/components/headers/XCost'
         '400':
-          description: Invalid request body or validation/client error. Costs
-            1 credit.
+          description: Invalid request body or validation/client error. Costs 1 credit.
           headers:
             x-balance:
               $ref: '#/components/headers/XBalance'
@@ -2181,8 +2179,7 @@ paths:
         '405':
           description: Method not allowed
         '500':
-          description: Service error. Service 5xx responses cost
-            0 credits.
+          description: Service error. Service 5xx responses cost 0 credits.
           headers:
             x-balance:
               $ref: '#/components/headers/XBalance'
