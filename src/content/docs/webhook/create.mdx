@@ -45,6 +45,8 @@ Use this mode when you want echoValue to assign an opaque mailbox address and fo
 | `options` | object | Format-specific options such as `chat_id` or `routing_key` | No |
 | `includeAttachments` | boolean | Include email attachments in payloads. Default: `true`. | No |
 
+Need a temporary callback URL while testing? Use [webhook.echovalue.dev](https://webhook.echovalue.dev) and set the generated HTTPS URL as `url`.
+
 ### Minimal request
 
 ```json
@@ -90,6 +92,8 @@ Use this mode when you want echoValue to call your webhook URL on a recurring sc
 | `schedule.cron` | string | 5-field cron expression: `minute hour day month weekday` | Yes |
 | `schedule.timezone` | string | IANA timezone used to evaluate the cron expression, for example `Europe/Rome` | Yes |
 | `schedule.active` | boolean | Whether scheduled delivery is enabled. Default: `true`. | No |
+
+Use [crontab.echovalue.dev](https://crontab.echovalue.dev) to generate a valid value for `schedule.cron`.
 
 ### Minimal request
 
