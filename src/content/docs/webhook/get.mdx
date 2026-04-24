@@ -5,8 +5,6 @@ sidebar:
   order: 3
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 `GET https://api.echovalue.dev/webhook/<webhookId>`
 
 Returns a single webhook configuration. Responses differ slightly for inbound email and scheduled webhooks.
@@ -15,77 +13,24 @@ Returns a single webhook configuration. Responses differ slightly for inbound em
 **Cost:** 1 credit
 :::
 
-<Tabs syncKey="lang">
-<TabItem label="cURL">
+## Request
+
+**Headers:**
+
+| Header | Description |
+| ------ | ----------- |
+| `x-token` | Your API token |
+
+**Path parameters:**
+
+| Parameter | Type | Description | Required |
+| --------- | ---- | ----------- | -------- |
+| `webhookId` | string | Public webhook identifier to retrieve | Yes |
 
 ```sh
 curl 'https://api.echovalue.dev/webhook/slack' \
   -H 'x-token: mytoken'
 ```
-
-</TabItem>
-<TabItem label="JavaScript">
-
-```js
-fetch('https://api.echovalue.dev/webhook/slack', {
-  headers: { 'x-token': 'mytoken' }
-})
-.then(response => response.json())
-.then(data => console.log(data));
-```
-
-</TabItem>
-<TabItem label="Python">
-
-```python
-import requests
-
-response = requests.get('https://api.echovalue.dev/webhook/slack',
-  headers={'x-token': 'mytoken'}
-)
-print(response.json())
-```
-
-</TabItem>
-<TabItem label="PHP">
-
-```php
-<?php
-$ch = curl_init('https://api.echovalue.dev/webhook/slack');
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-curl_close($ch);
-print_r(json_decode($response));
-?>
-```
-
-</TabItem>
-<TabItem label="Go">
-
-```go
-package main
-
-import (
-    "fmt"
-    "io"
-    "net/http"
-)
-
-func main() {
-    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/webhook/slack", nil)
-    req.Header.Set("x-token", "mytoken")
-
-    client := &http.Client{}
-    resp, _ := client.Do(req)
-    defer resp.Body.Close()
-    body, _ := io.ReadAll(resp.Body)
-    fmt.Println(string(body))
-}
-```
-
-</TabItem>
-</Tabs>
 
 ## Single Webhook Response
 
@@ -136,6 +81,8 @@ func main() {
 | `x-cost` | Credits consumed |
 
 See [Response Headers](/response-headers/) for details.
+
+## Status Codes
 
 | Status | Meaning |
 | ------ | ------- |

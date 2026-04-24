@@ -5,8 +5,6 @@ sidebar:
   order: 6
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 `POST https://api.echovalue.dev/url-to-metadata`
 
 Fetches metadata for a public URL through the echoValue URL To Metadata service.
@@ -35,9 +33,6 @@ The request is authenticated with `x-token`, charged by echoValue, and logged.
 
 **Examples:**
 
-<Tabs syncKey="lang">
-<TabItem label="cURL">
-
 ```sh
 curl 'https://api.echovalue.dev/url-to-metadata' \
   -H 'x-token: mytoken' \
@@ -47,104 +42,6 @@ curl 'https://api.echovalue.dev/url-to-metadata' \
     "aiSummary": "short"
   }'
 ```
-
-</TabItem>
-<TabItem label="JavaScript">
-
-```js
-fetch('https://api.echovalue.dev/url-to-metadata', {
-  method: 'POST',
-  headers: {
-    'x-token': 'mytoken',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    url: 'https://example.com/article',
-    aiSummary: 'short'
-  })
-})
-.then(response => response.json())
-.then(data => console.log(data));
-```
-
-</TabItem>
-<TabItem label="Python">
-
-```python
-import requests
-
-response = requests.post(
-    'https://api.echovalue.dev/url-to-metadata',
-    headers={
-        'x-token': 'mytoken',
-        'Content-Type': 'application/json'
-    },
-    json={
-        'url': 'https://example.com/article',
-        'aiSummary': 'short'
-    }
-)
-print(response.json())
-```
-
-</TabItem>
-<TabItem label="PHP">
-
-```php
-<?php
-$ch = curl_init('https://api.echovalue.dev/url-to-metadata');
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-  'x-token: mytoken',
-  'Content-Type: application/json'
-]);
-curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-  'url' => 'https://example.com/article',
-  'aiSummary' => 'short'
-]));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-curl_close($ch);
-print_r(json_decode($response, true));
-?>
-```
-
-</TabItem>
-<TabItem label="Go">
-
-```go
-package main
-
-import (
-    "bytes"
-    "encoding/json"
-    "fmt"
-    "io"
-    "net/http"
-)
-
-func main() {
-    payload := map[string]interface{}{
-        "url":       "https://example.com/article",
-        "aiSummary": "short",
-    }
-
-    body, _ := json.Marshal(payload)
-    req, _ := http.NewRequest("POST", "https://api.echovalue.dev/url-to-metadata", bytes.NewReader(body))
-    req.Header.Set("x-token", "mytoken")
-    req.Header.Set("Content-Type", "application/json")
-
-    client := &http.Client{}
-    resp, _ := client.Do(req)
-    defer resp.Body.Close()
-
-    responseBody, _ := io.ReadAll(resp.Body)
-    fmt.Println(string(responseBody))
-}
-```
-
-</TabItem>
-</Tabs>
 
 ## Response
 

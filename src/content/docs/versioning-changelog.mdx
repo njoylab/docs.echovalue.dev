@@ -1,0 +1,43 @@
+---
+title: Versioning / Changelog
+description: How echoValue communicates API changes and documentation updates
+sidebar:
+  order: 10
+---
+
+echoValue keeps the public API contract documented in the [OpenAPI Specification](/openapi/) and endpoint reference pages.
+
+## Versioning
+
+The API uses the stable base URL:
+
+```txt
+https://api.echovalue.dev
+```
+
+Changes are documented in place unless a future breaking change requires a new versioned surface. Client integrations should rely on documented request fields, response fields, status codes, limits, and response headers.
+
+## Compatibility
+
+Non-breaking changes can include:
+
+- New optional response fields
+- New optional request fields
+- New endpoints
+- Clarifications to limits, pricing notes, or examples
+
+Breaking changes include removals, renamed fields, stricter required fields, changed status-code meaning, or incompatible behavior changes for existing endpoints.
+
+## Changelog
+
+| Date | Change |
+| ---- | ------ |
+| 2026-04-24 | Added this versioning and changelog reference page. |
+
+## Related
+
+- [API Cheat Sheet](/api-cheat-sheet/)
+- [Limits & Retention](/limits-retention/)
+- [Response Headers](/response-headers/)
+- [Errors](/errors/)
+- [OpenAPI Specification](/openapi/)

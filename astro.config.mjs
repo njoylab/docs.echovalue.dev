@@ -14,10 +14,16 @@ export default defineConfig({
       ],
       sidebar: [
         {
-          label: 'Introduction',
+          label: 'Getting Started',
           items: [
             { label: 'Overview', link: '/' },
             { label: 'Authentication', link: '/authentication/' },
+            { label: 'API Cheat Sheet', link: '/api-cheat-sheet/' },
+          ],
+        },
+        {
+          label: 'Account & Billing',
+          items: [
             { label: 'Token Overview', link: '/token/' },
             { label: 'Create Token', link: '/token/create/' },
             { label: 'Get Balance', link: '/token/balance/' },
@@ -37,15 +43,7 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Guides',
-          items: [
-            { label: 'Agent Shared State', link: '/guides/agent-shared-state/' },
-            { label: 'Webhook: Inbound Email', link: '/guides/webhook-inbound-email/' },
-            { label: 'Webhook: Scheduled Jobs', link: '/guides/webhook-scheduled-jobs/' },
-          ],
-        },
-        {
-          label: 'Webhook',
+          label: 'Webhooks',
           items: [
             { label: 'Overview', link: '/webhook/' },
             { label: 'Create Webhook', link: '/webhook/create/' },
@@ -69,6 +67,14 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Guides',
+          items: [
+            { label: 'Agent Shared State', link: '/guides/agent-shared-state/' },
+            { label: 'Webhook: Inbound Email', link: '/guides/webhook-inbound-email/' },
+            { label: 'Webhook: Scheduled Jobs', link: '/guides/webhook-scheduled-jobs/' },
+          ],
+        },
+        {
           label: 'Utilities',
           items: [
             { label: 'DNS Lookup', link: '/dns-lookup/' },
@@ -79,10 +85,10 @@ export default defineConfig({
         {
           label: 'Reference',
           items: [
-            { label: 'API Cheat Sheet', link: '/api-cheat-sheet/' },
             { label: 'Limits & Retention', link: '/limits-retention/' },
             { label: 'Response Headers', link: '/response-headers/' },
             { label: 'Errors', link: '/errors/' },
+            { label: 'Versioning / Changelog', link: '/versioning-changelog/' },
             { label: 'OpenAPI Specification', link: '/openapi/' },
           ],
         },

@@ -5,8 +5,6 @@ sidebar:
   order: 5
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 `GET https://api.echovalue.dev/myip`
 
 Returns the IP address seen by echoValue for the current request, plus geo metadata derived from the request headers.
@@ -31,81 +29,10 @@ This endpoint is useful when you need to:
 
 **Examples:**
 
-<Tabs syncKey="lang">
-<TabItem label="cURL">
-
 ```sh
 curl 'https://api.echovalue.dev/myip' \
   -H 'x-token: mytoken'
 ```
-
-</TabItem>
-<TabItem label="JavaScript">
-
-```js
-fetch('https://api.echovalue.dev/myip', {
-  headers: { 'x-token': 'mytoken' }
-})
-.then(response => response.json())
-.then(data => console.log(data));
-```
-
-</TabItem>
-<TabItem label="Python">
-
-```python
-import requests
-
-response = requests.get('https://api.echovalue.dev/myip',
-  headers={'x-token': 'mytoken'}
-)
-print(response.json())
-```
-
-</TabItem>
-<TabItem label="PHP">
-
-```php
-<?php
-$ch = curl_init('https://api.echovalue.dev/myip');
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-curl_close($ch);
-print_r(json_decode($response, true));
-?>
-```
-
-</TabItem>
-<TabItem label="Go">
-
-```go
-package main
-
-import (
-    "encoding/json"
-    "fmt"
-    "io"
-    "net/http"
-)
-
-func main() {
-    req, _ := http.NewRequest("GET", "https://api.echovalue.dev/myip", nil)
-    req.Header.Set("x-token", "mytoken")
-
-    client := &http.Client{}
-    resp, _ := client.Do(req)
-    defer resp.Body.Close()
-
-    body, _ := io.ReadAll(resp.Body)
-    var result map[string]interface{}
-    json.Unmarshal(body, &result)
-    fmt.Println(result)
-}
-```
-
-</TabItem>
-</Tabs>
 
 ## Response
 
