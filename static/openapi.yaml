@@ -1427,8 +1427,13 @@ paths:
           type: string
         description: 'Optional endpoint filter.
 
-          Common values include `kv`, `token`, `settings`, `webhook`, `url-to-metadata`,
-          `myip`, `service`, and `manage`.
+          Common values include `kv`, `token`, `settings`, `webhook`, `webhook-delivery`,
+          `url-to-metadata`, `myip`, `service`, and `manage`.
+
+          Use `webhook` for webhook management audit logs and `webhook-delivery` for
+          delivery/test logs, including scheduled deliveries.
+
+          For `webhook-delivery` logs, `path` is the `webhookId`.
 
           '
       responses:

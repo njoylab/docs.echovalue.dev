@@ -28,7 +28,7 @@ Returns a list of recent API calls made with your token. Logs have a TTL of 7 da
 | Parameter | Type | Description | Default |
 | --------- | ---- | ----------- | ------- |
 | `n` | integer | Number of log entries to retrieve. Min: `1`. Default: `5`. | `5` |
-| `type` | string | Optional endpoint filter. Common values include `kv`, `token`, `settings`, `webhook`, `dns-lookup`, `url-to-metadata`, `myip`, and `service`. | — |
+| `type` | string | Optional endpoint filter. Common values include `kv`, `token`, `settings`, `webhook`, `webhook-delivery`, `url-to-metadata`, `myip`, `service`, and `manage`. | — |
 
 Supported `type` filters are implementation-driven. Common values are:
 
@@ -37,11 +37,14 @@ Supported `type` filters are implementation-driven. Common values are:
 | `kv` | Key-value operations |
 | `token` | Wallet info requests |
 | `settings` | Low-balance settings reads and updates |
-| `webhook` | Webhook management and test calls |
-| `dns-lookup` | DNS lookup and enrichment requests |
+| `webhook` | Webhook management audit logs |
+| `webhook-delivery` | Webhook delivery and test logs, including scheduled deliveries |
 | `url-to-metadata` | URL metadata and scraping requests |
 | `myip` | Caller IP lookup requests |
 | `service` | Recharge operations |
+| `manage` | Management operations |
+
+For `webhook-delivery` logs, `path` is the `webhookId`.
 
 ## Response
 
@@ -79,8 +82,8 @@ Supported `type` filters are implementation-driven. Common values are:
 | ----- | ---- | ----------- |
 | `id` | string | Unique log entry ID |
 | `method` | string | HTTP method used (`GET`, `POST`, `DELETE`) |
-| `path` | string | Full request path including query parameters |
-| `endpoint` | string | API category such as `kv`, `token`, `settings`, `webhook`, `dns-lookup`, `url-to-metadata`, `myip`, or `service` |
+| `path` | string | Full request path including query parameters. For `webhook-delivery` logs, this is the `webhookId`. |
+| `endpoint` | string | API category such as `kv`, `token`, `settings`, `webhook`, `webhook-delivery`, `url-to-metadata`, `myip`, `service`, or `manage` |
 | `status_code` | integer | HTTP status code returned by the request |
 | `response_time_ms` | integer | Response time in milliseconds for the request |
 | `error` | string | Error message, if any (omitted on success) |
@@ -112,8 +115,8 @@ Supported `type` filters are implementation-driven. Common values are:
 curl 'https://api.echovalue.dev/token/logs?n=5' \
   -H 'x-token: mytoken'
 
-# Get only KV operations
-curl 'https://api.echovalue.dev/token/logs?type=kv' \
+# Get only webhook deliveries and tests
+curl 'https://api.echovalue.dev/token/logs?type=webhook-delivery' \
   -H 'x-token: mytoken'
 ```
 
@@ -133,13 +136,13 @@ fetch('https://api.echovalue.dev/token/logs?n=5', {
   });
 });
 
-// Get only KV logs
-fetch('https://api.echovalue.dev/token/logs?type=kv', {
+// Get only webhook delivery logs
+fetch('https://api.echovalue.dev/token/logs?type=webhook-delivery', {
   headers: { 'x-token': 'mytoken' }
 })
 .then(response => response.json())
 .then(data => {
-  console.log(`Returned ${data.n} KV logs`);
+  console.log(`Returned ${data.n} webhook delivery logs`);
 });
 ```
 
@@ -159,10 +162,10 @@ print(f"Returned {data.get('n')} logs")
 for l in data.get('logs', []):
     print(f"{l.get('timestamp')} {l.get('method')} {l.get('endpoint') or l.get('path')} status={l.get('status_code')} time={l.get('response_time_ms')}ms cost={l.get('cost')} balance={l.get('balance')} id={l.get('id')}")
 
-# Get only webhook logs
+# Get only webhook delivery logs
 response = requests.get('https://api.echovalue.dev/token/logs',
   headers={'x-token': 'mytoken'},
-  params={'type': 'webhook'}
+  params={'type': 'webhook-delivery'}
 )
 ```
 
@@ -183,8 +186,8 @@ foreach ($data['logs'] as $l) {
   echo "{$l['timestamp']} {$l['method']} " . ($l['endpoint'] ?? $l['path']) . " status={$l['status_code']} time={$l['response_time_ms']}ms cost={$l['cost']} balance={$l['balance']} id={$l['id']}\n";
 }
 
-// Get only KV logs
-$ch = curl_init('https://api.echovalue.dev/token/logs?type=kv');
+// Get only webhook delivery logs
+$ch = curl_init('https://api.echovalue.dev/token/logs?type=webhook-delivery');
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['x-token: mytoken']);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
@@ -227,8 +230,8 @@ func main() {
         }
     }
 
-    // Get only KV logs
-    req2, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/logs?type=kv", nil)
+    // Get only webhook delivery logs
+    req2, _ := http.NewRequest("GET", "https://api.echovalue.dev/token/logs?type=webhook-delivery", nil)
     req2.Header.Set("x-token", "mytoken")
     resp2, _ := client.Do(req2)
     defer resp2.Body.Close()

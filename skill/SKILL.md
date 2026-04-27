@@ -257,6 +257,8 @@ curl -s 'https://api.echovalue.dev/token/logs?n=10' \
   -H "x-token: $ECHOVALUE_TOKEN"
 ```
 
+Use `type=webhook` for webhook management audit logs and `type=webhook-delivery` for delivery/test logs, including scheduled deliveries. For `webhook-delivery` logs, `path` is the `webhookId`.
+
 ### Get Caller IP
 ```bash
 curl -s 'https://api.echovalue.dev/myip' \

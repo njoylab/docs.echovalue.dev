@@ -108,6 +108,8 @@ curl -s 'https://api.echovalue.dev/token/logs?n=5' \
 # Response: {"logs":[...],"n":5}
 ```
 
+Common `type` filters include `webhook` for webhook management audit logs and `webhook-delivery` for delivery/test logs, including scheduled deliveries. For `webhook-delivery` logs, `path` is the `webhookId`.
+
 ## My IP
 
 ### Get Caller IP And Geo Metadata
